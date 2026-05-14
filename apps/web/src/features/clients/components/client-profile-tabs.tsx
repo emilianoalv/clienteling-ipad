@@ -10,14 +10,13 @@ import type { Consent } from "@/types/consent";
 import type { Communication } from "@/types/communication";
 import { Card } from "@/components/patterns";
 import { cn } from "@/lib/cn";
-import { TimelinePreview } from "./tabs/timeline-preview";
 import { PurchasesPreview } from "./tabs/purchases-preview";
 import { SamplesPreview } from "./tabs/samples-preview";
 import { RecsPreview } from "./tabs/recs-preview";
 import { ConsentPreview } from "./tabs/consent-preview";
 import { CommLog } from "@/features/communications";
 
-type TabId = "timeline" | "purchases" | "recs" | "samples" | "msgs" | "consent";
+type TabId = "purchases" | "recs" | "samples" | "msgs" | "consent";
 
 export interface ClientProfileTabsProps {
   interactions: readonly Interaction[];
@@ -27,14 +26,14 @@ export interface ClientProfileTabsProps {
   consents: readonly Consent[];
   communications: readonly Communication[];
   clientName: string;
+  clientId: string;
 }
 
 export function ClientProfileTabs(props: ClientProfileTabsProps) {
   const t = useTranslations();
-  const [tab, setTab] = useState<TabId>("timeline");
+  const [tab, setTab] = useState<TabId>("purchases");
 
   const tabs: ReadonlyArray<{ id: TabId; labelKey: string }> = [
-    { id: "timeline", labelKey: "profile.tab.timeline" },
     { id: "purchases", labelKey: "profile.tab.purchases" },
     { id: "recs", labelKey: "profile.tab.recs" },
     { id: "samples", labelKey: "profile.tab.samples" },
@@ -68,8 +67,9 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
       </div>
 
       <Card variant="flat" className="min-h-[220px]" role="tabpanel">
-        {tab === "timeline" && <TimelinePreview interactions={props.interactions} />}
-        {tab === "purchases" && <PurchasesPreview purchases={props.purchases} />}
+        {tab === "purchases" && (
+          <PurchasesPreview purchases={props.purchases} clientId={props.clientId} />
+        )}
         {tab === "recs" && <RecsPreview recommendations={props.recommendations} />}
         {tab === "samples" && <SamplesPreview samples={props.samples} />}
         {tab === "msgs" && (

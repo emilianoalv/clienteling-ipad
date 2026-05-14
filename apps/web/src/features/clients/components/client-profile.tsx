@@ -112,12 +112,10 @@ export async function ClientProfile({
         </div>
 
         {/* KPI strip */}
-        <Card className="grid grid-cols-3 gap-0">
-          <KpiCell label={t("profile.kpi.ltv")} value={formatCurrency(client.stats.ltv)} />
+        <Card className="grid grid-cols-2 gap-0">
           <KpiCell
             label={t("profile.kpi.avg_ticket")}
             value={formatCurrency(client.stats.avgTicket)}
-            divider
           />
           <KpiCell
             label={t("profile.kpi.last_purchase")}
@@ -135,6 +133,7 @@ export async function ClientProfile({
           consents={consents}
           communications={communications}
           clientName={client.name}
+          clientId={client.id}
         />
       </main>
 
