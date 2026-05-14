@@ -87,9 +87,9 @@ export async function ClientProfile({
         </Card>
 
         {/* Action strip */}
-        <div className="grid grid-cols-[1.3fr_1fr_1fr_1fr_1fr] gap-2.5">
+        <div className="grid grid-cols-5 gap-2.5">
           <Link href={`/ba/clients/${client.id}/consult`}>
-            <Button leading={<Icon name="sparkle" />} variant="primary" className="h-14 text-sm w-full">
+            <Button leading={<Icon name="sparkle" />} className="h-14 w-full">
               {t("profile.actions.recommend")}
             </Button>
           </Link>
