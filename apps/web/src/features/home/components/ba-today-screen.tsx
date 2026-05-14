@@ -77,5 +77,5 @@ const MONTHS = [
 ];
 
 function formatDateLabel(d: Date): string {
-  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} · ${MONTHS[d.getMonth()]}`;
+  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} · ${MONTHS[d.getMonth()]} · ${d.getFullYear()}`;
 }
