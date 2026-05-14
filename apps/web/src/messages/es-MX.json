@@ -1,0 +1,580 @@
+{
+  "app": {
+    "brand": "L'Oréal Luxe",
+    "title": "Clienteling",
+    "search": "Buscar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "change": "Cambiar",
+    "loading": "Cargando…",
+    "empty": "Sin resultados",
+    "back": "Volver",
+    "continue": "Continuar",
+    "submit": "Enviar"
+  },
+  "rail": {
+    "home": "Hoy",
+    "clients": "Clientas",
+    "appointments": "Citas",
+    "catalog": "Catálogo",
+    "samples": "Muestras",
+    "purchases": "Compras",
+    "followup": "Seguim.",
+    "commlog": "Mensajes",
+    "perf": "Mi KPI",
+    "team": "Equipo",
+    "segments": "Segmentos",
+    "devices": "Dispositivos",
+    "reports": "Reportes",
+    "stores": "Tiendas",
+    "tickets": "Incidencias",
+    "integrations": "Integraciones",
+    "users": "Usuarios",
+    "audit": "Auditoría"
+  },
+  "auth": {
+    "welcome": "Bienvenida",
+    "sign_in": "Iniciar sesión",
+    "pick_user": "Elige tu perfil",
+    "pin": "Ingresa tu PIN",
+    "locked": "Cuenta bloqueada. Reintenta en {minutes} min.",
+    "wrong_pin": "PIN incorrecto. Te quedan {attempts} intentos."
+  },
+  "home": {
+    "greeting": {
+      "morning": "Buenos días, {name}",
+      "afternoon": "Buenas tardes, {name}",
+      "evening": "Buenas noches, {name}"
+    }
+  },
+  "clients": {
+    "title": "Clientas",
+    "search": "Buscar por nombre, email o teléfono",
+    "new": "Nueva clienta",
+    "count": "{count, plural, one {1 clienta} other {# clientas}}",
+    "segment": {
+      "all": "Todas",
+      "vip": "VIP",
+      "recurrent": "Recurrente",
+      "new": "Nueva",
+      "at_risk": "En riesgo"
+    },
+    "empty": {
+      "title": "No encontramos clientas",
+      "description": "Ajusta la búsqueda o el filtro de segmento."
+    },
+    "column": {
+      "name": "Nombre",
+      "tier": "Tier",
+      "ltv": "LTV",
+      "visits": "Visitas",
+      "last_purchase": "Última compra",
+      "brands": "Marcas"
+    }
+  },
+  "profile": {
+    "breadcrumb": "Clientas",
+    "since": "Clienta desde",
+    "city": "Ciudad",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "actions": {
+      "recommend": "Recomendar",
+      "register_visit": "Registrar visita",
+      "register_sale": "Registrar venta",
+      "give_sample": "Dar muestra",
+      "follow_up": "Seguimiento"
+    },
+    "tab": {
+      "timeline": "Historial",
+      "purchases": "Compras",
+      "recs": "Recomendaciones",
+      "samples": "Muestras",
+      "msgs": "Mensajes",
+      "consent": "Consentimientos"
+    },
+    "card": {
+      "luxe_circle": "Luxe Circle",
+      "skin_profile": "Perfil de piel",
+      "interests": "Intereses",
+      "affinities": "Afinidades",
+      "upcoming_events": "Próximos eventos",
+      "appointments": "Citas",
+      "arco": "Derechos ARCO",
+      "consent_summary": "Consentimientos"
+    },
+    "kpi": {
+      "ltv": "Lifetime value",
+      "avg_ticket": "Ticket promedio",
+      "last_purchase": "Última compra",
+      "samples_converted": "muestras conv."
+    },
+    "consent": {
+      "notice_version": "Vigente · {version}",
+      "granted": "Otorgado",
+      "revoked": "Revocado",
+      "no_record": "Sin registro"
+    },
+    "arco": {
+      "eyebrow": "Derechos ARCO",
+      "title": "Derecho al olvido",
+      "description": "Solicita la eliminación completa de datos personales. Requiere doble confirmación y genera ticket auditable.",
+      "cta": "Iniciar solicitud"
+    },
+    "appointments": {
+      "new": "Nueva",
+      "empty": "Sin citas próximas.",
+      "past": "Citas pasadas"
+    },
+    "empty": {
+      "timeline": "Aún no hay interacciones registradas.",
+      "purchases": "Aún no hay compras registradas.",
+      "recs": "Aún no hay recomendaciones.",
+      "samples": "Aún no hay muestras entregadas.",
+      "msgs": "Aún no hay mensajes."
+    }
+  },
+  "capture": {
+    "step": {
+      "identity": "Identidad",
+      "beauty": "Perfil de belleza",
+      "privacy": "Privacidad"
+    },
+    "field": {
+      "first_name": "Nombre",
+      "last_name": "Apellido",
+      "gender": "Género",
+      "birthdate": "Fecha de nacimiento",
+      "phone": "Teléfono",
+      "email": "Correo",
+      "city": "Ciudad",
+      "skin_type": "Tipo de piel",
+      "skin_tone": "Tono",
+      "concerns": "Preocupaciones",
+      "routine": "Rutina actual",
+      "interests": "Intereses",
+      "allergies": "Alergias o restricciones",
+      "brands": "Marcas",
+      "channels": "Canales de comunicación",
+      "accept_privacy": "He leído y acepto el aviso de privacidad (versión {version})."
+    },
+    "submit": "Crear clienta"
+  },
+  "event": {
+    "birthday": "Cumpleaños",
+    "anniversary": "Aniversario como clienta",
+    "replenishment": "Posible reposición",
+    "today": "hoy",
+    "tomorrow": "mañana",
+    "in_days": "en {days} días",
+    "days_ago": "hace {days} días"
+  },
+  "visit": {
+    "kind": {
+      "consultation": "Consulta",
+      "purchase": "Venta",
+      "sample": "Muestra",
+      "courtesy": "Cortesía",
+      "return": "Devolución",
+      "followup": "Seguimiento"
+    },
+    "reason": {
+      "skincare-consult": "Consulta de skincare",
+      "new-launch": "Lanzamiento",
+      "gift": "Regalo",
+      "diagnosis": "Diagnóstico",
+      "loyalty-redemption": "Redención de puntos",
+      "other": "Otro"
+    },
+    "field": {
+      "kind": "Tipo de visita",
+      "reason": "Motivo",
+      "brand": "Marca",
+      "amount": "Monto",
+      "duration": "Duración (min)",
+      "notes": "Notas"
+    },
+    "submit": "Registrar visita"
+  },
+  "sale": {
+    "field": {
+      "items": "Productos",
+      "qty": "Cantidad",
+      "unit_price": "Precio unitario",
+      "payment": "Método de pago",
+      "ticket": "Ticket",
+      "notes": "Notas",
+      "add_item": "Agregar otro producto",
+      "remove_item": "Quitar producto",
+      "product_search": "Buscar por SKU, línea o nombre…"
+    },
+    "payment": {
+      "card": "Tarjeta",
+      "cash": "Efectivo",
+      "transfer": "Transferencia",
+      "store-credit": "Crédito tienda"
+    },
+    "total": "Total",
+    "submit": "Registrar venta"
+  },
+  "consultation": {
+    "eyebrow": "Diagnóstico para {name}",
+    "title": "Diagnóstico de piel",
+    "subtitle": "Lectura combinada Lancôme Skin Screen + ModiFace · toma ≈ 3 min",
+    "summary": "Resumen",
+    "autosave_hint": "La sesión se guarda automáticamente en el historial, incluso sin conexión.",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "save_draft": "Guardar borrador",
+    "create_recommendation": "Crear recomendación",
+    "back_to_profile": "Volver al perfil",
+    "concerns_count": "{count, plural, =0 {Ninguno} one {1 sel.} other {# sel.}}",
+    "products_count": "{count, plural, =0 {0 productos} one {1 producto} other {# productos}}",
+    "step": {
+      "skin_type": "Tipo de piel",
+      "concerns": "Concerns",
+      "tone": "Tono",
+      "routine": "Rutina",
+      "recommendation": "Recomendación"
+    },
+    "skin_type": {
+      "eyebrow": "Selecciona el tipo dominante",
+      "dry": "Tirantez, descamación",
+      "normal": "Equilibrada",
+      "mixed": "Zona T grasa",
+      "oily": "Brillo, poros"
+    },
+    "concerns": {
+      "eyebrow": "Concerns principales (máx. {max})",
+      "photo": {
+        "title": "Análisis fotográfico",
+        "hint": "Captura con iluminación neutra · se procesa localmente (offline capable)",
+        "cta": "Capturar"
+      }
+    },
+    "routine": {
+      "morning": "Mañana",
+      "evening": "Noche"
+    },
+    "recommendation": {
+      "eyebrow": "Productos sugeridos para {name} · {skin} · {concerns}",
+      "empty": "No encontramos productos para esa combinación. Ajusta concerns o tipo de piel.",
+      "add": "Añadir",
+      "added": "Añadido"
+    },
+    "summary_field": {
+      "skin_type": "Tipo de piel",
+      "concerns": "Concerns",
+      "tone": "Tono",
+      "products": "Productos"
+    },
+    "integration": {
+      "title": "Integración diagnóstico",
+      "modiface": "ModiFace SDK · sandbox",
+      "hint": "Switch a modo live cuando HQ lo active."
+    },
+    "error": {
+      "no_concerns": "Selecciona al menos un concern antes de guardar.",
+      "no_items": "Agrega al menos un producto a la recomendación.",
+      "save": "No se pudo guardar la recomendación."
+    }
+  },
+  "basket": {
+    "title": "Checkout · Handoff POS",
+    "eyebrow": "Recomendación {id} · para {name}",
+    "empty": "No hay productos en la recomendación.",
+    "remove": "Quitar producto",
+    "handed_off": "Entregada al POS",
+    "back_to_profile": "Volver al perfil",
+    "qty": {
+      "increment": "Incrementar cantidad",
+      "decrement": "Disminuir cantidad"
+    },
+    "samples": {
+      "title": "Muestras sugeridas",
+      "hint": "Or Rouge sample · Libre travel 7.5ml",
+      "add": "Añadir"
+    },
+    "totals": {
+      "subtotal": "Subtotal",
+      "points": "Puntos Luxe Circle",
+      "iva": "IVA incluido (16%)",
+      "total": "Total"
+    },
+    "handoff": {
+      "title": "Handoff a POS",
+      "scan": "Muestra este código al cajero.",
+      "attribution_hint": "Atribución: BA · Rec · Muestras linked",
+      "cta": "Marcar como entregada",
+      "done": "Entregada al POS"
+    },
+    "attribution": {
+      "title": "Atribución",
+      "ba": "Beauty Advisor",
+      "recommendation": "Recomendación",
+      "client": "Clienta",
+      "client_tier": "Tier"
+    },
+    "error": {
+      "handoff": "No se pudo marcar la entrega."
+    }
+  },
+  "purchases": {
+    "title": "Compras",
+    "search": "Buscar por clienta, ticket o #ID de compra…",
+    "count": "{count, plural, one {1 ticket} other {# tickets}}",
+    "manual": "manual",
+    "unknown_client": "Cliente eliminado",
+    "empty": {
+      "title": "Sin compras",
+      "description": "No hay compras registradas que coincidan con la búsqueda."
+    },
+    "column": {
+      "ticket": "Ticket",
+      "client": "Clienta",
+      "products": "Producto(s)",
+      "date": "Fecha",
+      "brand": "Marca",
+      "total": "Total",
+      "ba": "BA"
+    }
+  },
+  "samples": {
+    "title": "Muestras",
+    "delivered_this_week": "Entregadas esta semana",
+    "register": "Registrar muestra",
+    "empty": "Aún no hay muestras registradas en este alcance.",
+    "follow": "Seguir",
+    "unknown_client": "Cliente desconocida",
+    "delivered_on": "Entregada {date}",
+    "followup_on": "Seguim. {date}",
+    "kpi": {
+      "delivered": "Muestras entregadas",
+      "conversion_rate": "Tasa de conversión",
+      "attributable_revenue": "Revenue atribuible"
+    },
+    "status": {
+      "converted": "Convertida",
+      "pending": "Pendiente"
+    },
+    "inventory": {
+      "title": "Disponible en counter",
+      "eyebrow": "Inventario de muestras",
+      "request_replenishment": "Solicitar reposición"
+    }
+  },
+  "catalog": {
+    "title": "Catálogo",
+    "search": "Buscar producto, SKU, línea…",
+    "filters": {
+      "all": "Todas"
+    },
+    "category": {
+      "serum": "Sérum",
+      "cream": "Crema",
+      "foundation": "Base",
+      "fragrance": "Fragancia",
+      "lipstick": "Labial",
+      "corrector": "Corrector"
+    },
+    "empty": {
+      "title": "Sin productos",
+      "description": "Ajusta la búsqueda, marca o categoría."
+    },
+    "card": {
+      "stock_at": "Stock {store}:",
+      "add_to_recs": "Agregar a recomendaciones"
+    },
+    "detail": {
+      "selling": "Argumentos de venta",
+      "how_to": "Cómo usar",
+      "availability": "Disponibilidad",
+      "units": "{qty} uds",
+      "fact_sheet": "Ficha técnica",
+      "add_to_recs": "A recomendar"
+    }
+  },
+  "calendar": {
+    "title": "Citas",
+    "new": "Nueva cita",
+    "today": "Hoy",
+    "view": {
+      "day": "Día",
+      "week": "Semana",
+      "month": "Mes"
+    },
+    "week_label": "Semana {week}",
+    "empty_day": "Sin citas para este día.",
+    "more_count": "+{count} más"
+  },
+  "appointment": {
+    "kind": {
+      "ritual": "Ritual",
+      "makeup": "Maquillaje",
+      "diagnosis": "Diagnóstico",
+      "consultation": "Consulta",
+      "vip-cabin": "Cabina VIP",
+      "facial": "Facial",
+      "anniversary-event": "Aniversario",
+      "product-followup": "Seguimiento producto",
+      "fragrance-consult": "Consulta fragancia",
+      "other": "Otro"
+    },
+    "status": {
+      "scheduled": "Programada",
+      "confirmed": "Confirmada",
+      "completed": "Completada",
+      "rescheduled": "Reagendada",
+      "cancelled": "Cancelada",
+      "no-show": "No asistió"
+    },
+    "actions": {
+      "confirm": "Confirmar",
+      "complete": "Marcar completada",
+      "reschedule": "Reagendar",
+      "cancel": "Cancelar cita",
+      "no_show": "No asistió"
+    },
+    "field": {
+      "client": "Clienta",
+      "ba": "Beauty Advisor",
+      "kind": "Tipo",
+      "brand": "Marca",
+      "date": "Fecha",
+      "time": "Hora",
+      "duration": "Duración (min)",
+      "notes": "Notas",
+      "reason": "Motivo de cancelación"
+    },
+    "submit": "Agendar",
+    "confirm_reschedule": "Confirmar nuevo horario",
+    "confirm_cancel": "Confirmar cancelación",
+    "saved": "Cita guardada",
+    "rescheduled": "Cita reagendada",
+    "cancelled": "Cita cancelada",
+    "completed": "Cita completada",
+    "insights": {
+      "title": "Insight de la clienta",
+      "visits": "Visitas",
+      "avg_ticket": "Ticket prom",
+      "ltv": "LTV",
+      "tier": "Tier"
+    },
+    "summary": "Resumen de la cita",
+    "summary_empty": "Selecciona una clienta",
+    "saved_eyebrow": "Cita guardada",
+    "saved_cta_again": "Otra cita",
+    "saved_cta_calendar": "Ver agenda",
+    "management": {
+      "tab": "Reagendadas y canceladas",
+      "kpi": {
+        "total": "Total citas",
+        "total_subtitle": "últimos 60 días",
+        "scheduled": "Programadas",
+        "scheduled_subtitle": "activas",
+        "rescheduled": "Reagendadas",
+        "cancelled": "Canceladas",
+        "completed": "Completadas",
+        "completed_subtitle": "servicio cumplido",
+        "rate": "{rate}% tasa"
+      },
+      "filter": "Filtrar",
+      "filter_all": "Todas",
+      "column": {
+        "client": "Clienta",
+        "kind": "Tipo",
+        "original": "Fecha original",
+        "status": "Estado",
+        "new_date": "Nueva fecha",
+        "reason": "Motivo"
+      },
+      "empty": "Sin citas en este filtro.",
+      "tab_calendar": "Calendario"
+    }
+  },
+  "admin": {
+    "users": {
+      "title": "Usuarios"
+    },
+    "audit": {
+      "title": "Auditoría"
+    },
+    "segments": {
+      "title": "Segmentos"
+    },
+    "integrations": {
+      "title": "Integraciones"
+    }
+  },
+  "devices": {
+    "title": "Dispositivos"
+  },
+  "tickets": {
+    "title": "Incidencias"
+  },
+  "reports": {
+    "title": "Reportes"
+  },
+  "comm": {
+    "unknown_client": "Cliente desconocido",
+    "outbound": "Enviado",
+    "inbound": "Recibido",
+    "empty": {
+      "title": "Sin mensajes",
+      "description": "No hay comunicaciones registradas para este filtro."
+    },
+    "status": {
+      "sent": "enviado",
+      "delivered": "entregado",
+      "read": "leído",
+      "responded": "respondido",
+      "failed": "falló"
+    },
+    "metrics": {
+      "title": "Métricas (30 d)",
+      "eyebrow": "Comunicaciones",
+      "sent": "Enviados",
+      "read_rate": "Tasa de lectura",
+      "responses": "Respuestas",
+      "opt_outs": "Opt-outs"
+    },
+    "channel_mix": {
+      "title": "Mix de canales"
+    }
+  },
+  "followup": {
+    "title": "Seguimiento",
+    "templates": "Plantillas",
+    "composer": "Compositor",
+    "channel": "Canal",
+    "body": "Mensaje personalizado",
+    "consent_hint": "Consent. WhatsApp: otorgado",
+    "no_template": "Selecciona una plantilla",
+    "send_now": "Enviar ahora",
+    "save_draft": "Guardar borrador",
+    "sent": "Mensaje enviado",
+    "brand_all": "Todas",
+    "preview": {
+      "online": "en línea",
+      "caption": "Vista previa · tokens personalizados",
+      "fallback": "Selecciona una plantilla para previsualizar."
+    },
+    "sandbox": {
+      "title": "Simulador WhatsApp Business API",
+      "hint": "Modo sandbox. Las métricas de entrega y lectura se simulan localmente y se almacenan en el historial de la clienta. Cambiará a modo live cuando HQ active la integración."
+    },
+    "tab": {
+      "composer": "Compositor",
+      "log": "Bitácora"
+    },
+    "log": {
+      "title": "Bitácora de comunicaciones",
+      "eyebrow": "Historial por canal"
+    },
+    "error": {
+      "send": "No se pudo enviar el mensaje."
+    }
+  }
+}

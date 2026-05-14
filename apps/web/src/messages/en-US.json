@@ -1,0 +1,572 @@
+{
+  "app": {
+    "brand": "L'Oréal Luxe",
+    "title": "Clienteling",
+    "search": "Search",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "change": "Change",
+    "loading": "Loading…",
+    "empty": "No results",
+    "back": "Back",
+    "continue": "Continue",
+    "submit": "Submit"
+  },
+  "rail": {
+    "home": "Today",
+    "clients": "Clients",
+    "appointments": "Calendar",
+    "catalog": "Catalog",
+    "samples": "Samples",
+    "purchases": "Purchases",
+    "followup": "Follow-up",
+    "commlog": "Messages",
+    "perf": "My KPIs",
+    "team": "Team",
+    "segments": "Segments",
+    "devices": "Devices",
+    "reports": "Reports",
+    "stores": "Stores",
+    "tickets": "Tickets",
+    "integrations": "Integrations",
+    "users": "Users",
+    "audit": "Audit"
+  },
+  "auth": {
+    "welcome": "Welcome",
+    "sign_in": "Sign in",
+    "pick_user": "Choose your profile",
+    "pin": "Enter your PIN",
+    "locked": "Account locked. Retry in {minutes} min.",
+    "wrong_pin": "Wrong PIN. {attempts} attempts remaining."
+  },
+  "home": {
+    "greeting": {
+      "morning": "Good morning, {name}",
+      "afternoon": "Good afternoon, {name}",
+      "evening": "Good evening, {name}"
+    }
+  },
+  "clients": {
+    "title": "Clients",
+    "search": "Search by name, email or phone",
+    "new": "New client",
+    "count": "{count, plural, one {1 client} other {# clients}}",
+    "segment": {
+      "all": "All",
+      "vip": "VIP",
+      "recurrent": "Recurrent",
+      "new": "New",
+      "at_risk": "At risk"
+    },
+    "empty": {
+      "title": "No clients found",
+      "description": "Adjust your search or segment filter."
+    },
+    "column": {
+      "name": "Name",
+      "tier": "Tier",
+      "ltv": "LTV",
+      "visits": "Visits",
+      "last_purchase": "Last purchase",
+      "brands": "Brands"
+    }
+  },
+  "profile": {
+    "breadcrumb": "Clients",
+    "since": "Client since",
+    "city": "City",
+    "phone": "Phone",
+    "email": "Email",
+    "actions": {
+      "recommend": "Recommend",
+      "register_visit": "Log visit",
+      "register_sale": "Log sale",
+      "give_sample": "Give sample",
+      "follow_up": "Follow up"
+    },
+    "tab": {
+      "timeline": "Timeline",
+      "purchases": "Purchases",
+      "recs": "Recommendations",
+      "samples": "Samples",
+      "msgs": "Messages",
+      "consent": "Consent"
+    },
+    "card": {
+      "luxe_circle": "Luxe Circle",
+      "skin_profile": "Skin profile",
+      "interests": "Interests",
+      "affinities": "Affinities",
+      "upcoming_events": "Upcoming events",
+      "appointments": "Appointments",
+      "arco": "ARCO rights",
+      "consent_summary": "Consents"
+    },
+    "kpi": {
+      "ltv": "Lifetime value",
+      "avg_ticket": "Avg. ticket",
+      "last_purchase": "Last purchase",
+      "samples_converted": "samples conv."
+    },
+    "consent": {
+      "notice_version": "Active · {version}",
+      "granted": "Granted",
+      "revoked": "Revoked",
+      "no_record": "No record"
+    },
+    "arco": {
+      "eyebrow": "ARCO rights",
+      "title": "Right to be forgotten",
+      "description": "Request full removal of personal data. Requires double confirmation and creates an auditable ticket.",
+      "cta": "Start request"
+    },
+    "appointments": {
+      "new": "New",
+      "empty": "No upcoming appointments.",
+      "past": "Past appointments"
+    },
+    "empty": {
+      "timeline": "No interactions yet.",
+      "purchases": "No purchases yet.",
+      "recs": "No recommendations yet.",
+      "samples": "No samples given yet.",
+      "msgs": "No messages yet."
+    }
+  },
+  "capture": {
+    "step": { "identity": "Identity", "beauty": "Beauty profile", "privacy": "Privacy" },
+    "field": {
+      "first_name": "First name",
+      "last_name": "Last name",
+      "gender": "Gender",
+      "birthdate": "Birthdate",
+      "phone": "Phone",
+      "email": "Email",
+      "city": "City",
+      "skin_type": "Skin type",
+      "skin_tone": "Tone",
+      "concerns": "Concerns",
+      "routine": "Current routine",
+      "interests": "Interests",
+      "allergies": "Allergies or restrictions",
+      "brands": "Brands",
+      "channels": "Communication channels",
+      "accept_privacy": "I have read and accept the privacy notice (version {version})."
+    },
+    "submit": "Create client"
+  },
+  "event": {
+    "birthday": "Birthday",
+    "anniversary": "Client anniversary",
+    "replenishment": "Possible replenishment",
+    "today": "today",
+    "tomorrow": "tomorrow",
+    "in_days": "in {days} days",
+    "days_ago": "{days} days ago"
+  },
+  "visit": {
+    "kind": {
+      "consultation": "Consultation",
+      "purchase": "Sale",
+      "sample": "Sample",
+      "courtesy": "Courtesy",
+      "return": "Return",
+      "followup": "Follow-up"
+    },
+    "reason": {
+      "skincare-consult": "Skincare consult",
+      "new-launch": "Launch",
+      "gift": "Gift",
+      "diagnosis": "Diagnosis",
+      "loyalty-redemption": "Points redemption",
+      "other": "Other"
+    },
+    "field": {
+      "kind": "Visit kind",
+      "reason": "Reason",
+      "brand": "Brand",
+      "amount": "Amount",
+      "duration": "Duration (min)",
+      "notes": "Notes"
+    },
+    "submit": "Save visit"
+  },
+  "sale": {
+    "field": {
+      "items": "Items",
+      "qty": "Qty",
+      "unit_price": "Unit price",
+      "payment": "Payment method",
+      "ticket": "Ticket",
+      "notes": "Notes",
+      "add_item": "Add another product",
+      "remove_item": "Remove item",
+      "product_search": "Search by SKU, line or name…"
+    },
+    "payment": {
+      "card": "Card",
+      "cash": "Cash",
+      "transfer": "Transfer",
+      "store-credit": "Store credit"
+    },
+    "total": "Total",
+    "submit": "Save sale"
+  },
+  "consultation": {
+    "eyebrow": "Diagnosis for {name}",
+    "title": "Skin diagnosis",
+    "subtitle": "Combined Lancôme Skin Screen + ModiFace read · ≈ 3 min",
+    "summary": "Summary",
+    "autosave_hint": "The session is autosaved into the client history, even offline.",
+    "back": "Back",
+    "next": "Next",
+    "save_draft": "Save draft",
+    "create_recommendation": "Create recommendation",
+    "back_to_profile": "Back to profile",
+    "concerns_count": "{count, plural, =0 {None} one {1 sel.} other {# sel.}}",
+    "products_count": "{count, plural, =0 {0 products} one {1 product} other {# products}}",
+    "step": {
+      "skin_type": "Skin type",
+      "concerns": "Concerns",
+      "tone": "Tone",
+      "routine": "Routine",
+      "recommendation": "Recommendation"
+    },
+    "skin_type": {
+      "eyebrow": "Pick the dominant type",
+      "dry": "Tight, flaky",
+      "normal": "Balanced",
+      "mixed": "Oily T-zone",
+      "oily": "Shine, pores"
+    },
+    "concerns": {
+      "eyebrow": "Main concerns (max {max})",
+      "photo": {
+        "title": "Photo analysis",
+        "hint": "Capture under neutral light · processed locally (offline capable)",
+        "cta": "Capture"
+      }
+    },
+    "routine": {
+      "morning": "Morning",
+      "evening": "Evening"
+    },
+    "recommendation": {
+      "eyebrow": "Suggested products for {name} · {skin} · {concerns}",
+      "empty": "No products match this combination. Adjust concerns or skin type.",
+      "add": "Add",
+      "added": "Added"
+    },
+    "summary_field": {
+      "skin_type": "Skin type",
+      "concerns": "Concerns",
+      "tone": "Tone",
+      "products": "Products"
+    },
+    "integration": {
+      "title": "Diagnostic integration",
+      "modiface": "ModiFace SDK · sandbox",
+      "hint": "Switch to live when HQ enables it."
+    },
+    "error": {
+      "no_concerns": "Pick at least one concern before saving.",
+      "no_items": "Add at least one product to the recommendation.",
+      "save": "Could not save the recommendation."
+    }
+  },
+  "basket": {
+    "title": "Checkout · POS handoff",
+    "eyebrow": "Recommendation {id} · for {name}",
+    "empty": "No products in this recommendation.",
+    "remove": "Remove item",
+    "handed_off": "Handed off to POS",
+    "back_to_profile": "Back to profile",
+    "qty": {
+      "increment": "Increase quantity",
+      "decrement": "Decrease quantity"
+    },
+    "samples": {
+      "title": "Suggested samples",
+      "hint": "Or Rouge sample · Libre travel 7.5ml",
+      "add": "Add"
+    },
+    "totals": {
+      "subtotal": "Subtotal",
+      "points": "Luxe Circle points",
+      "iva": "VAT included (16%)",
+      "total": "Total"
+    },
+    "handoff": {
+      "title": "POS handoff",
+      "scan": "Show this code to the cashier.",
+      "attribution_hint": "Attribution: BA · Rec · Linked samples",
+      "cta": "Mark as handed off",
+      "done": "Handed off to POS"
+    },
+    "attribution": {
+      "title": "Attribution",
+      "ba": "Beauty Advisor",
+      "recommendation": "Recommendation",
+      "client": "Client",
+      "client_tier": "Tier"
+    },
+    "error": {
+      "handoff": "Could not record the handoff."
+    }
+  },
+  "purchases": {
+    "title": "Purchases",
+    "search": "Search by client, ticket or purchase #ID…",
+    "count": "{count, plural, one {1 ticket} other {# tickets}}",
+    "manual": "manual",
+    "unknown_client": "Removed client",
+    "empty": {
+      "title": "No purchases",
+      "description": "No purchases match this search."
+    },
+    "column": {
+      "ticket": "Ticket",
+      "client": "Client",
+      "products": "Product(s)",
+      "date": "Date",
+      "brand": "Brand",
+      "total": "Total",
+      "ba": "BA"
+    }
+  },
+  "samples": {
+    "title": "Samples",
+    "delivered_this_week": "Delivered this week",
+    "register": "Register sample",
+    "empty": "No samples in scope yet.",
+    "follow": "Follow",
+    "unknown_client": "Unknown client",
+    "delivered_on": "Given {date}",
+    "followup_on": "Follow-up {date}",
+    "kpi": {
+      "delivered": "Samples delivered",
+      "conversion_rate": "Conversion rate",
+      "attributable_revenue": "Attributable revenue"
+    },
+    "status": {
+      "converted": "Converted",
+      "pending": "Pending"
+    },
+    "inventory": {
+      "title": "Available at counter",
+      "eyebrow": "Sample inventory",
+      "request_replenishment": "Request replenishment"
+    }
+  },
+  "catalog": {
+    "title": "Catalog",
+    "search": "Search product, SKU, line…",
+    "filters": {
+      "all": "All"
+    },
+    "category": {
+      "serum": "Serum",
+      "cream": "Cream",
+      "foundation": "Foundation",
+      "fragrance": "Fragrance",
+      "lipstick": "Lipstick",
+      "corrector": "Corrector"
+    },
+    "empty": {
+      "title": "No products",
+      "description": "Adjust search, brand or category."
+    },
+    "card": {
+      "stock_at": "Stock {store}:",
+      "add_to_recs": "Add to recommendations"
+    },
+    "detail": {
+      "selling": "Selling points",
+      "how_to": "How to use",
+      "availability": "Availability",
+      "units": "{qty} units",
+      "fact_sheet": "Fact sheet",
+      "add_to_recs": "Recommend"
+    }
+  },
+  "calendar": {
+    "title": "Appointments",
+    "new": "New appointment",
+    "today": "Today",
+    "view": { "day": "Day", "week": "Week", "month": "Month" },
+    "week_label": "Week {week}",
+    "empty_day": "No appointments for this day.",
+    "more_count": "+{count} more"
+  },
+  "appointment": {
+    "kind": {
+      "ritual": "Ritual",
+      "makeup": "Makeup",
+      "diagnosis": "Diagnosis",
+      "consultation": "Consultation",
+      "vip-cabin": "VIP cabin",
+      "facial": "Facial",
+      "anniversary-event": "Anniversary",
+      "product-followup": "Product follow-up",
+      "fragrance-consult": "Fragrance consult",
+      "other": "Other"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "rescheduled": "Rescheduled",
+      "cancelled": "Cancelled",
+      "no-show": "No-show"
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "complete": "Mark completed",
+      "reschedule": "Reschedule",
+      "cancel": "Cancel appointment",
+      "no_show": "No-show"
+    },
+    "field": {
+      "client": "Client",
+      "ba": "Beauty Advisor",
+      "kind": "Kind",
+      "brand": "Brand",
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration (min)",
+      "notes": "Notes",
+      "reason": "Cancellation reason"
+    },
+    "submit": "Book",
+    "confirm_reschedule": "Confirm new slot",
+    "confirm_cancel": "Confirm cancellation",
+    "saved": "Appointment saved",
+    "rescheduled": "Appointment rescheduled",
+    "cancelled": "Appointment cancelled",
+    "completed": "Appointment completed",
+    "insights": {
+      "title": "Client insights",
+      "visits": "Visits",
+      "avg_ticket": "Avg. ticket",
+      "ltv": "LTV",
+      "tier": "Tier"
+    },
+    "summary": "Appointment summary",
+    "summary_empty": "Pick a client",
+    "saved_eyebrow": "Appointment saved",
+    "saved_cta_again": "Book another",
+    "saved_cta_calendar": "Open calendar",
+    "management": {
+      "tab": "Rescheduled and cancelled",
+      "kpi": {
+        "total": "Total appointments",
+        "total_subtitle": "last 60 days",
+        "scheduled": "Scheduled",
+        "scheduled_subtitle": "active",
+        "rescheduled": "Rescheduled",
+        "cancelled": "Cancelled",
+        "completed": "Completed",
+        "completed_subtitle": "service delivered",
+        "rate": "{rate}% rate"
+      },
+      "filter": "Filter",
+      "filter_all": "All",
+      "column": {
+        "client": "Client",
+        "kind": "Kind",
+        "original": "Original date",
+        "status": "Status",
+        "new_date": "New date",
+        "reason": "Reason"
+      },
+      "empty": "No appointments in this filter.",
+      "tab_calendar": "Calendar"
+    }
+  },
+  "admin": {
+    "users": {
+      "title": "Users"
+    },
+    "audit": {
+      "title": "Audit"
+    },
+    "segments": {
+      "title": "Segments"
+    },
+    "integrations": {
+      "title": "Integrations"
+    }
+  },
+  "devices": {
+    "title": "Devices"
+  },
+  "tickets": {
+    "title": "Tickets"
+  },
+  "reports": {
+    "title": "Reports"
+  },
+  "comm": {
+    "unknown_client": "Unknown client",
+    "outbound": "Sent",
+    "inbound": "Received",
+    "empty": {
+      "title": "No messages",
+      "description": "No communications recorded for this filter."
+    },
+    "status": {
+      "sent": "sent",
+      "delivered": "delivered",
+      "read": "read",
+      "responded": "responded",
+      "failed": "failed"
+    },
+    "metrics": {
+      "title": "Metrics (30 d)",
+      "eyebrow": "Communications",
+      "sent": "Sent",
+      "read_rate": "Read rate",
+      "responses": "Responses",
+      "opt_outs": "Opt-outs"
+    },
+    "channel_mix": {
+      "title": "Channel mix"
+    }
+  },
+  "followup": {
+    "title": "Follow-up",
+    "templates": "Templates",
+    "composer": "Composer",
+    "channel": "Channel",
+    "body": "Personalized message",
+    "consent_hint": "WhatsApp consent: granted",
+    "no_template": "Pick a template",
+    "send_now": "Send now",
+    "save_draft": "Save draft",
+    "sent": "Message sent",
+    "brand_all": "All",
+    "preview": {
+      "online": "online",
+      "caption": "Preview · personalized tokens",
+      "fallback": "Pick a template to preview."
+    },
+    "sandbox": {
+      "title": "WhatsApp Business API simulator",
+      "hint": "Sandbox mode. Delivery and read metrics are simulated locally and stored in the client history. Will switch to live when HQ enables the integration."
+    },
+    "tab": {
+      "composer": "Composer",
+      "log": "Log"
+    },
+    "log": {
+      "title": "Communications log",
+      "eyebrow": "History by channel"
+    },
+    "error": {
+      "send": "Could not send the message."
+    }
+  }
+}

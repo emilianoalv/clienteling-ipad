@@ -1,0 +1,24 @@
+{
+  "name": "clienteling-ipad",
+  "version": "0.1.0",
+  "private": true,
+  "description": "L'Oréal Luxe · Clienteling iPad — monorepo",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @clienteling/web dev",
+    "build": "pnpm --filter @clienteling/web build",
+    "start": "pnpm --filter @clienteling/web start",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  }
+}

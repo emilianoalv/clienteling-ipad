@@ -1,0 +1,292 @@
+/* L'Oréal Luxe Clienteling — Design Tokens
+   Neutral L'Oréal Luxe shell. Brand accents applied per-brand in content only.
+   Fonts: Manrope (Essentielle stand-in) + Cormorant Garamond (Royale stand-in).
+*/
+
+:root {
+  /* Neutral palette */
+  --ink: #0E0E0F;
+  --ink-80: rgba(14,14,15,.80);
+  --ink-60: rgba(14,14,15,.60);
+  --ink-40: rgba(14,14,15,.40);
+  --ink-12: rgba(14,14,15,.12);
+  --ink-08: rgba(14,14,15,.08);
+  --ink-04: rgba(14,14,15,.04);
+
+  --paper: #FAFAF7;
+  --bone:  #F2EEE8;
+  --bone-2:#EBE6DC;
+  --line:  #E3DED4;
+  --mist:  #8B8680;
+
+  /* Accent — tweakable. Default: lean neutral graphite. */
+  --accent: #0E0E0F;
+  --accent-ink: #FAFAF7;
+  --accent-soft: rgba(14,14,15,.06);
+
+  /* Semantic */
+  --ok:   #1F7A5A;
+  --warn: #B5861F;
+  --err:  #A23A2E;
+  --ok-08:    rgba(31,122,90,.08);
+  --warn-08:  rgba(181,134,31,.10);
+  --err-08:   rgba(162,58,46,.08);
+  --ok-20:    rgba(31,122,90,.22);
+  --err-20:   rgba(162,58,46,.22);
+
+  /* Brand chips (content only, never chrome) */
+  --lancome-ink: #1C0E10;
+  --lancome-rose: #E8C4C0;
+  --lancome-rose-deep: #B85F63;
+
+  --ysl-ink: #000000;
+  --ysl-gold: #C9A961;
+  --ysl-cream: #F4ECD8;
+
+  /* Typography */
+  --f-display: "Cormorant Garamond", "Royale", Georgia, serif;
+  --f-sans:    "Manrope", "Essentielle", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --f-mono:    "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+
+  /* Sizing */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 40px;
+  --s-9: 56px;
+  --s-10: 72px;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-pill: 999px;
+
+  /* Shadow — single ambient lift */
+  --shadow-1: 0 1px 2px rgba(14,14,15,.04), 0 8px 24px -12px rgba(14,14,15,.08);
+  --shadow-2: 0 2px 4px rgba(14,14,15,.04), 0 18px 48px -16px rgba(14,14,15,.12);
+
+  /* Motion */
+  --ease: cubic-bezier(.2,.7,.3,1);
+}
+
+/* Base */
+* { box-sizing: border-box; }
+body, html { margin: 0; padding: 0; }
+
+.lx {
+  font-family: var(--f-sans);
+  color: var(--ink);
+  background: var(--paper);
+  font-feature-settings: "ss01","cv11","tnum" 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Typography scale */
+.lx-display-1 { font-family: var(--f-display); font-weight: 400; font-size: 56px; line-height: 1.02; letter-spacing: -0.02em; }
+.lx-display-2 { font-family: var(--f-display); font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; }
+.lx-display-3 { font-family: var(--f-display); font-weight: 400; font-size: 28px; line-height: 1.1;  letter-spacing: -0.01em; }
+.lx-h1 { font-size: 22px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; }
+.lx-h2 { font-size: 18px; line-height: 1.25; font-weight: 600; letter-spacing: -0.005em; }
+.lx-h3 { font-size: 15px; line-height: 1.3;  font-weight: 600; }
+.lx-body { font-size: 14px; line-height: 1.45; font-weight: 400; }
+.lx-small { font-size: 12px; line-height: 1.4; font-weight: 500; color: var(--ink-60); }
+.lx-micro { font-size: 10.5px; line-height: 1.3; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-60); }
+.lx-num   { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+/* Utility */
+.lx-hairline { border: 0; border-top: 1px solid var(--line); margin: 0; }
+.lx-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-1); }
+.lx-card-flat { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); }
+.lx-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 26px; padding: 0 10px; border-radius: var(--r-pill);
+  background: var(--bone); color: var(--ink); font-size: 12px; font-weight: 500;
+  border: 1px solid var(--line);
+}
+.lx-chip--accent { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.lx-chip--ghost  { background: transparent; }
+.lx-chip--lancome { background: var(--lancome-rose); color: var(--lancome-ink); border-color: transparent; }
+.lx-chip--ysl     { background: var(--ysl-ink); color: var(--ysl-gold); border-color: transparent; }
+.lx-chip--ok   { background: rgba(31,122,90,.10); color: var(--ok); border-color: rgba(31,122,90,.20); }
+.lx-chip--warn { background: rgba(181,134,31,.10); color: var(--warn); border-color: rgba(181,134,31,.20); }
+.lx-chip--err  { background: rgba(162,58,46,.10); color: var(--err); border-color: rgba(162,58,46,.20); }
+
+/* Buttons */
+.lx-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 18px; border-radius: 10px;
+  font-family: var(--f-sans); font-size: 14px; font-weight: 600;
+  border: 1px solid var(--line); background: #fff; color: var(--ink);
+  cursor: pointer; transition: background .15s var(--ease), border-color .15s var(--ease), transform .05s;
+  letter-spacing: 0;
+}
+.lx-btn:hover { background: var(--bone); }
+.lx-btn:active { transform: translateY(0.5px); }
+.lx-btn--primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.lx-btn--primary:hover { filter: brightness(1.1); }
+.lx-btn--ghost { background: transparent; border-color: transparent; }
+.lx-btn--ghost:hover { background: var(--ink-04); }
+.lx-btn--sm { height: 32px; padding: 0 12px; font-size: 13px; }
+.lx-btn--lg { height: 48px; padding: 0 22px; font-size: 15px; }
+.lx-btn--icon { width: 40px; padding: 0; }
+
+/* Inputs */
+.lx-input {
+  height: 40px; padding: 0 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: #fff;
+  font-family: var(--f-sans); font-size: 14px; color: var(--ink);
+  width: 100%; outline: none;
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.lx-input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px var(--ink-08); }
+.lx-input::placeholder { color: var(--ink-40); }
+
+/* Brand-tag line-height niceties for Cormorant */
+.lx-display-1, .lx-display-2, .lx-display-3 { font-variation-settings: "opsz" 28; }
+
+/* Avatar */
+.lx-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--bone-2); display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 600; color: var(--ink); font-size: 14px; letter-spacing: 0.02em;
+  border: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+
+/* iPad frame */
+.lx-ipad {
+  background: #1a1a1a; border-radius: 38px; padding: 12px;
+  box-shadow: 0 30px 80px -30px rgba(0,0,0,.45), 0 4px 10px rgba(0,0,0,.15);
+  position: relative;
+}
+.lx-ipad-screen { background: var(--paper); border-radius: 26px; overflow: hidden; position: relative; }
+.lx-ipad-camera {
+  position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+  width: 6px; height: 6px; border-radius: 50%; background: #333;
+  box-shadow: inset 0 0 0 1px #222;
+}
+
+/* Scroll helpers used inside artboards */
+.lx-scroll::-webkit-scrollbar { width: 0; height: 0; }
+.lx-scroll { scrollbar-width: none; }
+
+/* Dotted dividers for luxury feel */
+.lx-dot-row { display: flex; align-items: center; gap: 8px; }
+.lx-dot-row::after {
+  content: ""; flex: 1; border-top: 1px dashed var(--line);
+}
+
+/* Tiny stat */
+.lx-stat-label { font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-60); font-weight: 600; }
+.lx-stat-value { font-family: var(--f-display); font-weight: 400; font-size: 32px; line-height: 1; letter-spacing: -0.01em; }
+
+/* Focus ring subtle */
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* Print */
+@media print {
+  .lx-ipad { box-shadow: none; }
+}
+
+/* ——— Refinement layer (premium polish) ——— */
+
+/* Hero KPI — for executive dashboards, used to anchor the top of the page */
+.lx-hero {
+  background: linear-gradient(180deg, #fff 0%, var(--paper) 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: 28px 32px;
+  box-shadow: var(--shadow-2);
+}
+.lx-hero-num {
+  font-family: var(--f-display); font-weight: 400;
+  font-size: 72px; line-height: .96; letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+.lx-hero-num-sm {
+  font-family: var(--f-display); font-weight: 400;
+  font-size: 44px; line-height: 1; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Section eyebrow — small, uppercase, ink-40, with a hairline under */
+.lx-eyebrow {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding-bottom: 10px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.lx-eyebrow-title { font-family: var(--f-display); font-size: 22px; font-weight: 400; letter-spacing: -0.01em; }
+.lx-eyebrow-sub { color: var(--ink-60); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+
+/* Quick action — chunky tap target with icon + label + optional badge */
+.lx-quick {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  height: 88px; padding: 14px;
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg);
+  cursor: pointer; transition: background .15s var(--ease), border-color .15s var(--ease), transform .06s;
+  text-align: left;
+}
+.lx-quick:hover { background: var(--bone); border-color: var(--ink-12); }
+.lx-quick:active { transform: translateY(0.5px); }
+.lx-quick-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--bone); display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ink);
+}
+.lx-quick-label { font-size: 13px; font-weight: 600; }
+.lx-quick-sub { font-size: 11px; color: var(--ink-60); }
+
+/* Pending row — dense list of actions waiting, with a dot accent */
+.lx-pending {
+  display: grid; grid-template-columns: 8px 1fr auto; gap: 14px; align-items: center;
+  padding: 14px 16px; border-bottom: 1px solid var(--line);
+}
+.lx-pending:last-child { border-bottom: 0; }
+.lx-pending-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); }
+.lx-pending-dot--err { background: var(--err); }
+.lx-pending-dot--ok  { background: var(--ok); }
+
+/* Card variants */
+.lx-card-luxe {
+  background: #fff; border: 1px solid var(--line);
+  border-radius: var(--r-xl); padding: 24px;
+  box-shadow: 0 1px 2px rgba(14,14,15,.03);
+}
+.lx-card-flat-lg {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+/* Step indicator — for the streamlined 3-step client creation */
+.lx-steps { display: flex; align-items: center; gap: 12px; }
+.lx-step {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 600; color: var(--ink-40);
+}
+.lx-step--active { color: var(--ink); }
+.lx-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid var(--line); background: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px;
+}
+.lx-step--active .lx-step-num { background: var(--ink); color: #fff; border-color: var(--ink); }
+.lx-step--done .lx-step-num   { background: var(--ok); color: #fff; border-color: var(--ok); }
+.lx-step-bar { width: 24px; height: 1px; background: var(--line); }
+
+/* Soft surfaces */
+.lx-soft-ok   { background: var(--ok-08); }
+.lx-soft-warn { background: var(--warn-08); }
+.lx-soft-err  { background: var(--err-08); }
+
+/* Tabular num shortcut */
+.tn { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+/* Smooth scrolling for artboard content */
+.lx-smooth { scroll-behavior: smooth; }

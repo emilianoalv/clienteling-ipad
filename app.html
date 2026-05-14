@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>L'Oréal Luxe · Clienteling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles/tokens.css"/>
+<style>
+  html, body { margin:0; padding:0; background: var(--paper); color: var(--ink); font-family: var(--f-sans); height:100%; }
+  #app-root { position: relative; z-index: 10; min-height:100vh; }
+
+  /* Modo app: la Shell ocupa toda la pantalla, sin marco de iPad. */
+  .lx-app-viewport {
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    background: var(--paper);
+  }
+
+  /* Cuando estamos en login, full-bleed sin shell. */
+  .lx-app-fullbleed { width:100vw; height:100vh; }
+
+  /* Loading antes de que React monte — DEBE estar debajo de #app-root para
+     que se cubra naturalmente cuando React pinta algo encima. */
+  #boot {
+    position: fixed; inset: 0; z-index: 1;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--paper); color: var(--ink-60); font-family: var(--f-sans); font-size: 13px;
+  }
+  #boot.gone { display:none; }
+
+  /* Box de errores: aparece si algún script babel falla durante el bootstrap. */
+  #boot-err {
+    position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 99999;
+    background: #2a1215; color: #ff8a80; padding: 12px 16px; border-radius: 10px;
+    border: 1px solid #5c2b2e; font: 12px/1.4 ui-monospace, monospace;
+    max-height: 40vh; overflow: auto; white-space: pre-wrap; display:none;
+  }
+</style>
+</head>
+<body class="lx">
+
+<div id="app-root"></div>
+<div id="boot">
+  <div style="text-align:center;">
+    <div style="font-family: var(--f-display); font-size: 32px; color: var(--ink); margin-bottom: 12px;">L'Oréal Luxe · Clienteling</div>
+    <div id="boot-msg">Cargando…</div>
+  </div>
+</div>
+<div id="boot-err"></div>
+
+<script>
+  // Si la app se abrió con file:// (doble clic), Babel-standalone falla al
+  // hacer fetch de los .jsx por restricciones CORS. Avisar al usuario.
+  if (location.protocol === 'file:') {
+    var msg = document.getElementById('boot-msg');
+    if (msg) {
+      msg.innerHTML = 'Esta vista requiere un servidor local.<br><br>' +
+        '<b>Cierra esta pestaña</b> y ejecuta <code>start.cmd</code> en la carpeta del proyecto.<br>' +
+        'Eso abrirá la app en <code>http://127.0.0.1:8765/app.html</code>.';
+      msg.style.color = 'var(--err)';
+      msg.style.maxWidth = '420px';
+      msg.style.lineHeight = '1.55';
+    }
+  }
+</script>
+
+<script>
+  // Captura de errores globales — muestra cualquier error de runtime/parse en
+  // un cuadro visible. Esto NO depende de Babel.
+  (function() {
+    function show(msg) {
+      var d = document.getElementById('boot-err');
+      if (!d) return;
+      d.style.display = 'block';
+      d.textContent = (d.textContent ? d.textContent + '\n' : '') + msg;
+    }
+    window.addEventListener('error', function(e) {
+      show('[error] ' + (e.message || e.type) + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''));
+    }, true);
+    window.addEventListener('unhandledrejection', function(e) {
+      show('[promise] ' + (e.reason && (e.reason.stack || e.reason.message || e.reason)));
+    });
+    // Auto-hide splash en cuanto React monte algo (poll #app-root).
+    // Tras 4s sin contenido, lo ocultamos igual para revelar el error.
+    function hideBootWhenReady() {
+      var attempts = 0;
+      function check() {
+        var root = document.getElementById('app-root');
+        var b = document.getElementById('boot');
+        if (root && root.children.length > 0) {
+          if (b) b.classList.add('gone');
+          return;
+        }
+        attempts++;
+        if (attempts > 40) {
+          if (b) b.classList.add('gone');
+          return;
+        }
+        setTimeout(check, 100);
+      }
+      check();
+    }
+    if (document.readyState === 'complete') hideBootWhenReady();
+    else window.addEventListener('load', hideBootWhenReady);
+  })();
+</script>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- App scripts -->
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/state.jsx"></script>
+<script type="text/babel" src="app/i18n.jsx"></script>
+<script type="text/babel" src="app/rbac.jsx"></script>
+<script type="text/babel" src="app/auth.jsx"></script>
+<script type="text/babel" src="app/components.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+<script type="text/babel" src="app/screens-home.jsx"></script>
+<script type="text/babel" src="app/screens-clients.jsx"></script>
+<script type="text/babel" src="app/screens-profile.jsx"></script>
+<script type="text/babel" src="app/screens-consult.jsx"></script>
+<script type="text/babel" src="app/screens-ops.jsx"></script>
+<script type="text/babel" src="app/screens-newappt.jsx"></script>
+<script type="text/babel" src="app/screens-dash.jsx"></script>
+<script type="text/babel" src="app/screens-extra.jsx"></script>
+<script type="text/babel" src="app/screens-history.jsx"></script>
+<script type="text/babel" src="app/screens-dashboards.jsx"></script>
+
+<!-- App entry — "real app" sin canvas ni iPad frame -->
+<script type="text/babel" data-presets="env,react">
+const { useState, useEffect, useCallback } = React;
+
+const NAV_STORAGE = (window.LX_NS || 'lx-clienteling:v1') + ':nav';
+
+// Mapeo screen → componente (mismo set que design-canvas, pero sin custom-only flag).
+function renderScreen(role, screen, navTo, brandContext, openClient, currentClientId, backToClients) {
+  // Pantallas custom que no se enrutan por rail
+  switch (screen) {
+    case 'profile':        return <ScreenClientProfile clientId={currentClientId} onNav={navTo} onBack={backToClients}/>;
+    case 'register-visit': return <ScreenRegisterVisit clientId={currentClientId} onBack={() => navTo('profile')}/>;
+    case 'register-sale':  return <ScreenRegisterSale  clientId={currentClientId} onBack={() => navTo('profile')}/>;
+    case 'new-appt':       return <ScreenNewAppointment onNav={navTo}/>;
+    case 'timeline-full':  return <ScreenTimelineFull onBack={() => navTo('profile')}/>;
+    case 'purchases-full': return <ScreenPurchasesFull onBack={() => navTo('profile')}/>;
+    case 'recs-full':      return <ScreenRecsFull onBack={() => navTo('profile')}/>;
+    case 'samples-full':   return <ScreenSamplesFull onBack={() => navTo('profile')}/>;
+    case 'msgs-full':      return <ScreenMsgsFull onBack={() => navTo('profile')}/>;
+    case 'consult':        return <ScreenConsultation onNav={navTo}/>;
+    case 'basket':         return <ScreenBasket onNav={navTo}/>;
+    case 'new':            return <ScreenNewClient onNav={navTo}/>;
+    case 'sync':           return <ScreenSync onNav={navTo}/>;
+  }
+
+  if (role === 'BA') {
+    const m = {
+      home:      <ScreenHome brandContext={brandContext} onNav={navTo} onOpenClient={openClient}/>,
+      clients:   <ScreenClients brandContext={brandContext} onNav={navTo} onOpenClient={openClient}/>,
+      catalog:   <ScreenCatalog onNav={navTo}/>,
+      cal:       <ScreenAppointmentsHub onNav={navTo} onOpenClient={openClient}/>,
+      followup:  <ScreenFollowup onNav={navTo}/>,
+      commlog:   <ScreenCommLog onNav={navTo}/>,
+      samples:   <ScreenSamples onNav={navTo}/>,
+      purchases: <ScreenPurchases onNav={navTo} onOpenClient={openClient}/>,
+      perf:      <DashBA onNav={navTo}/>,
+    };
+    return m[screen] || m.home;
+  }
+  if (role === 'Manager') {
+    const m = {
+      home:     <DashManager onNav={navTo}/>,
+      team:     <ScreenClients brandContext={brandContext} onNav={navTo} onOpenClient={openClient}/>,
+      segments: <ScreenSegments onNav={navTo}/>,
+      cal:      <ScreenAppointmentsHub onNav={navTo} onOpenClient={openClient}/>,
+      devices:  <ScreenDevices onNav={navTo}/>,
+      reports:  <ScreenReports onNav={navTo}/>,
+    };
+    return m[screen] || m.home;
+  }
+  if (role === 'HQ' || role === 'Supervisor') {
+    const m = {
+      home:    <DashDirector onNav={navTo}/>,
+      stores:  <ScreenHQ onNav={navTo}/>,
+      catalog: <ScreenCatalog onNav={navTo}/>,
+      devices: <ScreenDevices onNav={navTo}/>,
+      reports: <ScreenReports onNav={navTo}/>,
+      intg:    <ScreenIntegrations onNav={navTo}/>,
+    };
+    return m[screen] || m.home;
+  }
+  if (role === 'Admin') {
+    const m = {
+      home:     <ScreenAdmin onNav={navTo}/>,
+      reports:  <ScreenReports onNav={navTo}/>,
+      segments: <ScreenSegments onNav={navTo}/>,
+      intg:     <ScreenIntegrations onNav={navTo}/>,
+    };
+    return m[screen] || m.home;
+  }
+  return <ScreenHome brandContext={brandContext} onNav={navTo}/>;
+}
+
+// Mapa rail-active cuando estamos en pantallas custom (para que el rail muestre
+// la categoría a la que pertenece la pantalla actual).
+const RAIL_MAP = {
+  profile:'clients', consult:'clients', basket:'catalog', new:'clients',
+  sync:'devices', 'new-appt':'cal', 'timeline-full':'clients',
+  'purchases-full':'clients', 'recs-full':'clients',
+  'samples-full':'clients', 'msgs-full':'clients',
+  'register-visit':'clients', 'register-sale':'clients',
+};
+
+const ROLE_TITLE = {
+  BA:         { subtitle:'Beauty Advisor' },
+  Manager:    { subtitle:'Store Manager' },
+  Supervisor: { subtitle:'Supervisor de zona' },
+  HQ:         { subtitle:"L'Oréal Luxe México · HQ" },
+  Admin:      { subtitle:'TI · Data & integraciones' },
+};
+
+function saveNav(state) {
+  try { localStorage.setItem(NAV_STORAGE, JSON.stringify(state)); } catch {}
+}
+function loadNav() {
+  try {
+    const raw = localStorage.getItem(NAV_STORAGE);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function App() {
+  // Forzamos re-render al cambiar sesión.
+  const [sessionTick, setSessionTick] = useState(0);
+  useEffect(() => {
+    const onSession = () => setSessionTick((n) => n + 1);
+    window.addEventListener('lx-session', onSession);
+    return () => window.removeEventListener('lx-session', onSession);
+  }, []);
+
+  const session = window.LxAuth.currentSession();
+  const user = window.CURRENT_BA;
+  const role = (session && user && user.role) || null;
+
+  // Nav state — persistido por rol.
+  const [screen, setScreen] = useState(() => {
+    const saved = loadNav();
+    if (saved && saved.role === role && saved.screen) return saved.screen;
+    return 'home';
+  });
+  // Cliente activo en el perfil — persistido junto al screen para que refresh
+  // mantenga el contexto.
+  const [currentClientId, setCurrentClientId] = useState(() => {
+    const saved = loadNav();
+    return (saved && saved.clientId) || null;
+  });
+
+  // Cuando cambia el rol (login con otro usuario), reseteamos a home.
+  useEffect(() => {
+    const saved = loadNav();
+    if (!saved || saved.role !== role) {
+      setScreen('home');
+      setCurrentClientId(null);
+    }
+  }, [role]);
+
+  // Persistir nav.
+  useEffect(() => {
+    if (role) saveNav({ role, screen, clientId: currentClientId });
+  }, [role, screen, currentClientId]);
+
+  // Idioma: arrancar con LxI18n hidratado.
+  // No mostramos selector aquí (es Tweaks-only) — pero la app consume LxI18n.t().
+
+  const navTo = useCallback((next) => {
+    if (next === 'login' || next === 'logout') {
+      window.LxAuth.logout();
+      setScreen('home');
+      setCurrentClientId(null);
+      return;
+    }
+    setScreen(next);
+  }, []);
+
+  // Abrir el perfil de un cliente específico desde la lista de Clientas.
+  const openClient = useCallback((clientId) => {
+    setCurrentClientId(clientId || null);
+    setScreen('profile');
+  }, []);
+
+  // Volver de perfil a la lista de Clientas.
+  const backToClients = useCallback(() => {
+    setScreen('clients');
+  }, []);
+
+  // Quitar el splash en cuanto montamos.
+  useEffect(() => {
+    const b = document.getElementById('boot');
+    if (b) b.classList.add('gone');
+  }, []);
+
+  // Sin sesión → Login full-bleed.
+  if (!session || !user) {
+    return (
+      <div className="lx-app-fullbleed">
+        <ScreenLogin onSignIn={(persona, pin) => {
+          const res = window.LxAuth.login(persona, pin || '000000');
+          if (!res.ok) {
+            if (res.reason === 'locked') alert(`Cuenta bloqueada. Vuelve a intentar en ${res.minutesLeft} min.`);
+            else if (res.reason === 'wrong_pin') alert(`PIN incorrecto. Intentos restantes: ${res.attemptsLeft}`);
+          }
+        }}/>
+      </div>
+    );
+  }
+
+  // Con sesión → Shell + screen.
+  const railActive = RAIL_MAP[screen] || screen;
+  const brandContext = (user.brands && user.brands[0]) || 'Lancôme';
+  const screenEl = renderScreen(role, screen, navTo, brandContext, openClient, currentClientId, backToClients);
+
+  // Para BA bloqueamos contexto de marca a la primera marca asignada (mismo
+  // comportamiento que el canvas).
+  const lockedEl = role === 'BA'
+    ? <BrandLockContext.Provider value={brandContext}>{screenEl}</BrandLockContext.Provider>
+    : screenEl;
+
+  const title = user.name;
+  const subtitle = `${ROLE_TITLE[role]?.subtitle || role}${user.storeId ? ' · ' + (getStore(user.storeId)?.name || '') : ''}${role === 'BA' ? ' · ' + brandContext : ''}`;
+
+  return (
+    <div className="lx-app-viewport">
+      <Shell role={role}
+             active={railActive}
+             onNav={navTo}
+             title={title}
+             subtitle={subtitle}
+             brandContext={role === 'BA' ? undefined : brandContext}
+             online={true}
+             onLogout={() => navTo('logout')}>
+        {lockedEl}
+      </Shell>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app-root')).render(<App/>);
+</script>
+</body>
+</html>

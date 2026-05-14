@@ -1,0 +1,19 @@
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Legacy prototype (do not reformat)
+app/
+app.html
+*.standalone-src.html
+design-canvas.jsx
+tweaks-panel.jsx
+ios-frame.jsx
+Clienteling*.html
+LOREAL*.html

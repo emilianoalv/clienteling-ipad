@@ -1,0 +1,10 @@
+.next/
+out/
+node_modules/
+.eslintcache
+*.tsbuildinfo
+next-env.d.ts
+.env*.local
+coverage/
+playwright-report/
+test-results/

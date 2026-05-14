@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1600"/>
+<title>L'Oréal Luxe · Clienteling iPad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles/tokens.css"/>
+<style>
+  html, body { background: #E8E4DC; }
+  .canvas-header {
+    padding: 36px 48px 8px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    color: #1a1814;
+  }
+  .canvas-header h1 {
+    font-size: 56px; font-weight: 400; letter-spacing: -0.02em; margin: 0 0 6px;
+  }
+  .canvas-header p {
+    font-family: "Manrope", system-ui, sans-serif;
+    font-size: 14px; color: rgba(26,24,20,.6); max-width: 720px; margin: 0;
+    line-height: 1.5; font-weight: 400;
+  }
+  .canvas-header .eyebrow {
+    font-family: "Manrope", system-ui, sans-serif;
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.18em;
+    text-transform: uppercase; color: rgba(26,24,20,.6); margin-bottom: 10px;
+  }
+</style>
+</head>
+<body class="lx">
+
+<div class="canvas-header">
+  <div class="eyebrow">L'Oréal Luxe México · Clienteling para BAs</div>
+  <h1>Un solo iPad, cinco tiendas, dos casas.</h1>
+  <p>
+    Prototipo de clienteling para Beauty Advisors de Lancôme y YSL en Liverpool y El Palacio de Hierro.
+    Cubre el recorrido completo — descubrimiento de clienta, diagnóstico de piel, recomendación, muestras,
+    seguimiento y handoff a POS — además de los dashboards para BA, tienda y dirección regional.
+    Arrastra para explorar; usa el panel de Tweaks para cambiar rol, marca de contexto y densidad.
+  </p>
+</div>
+
+<div id="canvas-root"></div>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Starters -->
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<!-- App -->
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/state.jsx"></script>
+<script type="text/babel" src="app/i18n.jsx"></script>
+<script type="text/babel" src="app/rbac.jsx"></script>
+<script type="text/babel" src="app/auth.jsx"></script>
+<script type="text/babel" src="app/components.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+<script type="text/babel" src="app/screens-home.jsx"></script>
+<script type="text/babel" src="app/screens-clients.jsx"></script>
+<script type="text/babel" src="app/screens-profile.jsx"></script>
+<script type="text/babel" src="app/screens-consult.jsx"></script>
+<script type="text/babel" src="app/screens-ops.jsx"></script>
+<script type="text/babel" src="app/screens-newappt.jsx"></script>
+<script type="text/babel" src="app/screens-dash.jsx"></script>
+<script type="text/babel" src="app/screens-extra.jsx"></script>
+<script type="text/babel" src="app/screens-history.jsx"></script>
+<script type="text/babel" src="app/screens-dashboards.jsx"></script>
+
+<!-- Canvas assembly -->
+<script type="text/babel" data-presets="env,react">
+const { useState, useEffect } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "role": "BA",
+  "brandContext": "Lancôme",
+  "accent": "Ink",
+  "density": "regular",
+  "online": true,
+  "showRail": true,
+  "lang": "es-MX"
+}/*EDITMODE-END*/;
+
+const ACCENT_MAP = {
+  "Ink":       { c:"#0E0E0F", i:"#FAFAF7" },
+  "Lancôme":   { c:"#B85F63", i:"#FFFFFF" },
+  "YSL":       { c:"#0E0E0F", i:"#C9A961" },
+  "Sage":      { c:"#3E5C4A", i:"#FAFAF7" },
+};
+
+function Root() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  // Accent swap
+  useEffect(() => {
+    const a = ACCENT_MAP[t.accent] || ACCENT_MAP.Ink;
+    document.documentElement.style.setProperty('--accent', a.c);
+    document.documentElement.style.setProperty('--accent-ink', a.i);
+  }, [t.accent]);
+
+  const iPadW = 1194, iPadH = 834;
+
+  const roleBoards = {
+    BA: [
+      { id:'ba-login',     label:'01 · Login · 3 usuarios',    screen: 'login',      custom:true },
+      { id:'ba-home',      label:'02 · Hoy',                   screen: 'home' },
+      { id:'ba-clients',   label:'03 · Clientas',              screen: 'clients' },
+      { id:'ba-profile',   label:'04 · Perfil · Ximena',       screen: 'profile',    custom:true },
+      { id:'ba-consult',   label:'05 · Diagnóstico',           screen: 'consult',    custom:true },
+      { id:'ba-catalog',   label:'06 · Catálogo',              screen: 'catalog' },
+      { id:'ba-appts',     label:'07 · Agenda',                screen: 'cal' },
+      { id:'ba-followup',  label:'08 · Seguimiento · WhatsApp',screen: 'followup' },
+      { id:'ba-commlog',   label:'09 · Bitácora · Conversaciones', screen: 'commlog' },
+      { id:'ba-samples',   label:'10 · Muestras',              screen: 'samples' },
+      { id:'ba-purchases', label:'11 · Histórico de compras',  screen: 'purchases' },
+      { id:'ba-basket',    label:'12 · Handoff POS',           screen: 'basket',     custom:true },
+      { id:'ba-newclient', label:'13 · Alta de clienta',       screen: 'new',        custom:true },
+      { id:'ba-perf',      label:'14 · Mi desempeño',          screen: 'perf' },
+      // Profile dropdown — interaction states
+      { id:'ba-menu-open',    label:'15a · Menú perfil · abierto',          screen: 'home', demoMenuState:'open' },
+      { id:'ba-menu-hover',   label:'15b · Menú perfil · hover Cerrar sesión', screen: 'home', demoMenuState:'logoutHover' },
+      { id:'ba-menu-confirm', label:'15c · Menú perfil · confirmación',     screen: 'home', demoMenuState:'confirm' },
+    ],
+    Manager: [
+      { id:'mg-home',    label:'M1 · Resumen tienda',   screen: 'home' },
+      { id:'mg-team',    label:'M2 · Equipo',           screen: 'team' },
+      { id:'mg-segments',label:'M3 · Segmentos',        screen: 'segments' },
+      { id:'mg-appts',   label:'M4 · Agenda tienda',    screen: 'cal' },
+      { id:'mg-devices', label:'M5 · Dispositivos',     screen: 'devices' },
+      { id:'mg-reports', label:'M6 · Reportes',         screen: 'reports' },
+      { id:'mg-sync',    label:'M7 · Sincronización',   screen: 'sync',       custom:true },
+    ],
+
+    HQ: [
+      { id:'hq-home',    label:'H1 · Panorama regional',  screen: 'home' },
+      { id:'hq-stores',  label:'H2 · Tiendas · red',      screen: 'stores' },
+      { id:'hq-catalog', label:'H3 · Gobierno de catálogo', screen: 'catalog' },
+      { id:'hq-devices', label:'H4 · Flota iPads',        screen: 'devices' },
+      { id:'hq-reports', label:'H5 · Reportes HQ',        screen: 'reports' },
+      { id:'hq-intg',    label:'H6 · Integraciones',      screen: 'intg' },
+      { id:'hq-sync',    label:'H7 · Capacidad offline',  screen: 'sync',       custom:true },
+    ],
+    Admin: [
+      { id:'ad-home',    label:'A1 · Consola admin',      screen: 'home' },
+      { id:'ad-reports', label:'A2 · Catálogo de reportes', screen: 'reports' },
+      { id:'ad-segments',label:'A3 · Segmentos · gobierno', screen: 'segments' },
+      { id:'ad-intg',    label:'A4 · Integraciones · llaves', screen: 'intg' },
+    ],
+  };
+
+  const roleTitle = {
+    BA:         { title:'Valentina Ríos',         subtitle:'Beauty Advisor · Liverpool Polanco · Lancôme' },
+    Manager:    { title:'Polanco',                subtitle:'Tienda · Liverpool · Store Manager' },
+HQ:         { title:'Dirección regional',     subtitle:"L'Oréal Luxe México · HQ" },
+    Admin:      { title:'Consola de administración', subtitle:'TI · Data & integraciones' },
+  };
+
+  // Sincronizar idioma del Tweaks panel con LxI18n al cargar y al cambiar.
+  useEffect(() => {
+    if (window.LxI18n && t.lang && t.lang !== window.LxI18n.current) {
+      window.LxI18n.setLang(t.lang);
+    }
+  }, [t.lang]);
+
+  const handleSignIn = (persona, pin) => {
+    // Sesión persistida vía LxAuth (mock inteligente: cualquier PIN de 6 dígitos
+    // pasa salvo que el usuario tenga `pin` propio en BAS/USERS).
+    if (window.LxAuth) {
+      const res = window.LxAuth.login(persona, pin || '000000');
+      if (res.ok) setTweak('role', res.user.role);
+      else if (res.reason === 'locked') console.warn('Cuenta bloqueada, intenta en', res.minutesLeft, 'min');
+      else console.warn('Login falló:', res.reason);
+    } else {
+      setTweak('role', persona.role);
+    }
+  };
+
+  function renderCustom(screen, navTo) {
+    switch (screen) {
+      case 'new-appt':  return <ScreenNewAppointment onNav={navTo}/>;
+      case 'profile':   return <ScreenClientProfile onNav={navTo}/>;
+      case 'timeline-full':  return <ScreenTimelineFull onBack={()=>navTo('profile')}/>;
+      case 'purchases-full': return <ScreenPurchasesFull onBack={()=>navTo('profile')}/>;
+      case 'recs-full':      return <ScreenRecsFull onBack={()=>navTo('profile')}/>;
+      case 'samples-full':   return <ScreenSamplesFull onBack={()=>navTo('profile')}/>;
+      case 'msgs-full':      return <ScreenMsgsFull onBack={()=>navTo('profile')}/>;
+      case 'consult':   return <ScreenConsultation onNav={navTo}/>;
+      case 'basket':    return <ScreenBasket onNav={navTo}/>;
+      case 'new':       return <ScreenNewClient onNav={navTo}/>;
+      case 'login':     return <ScreenLogin onSignIn={handleSignIn}/>;
+      case 'sync':      return <ScreenSync onNav={navTo}/>;
+    }
+    return null;
+  }
+
+  // Each artboard becomes its own interactive iPad — local nav state seeded from b.screen
+  function ArtboardIpad({ role, b }) {
+    const [navLocal, setNavLocal] = useState(b.screen);
+    const title = roleTitle[role].title;
+    const sub   = roleTitle[role].subtitle;
+
+    // Login is full bleed, no shell
+    if (b.custom && b.screen === 'login') {
+      return <IpadFrame w={iPadW} h={iPadH}>{renderCustom('login', setNavLocal)}</IpadFrame>;
+    }
+
+    // Custom screens (profile/consult/basket/new/sync/new-appt) — render custom but keep rail interactive
+    const customScreens = ['profile','consult','basket','new','sync','new-appt','login','timeline-full','purchases-full','recs-full','samples-full','msgs-full'];
+    const railMap = { profile:'clients', consult:'clients', basket:'catalog', new:'clients', sync:'devices', 'new-appt':'cal', login:'home', 'timeline-full':'clients', 'purchases-full':'clients', 'recs-full':'clients', 'samples-full':'clients', 'msgs-full':'clients' };
+
+    // Logout from the in-shell dropdown — full-bleed login screen
+    if (navLocal === 'login') {
+      return <IpadFrame w={iPadW} h={iPadH}>{renderCustom('login', setNavLocal)}</IpadFrame>;
+    }
+
+    let screenEl = null;
+    if (customScreens.includes(navLocal)) {
+      screenEl = renderCustom(navLocal, setNavLocal);
+    } else if (role === 'BA') {
+      const m = {
+        home:      <ScreenHome brandContext={t.brandContext} onNav={setNavLocal}/>,
+        clients:   <ScreenClients brandContext={t.brandContext} onNav={setNavLocal} onOpenClient={()=>setNavLocal('profile')}/>,
+        catalog:   <ScreenCatalog onNav={setNavLocal}/>,
+        cal:       <ScreenAppointmentsHub onNav={setNavLocal}/>,
+        followup:  <ScreenFollowup onNav={setNavLocal}/>,
+        commlog:   <ScreenCommLog onNav={setNavLocal}/>,
+        samples:   <ScreenSamples onNav={setNavLocal}/>,
+        purchases: <ScreenPurchases onNav={setNavLocal}/>,
+        perf:      <DashBA onNav={setNavLocal}/>,
+      };
+      screenEl = m[navLocal] || <ScreenHome brandContext={t.brandContext} onNav={setNavLocal}/>;
+    } else if (role === 'Manager') {
+      const m = {
+        home:     <DashManager onNav={setNavLocal}/>,
+        team:     <ScreenClients brandContext={t.brandContext} onNav={setNavLocal} onOpenClient={()=>setNavLocal('profile')}/>,
+        segments: <ScreenSegments onNav={setNavLocal}/>,
+        cal:      <ScreenAppointmentsHub onNav={setNavLocal}/>,
+        devices:  <ScreenDevices onNav={setNavLocal}/>,
+        reports:  <ScreenReports onNav={setNavLocal}/>,
+      };
+      screenEl = m[navLocal] || <DashManager onNav={setNavLocal}/>;
+    } else if (role === 'HQ') {
+      const m = {
+        home:    <DashDirector onNav={setNavLocal}/>,
+        stores:  <ScreenHQ onNav={setNavLocal}/>,
+        catalog: <ScreenCatalog onNav={setNavLocal}/>,
+        devices: <ScreenDevices onNav={setNavLocal}/>,
+        reports: <ScreenReports onNav={setNavLocal}/>,
+        intg:    <ScreenIntegrations onNav={setNavLocal}/>,
+      };
+      screenEl = m[navLocal] || <DashDirector onNav={setNavLocal}/>;
+    } else if (role === 'Admin') {
+      const m = {
+        home:     <ScreenAdmin onNav={setNavLocal}/>,
+        reports:  <ScreenReports onNav={setNavLocal}/>,
+        segments: <ScreenSegments onNav={setNavLocal}/>,
+        intg:     <ScreenIntegrations onNav={setNavLocal}/>,
+      };
+      screenEl = m[navLocal] || <ScreenAdmin onNav={setNavLocal}/>;
+    }
+
+    const railActive = customScreens.includes(navLocal) ? (railMap[navLocal] || 'home') : navLocal;
+
+    // Wrap BA screens in a brand lock so YSL labels/chips/products are filtered out
+    const lockedEl = role === 'BA'
+      ? <BrandLockContext.Provider value="Lancôme">{screenEl}</BrandLockContext.Provider>
+      : screenEl;
+
+    return (
+      <IpadFrame w={iPadW} h={iPadH}>
+        <Shell role={role} active={railActive} onNav={setNavLocal}
+               title={title} subtitle={sub}
+               brandContext={role==='BA' ? undefined : t.brandContext}
+               setBrandContext={role==='BA' ? undefined : v => setTweak('brandContext', v)}
+               online={t.online}
+               onLogout={() => setNavLocal('login')}
+               demoMenuState={b.demoMenuState}>
+          {lockedEl}
+        </Shell>
+      </IpadFrame>
+    );
+  }
+
+  const renderBoard = (role, b) => <ArtboardIpad role={role} b={b}/>;
+
+  const role = t.role;
+  const boards = roleBoards[role];
+
+  const sectionMeta = {
+    BA: {
+      title: 'Flujo Beauty Advisor · piso de ventas',
+      subtitle: 'Recorrido completo: descubrir clienta → diagnóstico → recomendar → seguir → vender',
+    },
+    Manager: {
+      title: 'Store Manager · gestión de tienda',
+      subtitle: 'Equipo, segmentos, agenda de tienda, dispositivos, reportes y sincronización',
+    },
+HQ: {
+      title: 'Dirección regional · HQ',
+      subtitle: 'Panorama regional, red de tiendas, catálogo, flota, reportes, integraciones',
+    },
+    Admin: {
+      title: 'Consola de administración · TI',
+      subtitle: 'Gobierno de usuarios, segmentos, reportes y llaves de integración',
+    },
+  };
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="flow" title={sectionMeta[role].title} subtitle={sectionMeta[role].subtitle}>
+          {boards.map(b => (
+            <DCArtboard key={b.id} id={b.id} label={b.label} width={iPadW+24} height={iPadH+24}>
+              {renderBoard(role, b)}
+            </DCArtboard>
+          ))}
+        </DCSection>
+
+        <DCSection id="system" title="Sistema · componentes" subtitle="Tokens, tipografía, chips y piezas reutilizadas">
+          <DCArtboard id="sys-tokens" label="Design tokens" width={720} height={520}>
+            <SystemTokens/>
+          </DCArtboard>
+          <DCArtboard id="sys-components" label="Inventario de componentes" width={920} height={520}>
+            <SystemComponents/>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks · Clienteling">
+        <TweakSection label="Rol activo"/>
+        <TweakRadio label="Vista" value={t.role}
+          options={['BA','Manager','HQ','Admin']}
+          onChange={(v) => setTweak('role', v)}/>
+        <TweakSection label="Contexto de marca (Manager / Dirección)"/>
+        <TweakRadio label="Marca" value={t.brandContext}
+          options={['Todas','Lancôme','YSL']}
+          onChange={(v) => setTweak('brandContext', v)}/>
+        <TweakSection label="Apariencia"/>
+        <TweakRadio label="Acento" value={t.accent}
+          options={['Ink','Lancôme','YSL','Sage']}
+          onChange={(v) => setTweak('accent', v)}/>
+        <TweakSection label="Estado"/>
+        <TweakToggle label="Conectado" value={t.online}
+          onChange={(v) => setTweak('online', v)}/>
+        <TweakSection label="Idioma"/>
+        <TweakRadio label="Idioma" value={t.lang || 'es-MX'}
+          options={['es-MX','en-US']}
+          onChange={(v) => setTweak('lang', v)}/>
+      </TweaksPanel>
+    </>
+  );
+}
+
+// Minimal system boards
+function SystemTokens() {
+  return (
+    <div style={{ padding: 28, fontFamily:'var(--f-sans)', background:'var(--paper)', width:'100%', height:'100%', overflow:'auto' }} className="lx-scroll">
+      <div className="lx-micro">Design system</div>
+      <div style={{ fontFamily:'var(--f-display)', fontSize: 36, marginBottom: 20 }}>Tokens</div>
+
+      <div className="lx-micro" style={{ marginBottom: 8 }}>Paleta</div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(6, 1fr)', gap: 10, marginBottom: 24 }}>
+        {[
+          ['Ink','#0E0E0F'],['Paper','#FAFAF7'],['Bone','#F2EEE8'],['Line','#E3DED4'],
+          ['Lancôme','#B85F63'],['YSL Gold','#C9A961'],
+          ['OK','#1F7A5A'],['Warn','#B5861F'],['Err','#A23A2E'],
+          ['Mist','#8B8680'],['Rose','#E8C4C0'],['Cream','#F4ECD8'],
+        ].map(([n, c]) => (
+          <div key={n}>
+            <div style={{ height: 44, background: c, borderRadius: 8, border:'1px solid var(--line)' }}/>
+            <div style={{ fontSize: 11, marginTop: 4 }}>{n}</div>
+            <div className="lx-num lx-small" style={{ fontSize: 10 }}>{c}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="lx-micro" style={{ marginBottom: 8 }}>Tipografía</div>
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ fontFamily:'var(--f-display)', fontSize: 40, lineHeight: 1.05 }}>Cormorant Garamond · Displays</div>
+        <div style={{ fontSize: 14, color:'var(--ink-60)' }}>Manrope · UI body, 14/1.45. Eyebrows en 10.5/uppercase/letter-spacing 0.12em.</div>
+      </div>
+    </div>
+  );
+}
+
+function SystemComponents() {
+  return (
+    <div style={{ padding: 28, fontFamily:'var(--f-sans)', background:'var(--paper)', width:'100%', height:'100%', overflow:'auto' }} className="lx-scroll">
+      <div className="lx-micro">Sistema</div>
+      <div style={{ fontFamily:'var(--f-display)', fontSize: 36, marginBottom: 20 }}>Componentes</div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 24 }}>
+        <div>
+          <div className="lx-micro" style={{ marginBottom: 10 }}>Botones</div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap: 8, marginBottom: 18 }}>
+            <button className="lx-btn lx-btn--primary">Primario</button>
+            <button className="lx-btn">Secundario</button>
+            <button className="lx-btn lx-btn--ghost">Ghost</button>
+            <button className="lx-btn lx-btn--sm">Small</button>
+          </div>
+          <div className="lx-micro" style={{ marginBottom: 10 }}>Chips</div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap: 8, marginBottom: 18 }}>
+            <span className="lx-chip">Neutral</span>
+            <span className="lx-chip lx-chip--lancome">Lancôme</span>
+            <span className="lx-chip lx-chip--ysl">YSL</span>
+            <span className="lx-chip lx-chip--ok">OK</span>
+            <span className="lx-chip lx-chip--warn">Warn</span>
+            <span className="lx-chip lx-chip--err">Err</span>
+          </div>
+          <div className="lx-micro" style={{ marginBottom: 10 }}>Avatares</div>
+          <div style={{ display:'flex', gap: 8 }}>
+            <LxAvatar label="XC"/>
+            <LxAvatar label="RI" tone="lancome"/>
+            <LxAvatar label="PA" tone="ysl"/>
+          </div>
+        </div>
+        <div>
+          <div className="lx-micro" style={{ marginBottom: 10 }}>Inputs</div>
+          <input className="lx-input" placeholder="Buscar clienta…" style={{ marginBottom: 10 }}/>
+          <div className="lx-micro" style={{ marginBottom: 10 }}>KPI</div>
+          <div className="lx-card" style={{ padding: 16, marginBottom: 12 }}>
+            <LxStat big label="Ventas mes" value={MXN(1184020)} delta={+6}/>
+          </div>
+          <div className="lx-card" style={{ padding: 16 }}>
+            <div className="lx-micro">Progreso</div>
+            <div style={{ marginTop: 10 }}><LxProgress value={78} max={100}/></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('canvas-root')).render(<Root/>);
+</script>
+</body>
+</html>
