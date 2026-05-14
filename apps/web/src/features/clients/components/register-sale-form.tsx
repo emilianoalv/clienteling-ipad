@@ -2,8 +2,9 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Chip, Icon, Input } from "@/components/primitives";
-import { Card, KvRow, SectionHeader } from "@/components/patterns";
+import { Avatar, Button, Icon, Input } from "@/components/primitives";
+import { Card } from "@/components/patterns";
+import { BarcodeScanner } from "@/components/feedback/barcode-scanner";
 import type { Client } from "@/types/client";
 import type { Product } from "@/types/product";
 import { formatCurrency } from "@/lib/format/format-currency";
@@ -21,18 +22,55 @@ interface DraftItem {
 
 const NEW_ITEM: DraftItem = { product: null, qty: 1 };
 
+function todayISO(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function nowHHMM(): string {
+  const d = new Date();
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0] ?? "")
+    .join("")
+    .toUpperCase();
+}
+
+const PAYMENT_DETAIL_PLACEHOLDER: Record<Payment, string> = {
+  card: "Visa · 4321",
+  cash: "Recibido en MXN",
+  transfer: "Banorte · ref",
+  "store-credit": "Crédito #",
+};
+
 export interface RegisterSaleFormProps {
   client: Client;
   products: readonly Product[];
+  baName: string;
+  storeName: string;
 }
 
-export function RegisterSaleForm({ client, products }: RegisterSaleFormProps) {
+export function RegisterSaleForm({ client, products, baName, storeName }: RegisterSaleFormProps) {
   const t = useTranslations();
+  const [purchaseDate, setPurchaseDate] = useState<string>(todayISO());
+  const [purchaseTime, setPurchaseTime] = useState<string>(nowHHMM());
   const [items, setItems] = useState<DraftItem[]>([{ ...NEW_ITEM }]);
   const [payment, setPayment] = useState<Payment>("card");
+  const [paymentDetail, setPaymentDetail] = useState("");
   const [ticketRef, setTicketRef] = useState("");
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const [scannerOpen, setScannerOpen] = useState<number | null>(null);
+  const [scanWarning, setScanWarning] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const filledItems = items.filter((it): it is { product: Product; qty: number } => !!it.product);
@@ -55,16 +93,34 @@ export function RegisterSaleForm({ client, products }: RegisterSaleFormProps) {
     setItems((prev) => prev.filter((_, i) => i !== idx));
   }
 
+  function handleScan(code: string) {
+    const idx = scannerOpen;
+    setScannerOpen(null);
+    if (idx === null) return;
+    const found = products.find(
+      (p) => p.sku.toLowerCase() === code.toLowerCase() || p.sku.replace(/\s/g, "") === code,
+    );
+    if (!found) {
+      setScanWarning(`SKU "${code}" no está en tu catálogo de marca`);
+      window.setTimeout(() => setScanWarning(null), 4000);
+      return;
+    }
+    patchItem(idx, { product: found });
+  }
+
   function onSubmit() {
     if (filledItems.length === 0) return;
     const input: RegisterSaleInput = {
       clientId: client.id,
+      purchaseDate,
+      purchaseTime,
       items: filledItems.map((it) => ({
         sku: it.product.sku,
         qty: it.qty,
         unitPrice: it.product.price,
       })),
       payment,
+      ...(paymentDetail ? { paymentDetail } : {}),
       ...(ticketRef ? { ticketRef } : {}),
       ...(notes ? { notes } : {}),
     };
@@ -75,104 +131,253 @@ export function RegisterSaleForm({ client, products }: RegisterSaleFormProps) {
   }
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_320px] gap-5 items-start">
-      <Card variant="luxe" className="flex flex-col gap-5">
-        <SectionHeader title={t("sale.field.items")} />
-        <div className="flex flex-col gap-3">
-          {items.map((item, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-[minmax(0,1fr)_80px_120px_32px] gap-2.5 items-end"
-            >
-              <ProductPicker
-                products={products}
-                value={item.product}
-                onSelect={(p) => patchItem(idx, { product: p })}
-              />
-              <Input
-                label={t("sale.field.qty")}
-                type="number"
-                min={1}
-                value={String(item.qty)}
-                onChange={(e) => patchItem(idx, { qty: Math.max(1, Number(e.target.value)) })}
-              />
-              <div className="flex flex-col gap-1">
-                <span className="text-xs font-semibold text-ink/60 tracking-[0.02em]">
-                  {t("sale.field.unit_price")}
-                </span>
-                <div className="h-10 inline-flex items-center px-[14px] rounded-[10px] bg-bone text-sm font-semibold tabular">
-                  {item.product ? formatCurrency(item.product.price) : "—"}
-                </div>
+    <>
+      <div className="grid grid-cols-[minmax(0,1fr)_360px] gap-5 items-start">
+        <Card variant="luxe" className="flex flex-col gap-5">
+          {/* Eyebrow + heading */}
+          <header>
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+              Registrar venta · Manual
+            </div>
+            <h2 className="m-0 mt-1 font-display text-[30px] leading-tight tracking-[-0.01em]">
+              Captura una compra
+            </h2>
+            <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug">
+              Usa esta vista cuando no haya integración con POS. La venta se atribuye automáticamente
+              a <strong className="text-ink">{baName}</strong>.
+            </p>
+          </header>
+
+          {/* Client banner */}
+          <article className="bg-bone rounded-xl px-4 py-3 flex items-center gap-3.5">
+            <Avatar initials={initials(client.name)} size={48} />
+            <div className="flex-1 min-w-0">
+              <div className="text-[16px] font-semibold leading-tight">{client.name}</div>
+              <div className="text-[14px] text-ink/60 leading-tight mt-0.5 truncate">
+                {client.phone} · {client.email}
               </div>
-              <Button
-                variant="ghost"
-                iconOnly
-                onClick={() => removeItem(idx)}
-                aria-label={t("sale.field.remove_item")}
-                disabled={items.length === 1}
-              >
-                <Icon name="trash" />
+            </div>
+            <span className="inline-flex items-center h-9 px-4 rounded-full bg-ink text-paper text-[13px] font-semibold">
+              Atribuir a {baName.split(/\s+/)[0]}
+            </span>
+          </article>
+
+          {/* Date + Time */}
+          <div className="grid grid-cols-2 gap-4 max-w-[420px]">
+            <Input
+              label="Fecha de la compra *"
+              type="date"
+              value={purchaseDate}
+              max={todayISO()}
+              onChange={(e) => setPurchaseDate(e.target.value)}
+              {...(errors.purchaseDate?.[0] ? { error: errors.purchaseDate[0] } : {})}
+            />
+            <Input
+              label="Hora"
+              type="time"
+              value={purchaseTime}
+              onChange={(e) => setPurchaseTime(e.target.value)}
+              {...(errors.purchaseTime?.[0] ? { error: errors.purchaseTime[0] } : {})}
+            />
+          </div>
+
+          {/* Products */}
+          <section>
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2.5">
+              Productos vendidos *
+            </div>
+            <article className="bg-bone/60 border border-line rounded-xl p-3 flex flex-col gap-2.5">
+              <div className="grid grid-cols-[minmax(0,1fr)_36px_80px_120px_32px] gap-2.5 px-1 text-[13px] font-medium text-ink/60">
+                <span>SKU / producto</span>
+                <span />
+                <span>Cantidad</span>
+                <span>Precio</span>
+                <span />
+              </div>
+              {items.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="grid grid-cols-[minmax(0,1fr)_36px_80px_120px_32px] gap-2.5 items-center"
+                >
+                  <ProductPicker
+                    products={products}
+                    value={item.product}
+                    onSelect={(p) => patchItem(idx, { product: p })}
+                  />
+                  <Button
+                    variant="ghost"
+                    iconOnly
+                    onClick={() => setScannerOpen(idx)}
+                    aria-label="Escanear SKU con cámara"
+                    className="h-10 w-10"
+                  >
+                    <Icon name="scan" size={20} />
+                  </Button>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={String(item.qty)}
+                    onChange={(e) =>
+                      patchItem(idx, { qty: Math.max(1, Number(e.target.value)) })
+                    }
+                    aria-label="Cantidad"
+                  />
+                  <div className="h-10 inline-flex items-center px-[14px] rounded-[10px] bg-bone text-[15px] font-semibold tabular text-ink/80">
+                    {item.product ? formatCurrency(item.product.price) : "—"}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    iconOnly
+                    onClick={() => removeItem(idx)}
+                    aria-label={t("sale.field.remove_item")}
+                    disabled={items.length === 1}
+                  >
+                    <Icon name="x" />
+                  </Button>
+                </div>
+              ))}
+              {errors.items?.[0] ? (
+                <span className="text-xs font-medium leading-snug text-err px-1">
+                  {errors.items[0]}
+                </span>
+              ) : null}
+            </article>
+            <div className="mt-3">
+              <Button variant="ghost" leading={<Icon name="plus" />} onClick={addItem}>
+                Agregar otro producto
               </Button>
             </div>
-          ))}
-          {errors.items?.[0] ? (
-            <span className="text-xs font-medium leading-snug text-err">{errors.items[0]}</span>
-          ) : null}
-          <Button variant="ghost" leading={<Icon name="plus" />} onClick={addItem}>
-            {t("sale.field.add_item")}
-          </Button>
-        </div>
+            {scanWarning ? (
+              <span className="block mt-2 text-[14.5px] text-warn font-medium leading-snug">
+                {scanWarning}
+              </span>
+            ) : null}
+          </section>
 
-        <SectionHeader title={t("sale.field.payment")} />
-        <div className="flex flex-wrap gap-1.5">
-          {PAYMENTS.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPayment(p)}
-              aria-pressed={payment === p}
-              className="bg-transparent border-0 p-0 cursor-pointer"
+          {/* Payment method */}
+          <section>
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2.5">
+              Método de pago
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {PAYMENTS.map((p) => {
+                const active = payment === p;
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPayment(p)}
+                    aria-pressed={active}
+                    className={`inline-flex items-center h-9 px-4 rounded-full border text-[13px] font-semibold cursor-pointer transition-colors ${
+                      active
+                        ? "bg-ink text-paper border-ink"
+                        : "bg-white text-ink border-line hover:bg-bone"
+                    }`}
+                  >
+                    {t(`sale.payment.${p}`)}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <Input
+                label="Detalle (opcional)"
+                value={paymentDetail}
+                onChange={(e) => setPaymentDetail(e.target.value)}
+                placeholder={PAYMENT_DETAIL_PLACEHOLDER[payment]}
+              />
+              <Input
+                label="Ticket / folio (opcional)"
+                value={ticketRef}
+                onChange={(e) => setTicketRef(e.target.value)}
+                placeholder="LV-260514-XXXX (vacío → folio MAN-…)"
+              />
+            </div>
+          </section>
+
+          {/* Notes */}
+          <section>
+            <label
+              htmlFor="sale-notes"
+              className="block text-[14.5px] font-semibold tracking-[0.02em] text-ink/70 mb-1.5"
             >
-              <Chip variant={payment === p ? "accent" : "neutral"} size="sm">
-                {t(`sale.payment.${p}`)}
-              </Chip>
-            </button>
-          ))}
-        </div>
+              Notas (opcional)
+            </label>
+            <textarea
+              id="sale-notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder="Comentarios sobre la venta, regalo, instrucciones especiales…"
+              className="w-full rounded-[10px] border border-line bg-white px-[14px] py-2.5 text-[15px] text-ink outline-none placeholder:text-ink/40 focus-visible:border-ink resize-y"
+            />
+          </section>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label={t("sale.field.ticket")}
-            value={ticketRef}
-            onChange={(e) => setTicketRef(e.target.value)}
-          />
-          <Input
-            label={t("sale.field.notes")}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
+          <div className="flex justify-end">
+            <Button
+              variant="primary"
+              onClick={onSubmit}
+              loading={isPending}
+              disabled={filledItems.length === 0 || total <= 0}
+            >
+              Registrar venta {total > 0 ? `· ${formatCurrency(total)}` : ""}
+            </Button>
+          </div>
+        </Card>
 
-        <Button
-          variant="primary"
-          onClick={onSubmit}
-          loading={isPending}
-          disabled={filledItems.length === 0 || total <= 0}
-        >
-          {t("sale.submit")} {total > 0 ? `· ${formatCurrency(total)}` : ""}
-        </Button>
-      </Card>
+        {/* Right side panel */}
+        <aside className="flex flex-col gap-5 sticky top-4">
+          <Card className="flex flex-col gap-4 bg-gradient-to-b from-white to-bone">
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+              Total venta
+            </div>
+            <div className="font-display text-[44px] leading-none tracking-[-0.01em] tabular">
+              {formatCurrency(total)}
+            </div>
+            <ul className="list-none m-0 p-0 flex flex-col gap-2.5 border-t border-line pt-4">
+              <SummaryRow label="Productos" value={filledItems.length} mono />
+              <SummaryRow label="Unidades" value={unitCount} mono />
+              <SummaryRow label="Marcas" value={brandsInSale.join(", ") || "—"} />
+              <SummaryRow label="Atribución" value={baName} />
+              <SummaryRow label="Tienda" value={storeName} />
+            </ul>
+          </Card>
 
-      <Card className="sticky top-4 flex flex-col gap-3 bg-gradient-to-b from-white to-bone">
-        <SectionHeader title={t("sale.total")} />
-        <div className="font-display text-[44px] leading-none tracking-[-0.01em] tabular">
-          {formatCurrency(total)}
-        </div>
-        <KvRow label={t("sale.field.items")} value={String(filledItems.length)} mono />
-        <KvRow label="Unidades" value={String(unitCount)} mono />
-        <KvRow label="Marcas" value={brandsInSale.join(", ") || "—"} />
-        <KvRow label="Cliente" value={client.name} dashed={false} />
-      </Card>
-    </div>
+          <Card variant="flat" className="bg-bone/60">
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+              Integración POS
+            </div>
+            <p className="m-0 mt-2 text-[14.5px] text-ink/70 leading-snug">
+              En tiendas con integración bidireccional, las compras llegan automáticamente desde el
+              POS. Esta pantalla es para captura manual cuando no hay sincronización.
+            </p>
+          </Card>
+        </aside>
+      </div>
+
+      <BarcodeScanner
+        open={scannerOpen !== null}
+        onScan={handleScan}
+        onClose={() => setScannerOpen(null)}
+        hint="Apunta al código del producto. Si no está en tu catálogo, se ignora."
+      />
+    </>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string | number;
+  mono?: boolean;
+}) {
+  return (
+    <li className="flex items-center justify-between gap-3 text-[15px]">
+      <span className="text-ink/60">{label}</span>
+      <span className={`font-semibold ${mono ? "tabular" : ""}`}>{value}</span>
+    </li>
   );
 }

@@ -35,7 +35,7 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
   if (!client) return { ok: false, message: "Cliente no encontrado" };
 
   const total = input.items.reduce((acc, i) => acc + i.qty * i.unitPrice, 0);
-  const at = input.at ?? new Date().toISOString();
+  const at = new Date(`${input.purchaseDate}T${input.purchaseTime}:00`).toISOString();
 
   const purchase = await purchaseRepository.create({
     clientId,
@@ -45,7 +45,9 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
     items: input.items.map((i) => ({ sku: i.sku as Sku, qty: i.qty, unitPrice: i.unitPrice })),
     total,
     payment: input.payment,
+    manual: true,
     ...(input.ticketRef !== undefined && { ticketRef: input.ticketRef }),
+    ...(input.paymentDetail !== undefined && { paymentDetail: input.paymentDetail }),
   });
 
   await interactionRepository.create({
