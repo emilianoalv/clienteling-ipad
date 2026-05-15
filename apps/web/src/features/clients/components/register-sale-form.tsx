@@ -8,6 +8,7 @@ import { BarcodeScanner } from "@/components/feedback/barcode-scanner";
 import type { Client } from "@/types/client";
 import type { Product } from "@/types/product";
 import { VISIT_MOTIVES, type VisitMotive } from "@/types/visit-motive";
+import { FOLLOWUP_TYPES, type FollowupType } from "@/types/followup-task";
 import { formatCurrency } from "@/lib/format/format-currency";
 import { registerSale } from "../actions/register-sale";
 import type { RegisterSaleInput } from "../schemas/register-sale.schema";
@@ -31,6 +32,12 @@ function todayISO(): string {
 function nowHHMM(): string {
   const d = new Date();
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function addDaysISO(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 function pad(n: number): string {
@@ -70,6 +77,11 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
   const [paymentDetail, setPaymentDetail] = useState("");
   const [ticketRef, setTicketRef] = useState("");
   const [notes, setNotes] = useState("");
+  const [showFollowup, setShowFollowup] = useState(false);
+  const [followupType, setFollowupType] = useState<FollowupType>("call");
+  const [followupDescription, setFollowupDescription] = useState("");
+  const [followupDueAt, setFollowupDueAt] = useState<string>(addDaysISO(14));
+
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [scannerOpen, setScannerOpen] = useState<number | null>(null);
   const [scanWarning, setScanWarning] = useState<string | null>(null);
@@ -80,6 +92,16 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
     () => filledItems.reduce((acc, it) => acc + it.qty * it.product.price, 0),
     [filledItems],
   );
+  const mainProduct = filledItems[0]?.product;
+
+  function toggleFollowup(next: boolean) {
+    setShowFollowup(next);
+    if (next && !followupDescription && mainProduct) {
+      setFollowupDescription(
+        `Llamar a ${client.name.split(/\s+/)[0]} para feedback de ${mainProduct.line}`,
+      );
+    }
+  }
   const unitCount = filledItems.reduce((acc, it) => acc + it.qty, 0);
   const brandsInSale = Array.from(new Set(filledItems.map((it) => it.product.brand)));
 
@@ -126,6 +148,15 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
       ...(paymentDetail ? { paymentDetail } : {}),
       ...(ticketRef ? { ticketRef } : {}),
       ...(notes ? { notes } : {}),
+      ...(showFollowup
+        ? {
+            followup: {
+              type: followupType,
+              description: followupDescription,
+              dueAt: followupDueAt,
+            },
+          }
+        : {}),
     };
     startTransition(async () => {
       const result = await registerSale(input);
@@ -344,6 +375,77 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
               placeholder="Comentarios sobre la venta, regalo, instrucciones especiales…"
               className="w-full rounded-[10px] border border-line bg-white px-[14px] py-2.5 text-[15px] text-ink outline-none placeholder:text-ink/40 focus-visible:border-ink resize-y"
             />
+          </section>
+
+          {/* Optional follow-up */}
+          <section>
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-3">
+              ¿Programar seguimiento? (opcional)
+            </div>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showFollowup}
+                onChange={(e) => toggleFollowup(e.target.checked)}
+                className="mt-1 w-[18px] h-[18px] accent-ink shrink-0"
+              />
+              <span className="flex-1 min-w-0">
+                <span className="block text-[15px] font-semibold leading-tight">
+                  Sí, agendar tarea post-venta
+                </span>
+                <span className="block text-[13.5px] text-ink/60 leading-snug mt-0.5">
+                  Aparecerá en tu inbox de Seguimientos. Útil para llamar y pedir feedback.
+                </span>
+              </span>
+            </label>
+            {showFollowup ? (
+              <div className="pl-9 pr-1 mt-3 flex flex-col gap-3">
+                <div>
+                  <div className="text-[12.5px] font-semibold text-ink/70 mb-1.5">Tipo</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {FOLLOWUP_TYPES.map((ft) => {
+                      const active = followupType === ft.id;
+                      return (
+                        <button
+                          key={ft.id}
+                          type="button"
+                          onClick={() => setFollowupType(ft.id)}
+                          aria-pressed={active}
+                          className={`inline-flex items-center h-8 px-3 rounded-full border text-[12.5px] font-semibold cursor-pointer transition-colors ${
+                            active
+                              ? "bg-ink text-paper border-ink"
+                              : "bg-white text-ink border-line hover:bg-bone"
+                          }`}
+                        >
+                          {ft.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-3 items-start">
+                  <Input
+                    label="Descripción *"
+                    placeholder='ej. "Llamar para feedback post-compra"'
+                    value={followupDescription}
+                    onChange={(e) => setFollowupDescription(e.target.value)}
+                    {...(errors["followup.description"]?.[0]
+                      ? { error: errors["followup.description"][0] }
+                      : {})}
+                  />
+                  <Input
+                    label="Vence *"
+                    type="date"
+                    value={followupDueAt}
+                    min={todayISO()}
+                    onChange={(e) => setFollowupDueAt(e.target.value)}
+                    {...(errors["followup.dueAt"]?.[0]
+                      ? { error: errors["followup.dueAt"][0] }
+                      : {})}
+                  />
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <div className="flex justify-end">

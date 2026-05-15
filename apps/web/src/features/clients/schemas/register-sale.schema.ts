@@ -15,6 +15,15 @@ const motiveEnum = z.enum([
   "browse",
 ]);
 
+const followupTypeEnum = z.enum([
+  "call",
+  "whatsapp",
+  "email",
+  "sample-feedback",
+  "appointment",
+  "other",
+]);
+
 export const registerSaleSchema = z
   .object({
     clientId: z.string().min(1),
@@ -36,6 +45,20 @@ export const registerSaleSchema = z
     payment: z.enum(["card", "cash", "transfer", "store-credit"]),
     ticketRef: z.string().optional(),
     notes: z.string().max(500).optional(),
+    /** Optional follow-up task to schedule for after the sale (e.g. post-purchase check-in). */
+    followup: z
+      .object({
+        type: followupTypeEnum,
+        description: z.string().trim().min(1, "Describe la tarea"),
+        dueAt: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida")
+          .refine(
+            (s) => new Date(s + "T00:00:00").getTime() >= new Date().setHours(0, 0, 0, 0),
+            { message: "La fecha no puede ser pasada" },
+          ),
+      })
+      .optional(),
   })
   .superRefine((data, ctx) => {
     const total = data.items.reduce((acc, i) => acc + i.qty * i.unitPrice, 0);
