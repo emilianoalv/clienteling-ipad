@@ -6,19 +6,18 @@ import { requireSession } from "@/server/auth/session";
 import { can } from "@/config/rbac";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { interactionRepository } from "@/server/repositories/interaction.repository";
-import { applyPurchaseToStats, applyVisitToStats } from "../services/update-client-stats";
+import { sampleRepository } from "@/server/repositories/sample.repository";
+import { recommendationRepository } from "@/server/repositories/recommendation.repository";
+import { productRepository } from "@/server/repositories/product.repository";
+import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
+import { applyVisitToStats } from "../services/update-client-stats";
 import { registerVisitSchema, type RegisterVisitInput } from "../schemas/register-visit.schema";
 import type { ClientId } from "@/types/client";
 import type { InteractionKind } from "@/types/interaction";
+import type { BrandId } from "@/types/brand";
+import type { Sku } from "@/types/product";
 
-const VISIT_KIND_TO_INTERACTION: Record<RegisterVisitInput["kind"], InteractionKind> = {
-  consultation: "consultation",
-  purchase: "purchase",
-  sample: "sample",
-  courtesy: "courtesy",
-  return: "return",
-  followup: "followup",
-};
+const DEFAULT_BRAND = "Lancôme" as BrandId;
 
 export interface RegisterVisitError {
   ok: false;
@@ -38,23 +37,69 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
   const client = await clientRepository.findById(clientId);
   if (!client) return { ok: false, message: "Cliente no encontrado" };
 
-  await interactionRepository.create({
+  const at = new Date().toISOString();
+
+  // Derive interaction kind from outcomes — samples > recommendations > visit.
+  const kind: InteractionKind =
+    input.samples.length > 0
+      ? "sample"
+      : input.recommendations.length > 0
+        ? "consultation"
+        : "courtesy";
+
+  // Pick the dominant brand for the interaction from sampled/recommended products,
+  // falling back to the client's primary brand or the BA default.
+  const brand =
+    client.brands[0] ?? DEFAULT_BRAND;
+
+  const interaction = await interactionRepository.create({
     clientId,
     baId: staff.id,
-    brand: input.brand,
-    kind: VISIT_KIND_TO_INTERACTION[input.kind],
-    at: new Date().toISOString(),
+    brand,
+    kind,
+    at,
+    motive: input.motive,
     ...(input.notes !== undefined && { notes: input.notes }),
-    ...(input.amount !== undefined && { amount: input.amount }),
     ...(input.durationMin !== undefined && { durationMin: input.durationMin }),
-    reasonId: input.reason,
   });
 
-  const nextStats =
-    input.kind === "purchase" && input.amount
-      ? applyPurchaseToStats(client.stats, input.amount)
-      : applyVisitToStats(client.stats);
-  await clientRepository.patchStats(clientId, nextStats);
+  // Persist sample records (one per SKU).
+  for (const sku of input.samples) {
+    const product = await productRepository.findBySku(sku as Sku);
+    await sampleRepository.create({
+      clientId,
+      baId: staff.id,
+      sku: sku as Sku,
+      name: product?.line ?? sku,
+      givenAt: at,
+      converted: false,
+    });
+  }
+
+  // Persist a single recommendation record bundling all SKUs.
+  if (input.recommendations.length > 0) {
+    await recommendationRepository.create({
+      clientId,
+      baId: staff.id,
+      at,
+      items: input.recommendations.map((s) => s as Sku),
+      status: "pending",
+    });
+  }
+
+  // Optional follow-up task — fired only if the BA filled the section.
+  if (input.followup) {
+    await followupTaskRepository.create({
+      clientId,
+      baId: staff.id,
+      type: input.followup.type,
+      description: input.followup.description,
+      dueAt: new Date(`${input.followup.dueAt}T12:00:00`).toISOString(),
+      sourceInteractionId: interaction.id,
+    });
+  }
+
+  await clientRepository.patchStats(clientId, applyVisitToStats(client.stats));
 
   revalidatePath(`/ba/clients/${clientId}`);
   redirect(`/ba/clients/${clientId}`);
