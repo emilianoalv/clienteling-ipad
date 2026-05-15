@@ -7,6 +7,7 @@ import { Card } from "@/components/patterns";
 import { BarcodeScanner } from "@/components/feedback/barcode-scanner";
 import type { Client } from "@/types/client";
 import type { Product } from "@/types/product";
+import { VISIT_MOTIVES, type VisitMotive } from "@/types/visit-motive";
 import { formatCurrency } from "@/lib/format/format-currency";
 import { registerSale } from "../actions/register-sale";
 import type { RegisterSaleInput } from "../schemas/register-sale.schema";
@@ -61,6 +62,7 @@ export interface RegisterSaleFormProps {
 
 export function RegisterSaleForm({ client, products, baName, storeName }: RegisterSaleFormProps) {
   const t = useTranslations();
+  const [motive, setMotive] = useState<VisitMotive>("new-purchase");
   const [purchaseDate, setPurchaseDate] = useState<string>(todayISO());
   const [purchaseTime, setPurchaseTime] = useState<string>(nowHHMM());
   const [items, setItems] = useState<DraftItem[]>([{ ...NEW_ITEM }]);
@@ -112,6 +114,7 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
     if (filledItems.length === 0) return;
     const input: RegisterSaleInput = {
       clientId: client.id,
+      motive,
       purchaseDate,
       purchaseTime,
       items: filledItems.map((it) => ({
@@ -161,6 +164,36 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
               Atribuir a {baName.split(/\s+/)[0]}
             </span>
           </article>
+
+          {/* Motivo de la visita */}
+          <section>
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2.5">
+              Motivo de la visita *
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {VISIT_MOTIVES.map((m) => {
+                const active = motive === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setMotive(m.id)}
+                    aria-pressed={active}
+                    className={`inline-flex items-center h-9 px-4 rounded-full border text-[13.5px] font-semibold cursor-pointer transition-colors ${
+                      active
+                        ? "bg-ink text-paper border-ink"
+                        : "bg-white text-ink border-line hover:bg-bone"
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
+            {errors.motive?.[0] ? (
+              <span className="block mt-1.5 text-xs text-err">{errors.motive[0]}</span>
+            ) : null}
+          </section>
 
           {/* Date + Time */}
           <div className="grid grid-cols-2 gap-4 max-w-[420px]">

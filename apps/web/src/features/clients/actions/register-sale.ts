@@ -57,6 +57,7 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
     kind: "purchase",
     at,
     amount: total,
+    motive: input.motive,
     ...(input.notes !== undefined && { notes: input.notes }),
   });
 

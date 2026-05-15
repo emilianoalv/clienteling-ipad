@@ -6,9 +6,20 @@ const itemSchema = z.object({
   unitPrice: z.number().nonnegative(),
 });
 
+const motiveEnum = z.enum([
+  "new-purchase",
+  "repurchase",
+  "gift",
+  "concern",
+  "promo",
+  "browse",
+]);
+
 export const registerSaleSchema = z
   .object({
     clientId: z.string().min(1),
+    /** Why the client came in. Captured at the top of the sale form. */
+    motive: motiveEnum,
     /** ISO date (YYYY-MM-DD) when the purchase happened. Cannot be in the future. */
     purchaseDate: z
       .string()
