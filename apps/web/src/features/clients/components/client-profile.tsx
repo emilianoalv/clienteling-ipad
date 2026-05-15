@@ -91,7 +91,7 @@ export async function ClientProfile({
         </Card>
 
         {/* Action strip */}
-        <div className="grid grid-cols-5 gap-2.5">
+        <div className="grid grid-cols-4 gap-2.5">
           <Link href={`/ba/clients/${client.id}/consult`}>
             <Button leading={<Icon name="sparkle" />} className="h-14 w-full">
               {t("profile.actions.recommend")}
@@ -107,12 +107,11 @@ export async function ClientProfile({
               {t("profile.actions.register_sale")}
             </Button>
           </Link>
-          <Button leading={<Icon name="gift" />} className="h-14">
-            {t("profile.actions.give_sample")}
-          </Button>
-          <Button leading={<Icon name="whatsapp" />} className="h-14">
-            {t("profile.actions.follow_up")}
-          </Button>
+          <Link href={`/ba/clients/${client.id}?tab=followup#profile-tabs`}>
+            <Button leading={<Icon name="message" />} className="h-14 w-full">
+              {t("profile.actions.follow_up")}
+            </Button>
+          </Link>
         </div>
 
         {/* KPI strip */}
