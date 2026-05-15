@@ -9,6 +9,7 @@ import { recommendationRepository } from "@/server/repositories/recommendation.r
 import { consentRepository } from "@/server/repositories/consent.repository";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import { communicationRepository } from "@/server/repositories/communication.repository";
+import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 
 export async function fetchClient(id: string): Promise<Client> {
   const client = await clientRepository.findById(id as ClientId);
@@ -27,6 +28,7 @@ export async function fetchClientWithHistory(id: string) {
     consents,
     appointments,
     communications,
+    followupTasks,
   ] = await Promise.all([
     clientRepository.findById(clientId),
     interactionRepository.listByClient(clientId),
@@ -36,6 +38,7 @@ export async function fetchClientWithHistory(id: string) {
     consentRepository.listByClient(clientId),
     appointmentRepository.listByClient(clientId),
     communicationRepository.listByClient(clientId),
+    followupTaskRepository.listByClient(clientId),
   ]);
   if (!client) notFound();
   return {
@@ -47,5 +50,6 @@ export async function fetchClientWithHistory(id: string) {
     consents,
     appointments,
     communications,
+    followupTasks,
   };
 }

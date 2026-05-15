@@ -8,6 +8,7 @@ import type { Recommendation } from "@/types/recommendation";
 import type { Consent } from "@/types/consent";
 import type { Appointment } from "@/types/appointment";
 import type { Communication } from "@/types/communication";
+import type { FollowupTask } from "@/types/followup-task";
 import { Avatar, type AvatarTone, BrandTag, Button, Chip, Icon } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import { ClientProfileTabs } from "./client-profile-tabs";
@@ -19,6 +20,7 @@ import { AffinitiesCard } from "./side-panel/affinities-card";
 import { AppointmentsCard } from "./side-panel/appointments-card";
 import { ConsentSummaryCard } from "./side-panel/consent-summary-card";
 import { ArcoRightsCard } from "./side-panel/arco-rights-card";
+import { UpcomingFollowupsCard } from "./side-panel/upcoming-followups-card";
 import { segmentClient } from "../services/segment-client";
 import { formatCurrency } from "@/lib/format/format-currency";
 
@@ -31,6 +33,7 @@ export interface ClientProfileProps {
   consents: readonly Consent[];
   appointments: readonly Appointment[];
   communications: readonly Communication[];
+  followupTasks: readonly FollowupTask[];
 }
 
 export async function ClientProfile({
@@ -42,6 +45,7 @@ export async function ClientProfile({
   consents,
   appointments,
   communications,
+  followupTasks,
 }: ClientProfileProps) {
   const t = await getTranslations();
   const segment = segmentClient(client);
@@ -132,6 +136,7 @@ export async function ClientProfile({
           recommendations={recommendations}
           consents={consents}
           communications={communications}
+          followupTasks={followupTasks}
           clientName={client.name}
           clientId={client.id}
         />
@@ -139,6 +144,7 @@ export async function ClientProfile({
 
       <aside className="flex flex-col gap-4">
         <LuxeCircleCard client={client} segment={segment} />
+        <UpcomingFollowupsCard clientId={client.id} tasks={followupTasks} />
         <SkinProfileCard client={client} />
         <InterestsCard client={client} />
         <AppointmentsCard appointments={appointments} />
