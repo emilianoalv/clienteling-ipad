@@ -2,6 +2,7 @@ import type { BrandId } from "./brand";
 import type { Branded } from "./branded";
 import type { ClientId } from "./client";
 import type { StaffId } from "./staff";
+import type { VisitMotive } from "./visit-motive";
 
 export type InteractionId = Branded<string, "Interaction">;
 
@@ -28,4 +29,9 @@ export interface Interaction {
   durationMin?: number;
   reasonId?: string;
   reasonLabel?: string;
+  /**
+   * Why the client came in. Captured in visit/sale forms. Independent of
+   * outcome — orthogonal to `kind`.
+   */
+  motive?: VisitMotive;
 }
