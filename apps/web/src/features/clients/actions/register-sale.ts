@@ -7,6 +7,7 @@ import { can } from "@/config/rbac";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
 import { interactionRepository } from "@/server/repositories/interaction.repository";
+import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { applyPurchaseToStats } from "../services/update-client-stats";
 import { registerSaleSchema, type RegisterSaleInput } from "../schemas/register-sale.schema";
 import type { ClientId } from "@/types/client";
@@ -35,7 +36,7 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
   if (!client) return { ok: false, message: "Cliente no encontrado" };
 
   const total = input.items.reduce((acc, i) => acc + i.qty * i.unitPrice, 0);
-  const at = input.at ?? new Date().toISOString();
+  const at = new Date(`${input.purchaseDate}T${input.purchaseTime}:00`).toISOString();
 
   const purchase = await purchaseRepository.create({
     clientId,
@@ -45,18 +46,32 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
     items: input.items.map((i) => ({ sku: i.sku as Sku, qty: i.qty, unitPrice: i.unitPrice })),
     total,
     payment: input.payment,
+    manual: true,
     ...(input.ticketRef !== undefined && { ticketRef: input.ticketRef }),
+    ...(input.paymentDetail !== undefined && { paymentDetail: input.paymentDetail }),
   });
 
-  await interactionRepository.create({
+  const interaction = await interactionRepository.create({
     clientId,
     baId: staff.id,
     brand: DEFAULT_BRAND,
     kind: "purchase",
     at,
     amount: total,
+    motive: input.motive,
     ...(input.notes !== undefined && { notes: input.notes }),
   });
+
+  if (input.followup) {
+    await followupTaskRepository.create({
+      clientId,
+      baId: staff.id,
+      type: input.followup.type,
+      description: input.followup.description,
+      dueAt: new Date(`${input.followup.dueAt}T12:00:00`).toISOString(),
+      sourceInteractionId: interaction.id,
+    });
+  }
 
   await clientRepository.patchStats(clientId, applyPurchaseToStats(client.stats, total, new Date(at)));
 

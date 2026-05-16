@@ -8,6 +8,7 @@ import type { Recommendation } from "@/types/recommendation";
 import type { Consent } from "@/types/consent";
 import type { Appointment } from "@/types/appointment";
 import type { Communication } from "@/types/communication";
+import type { FollowupTask } from "@/types/followup-task";
 import { Avatar, type AvatarTone, BrandTag, Button, Chip, Icon } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import { ClientProfileTabs } from "./client-profile-tabs";
@@ -19,6 +20,7 @@ import { AffinitiesCard } from "./side-panel/affinities-card";
 import { AppointmentsCard } from "./side-panel/appointments-card";
 import { ConsentSummaryCard } from "./side-panel/consent-summary-card";
 import { ArcoRightsCard } from "./side-panel/arco-rights-card";
+import { UpcomingFollowupsCard } from "./side-panel/upcoming-followups-card";
 import { segmentClient } from "../services/segment-client";
 import { formatCurrency } from "@/lib/format/format-currency";
 
@@ -31,6 +33,7 @@ export interface ClientProfileProps {
   consents: readonly Consent[];
   appointments: readonly Appointment[];
   communications: readonly Communication[];
+  followupTasks: readonly FollowupTask[];
 }
 
 export async function ClientProfile({
@@ -42,6 +45,7 @@ export async function ClientProfile({
   consents,
   appointments,
   communications,
+  followupTasks,
 }: ClientProfileProps) {
   const t = await getTranslations();
   const segment = segmentClient(client);
@@ -87,9 +91,9 @@ export async function ClientProfile({
         </Card>
 
         {/* Action strip */}
-        <div className="grid grid-cols-[1.3fr_1fr_1fr_1fr_1fr] gap-2.5">
+        <div className="grid grid-cols-4 gap-2.5">
           <Link href={`/ba/clients/${client.id}/consult`}>
-            <Button leading={<Icon name="sparkle" />} variant="primary" className="h-14 text-sm w-full">
+            <Button leading={<Icon name="sparkle" />} className="h-14 w-full">
               {t("profile.actions.recommend")}
             </Button>
           </Link>
@@ -103,21 +107,18 @@ export async function ClientProfile({
               {t("profile.actions.register_sale")}
             </Button>
           </Link>
-          <Button leading={<Icon name="gift" />} className="h-14">
-            {t("profile.actions.give_sample")}
-          </Button>
-          <Button leading={<Icon name="whatsapp" />} className="h-14">
-            {t("profile.actions.follow_up")}
-          </Button>
+          <Link href={`/ba/clients/${client.id}?tab=followup#profile-tabs`}>
+            <Button leading={<Icon name="message" />} className="h-14 w-full">
+              {t("profile.actions.follow_up")}
+            </Button>
+          </Link>
         </div>
 
         {/* KPI strip */}
-        <Card className="grid grid-cols-3 gap-0">
-          <KpiCell label={t("profile.kpi.ltv")} value={formatCurrency(client.stats.ltv)} />
+        <Card className="grid grid-cols-2 gap-0">
           <KpiCell
             label={t("profile.kpi.avg_ticket")}
             value={formatCurrency(client.stats.avgTicket)}
-            divider
           />
           <KpiCell
             label={t("profile.kpi.last_purchase")}
@@ -134,12 +135,15 @@ export async function ClientProfile({
           recommendations={recommendations}
           consents={consents}
           communications={communications}
+          followupTasks={followupTasks}
           clientName={client.name}
+          clientId={client.id}
         />
       </main>
 
       <aside className="flex flex-col gap-4">
         <LuxeCircleCard client={client} segment={segment} />
+        <UpcomingFollowupsCard clientId={client.id} tasks={followupTasks} />
         <SkinProfileCard client={client} />
         <InterestsCard client={client} />
         <AppointmentsCard appointments={appointments} />

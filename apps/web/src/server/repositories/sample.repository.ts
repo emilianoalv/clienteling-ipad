@@ -1,9 +1,10 @@
 import "server-only";
 import type { BrandId } from "@/types/brand";
 import type { ClientId } from "@/types/client";
-import type { Sample } from "@/types/sample";
+import type { Sample, SampleId } from "@/types/sample";
 import { SEED_SAMPLES } from "./seed";
 import { persistent } from "./_persist";
+import { generateId } from "@/lib/id/generate-id";
 
 export interface SampleInventoryItem {
   sku: string;
@@ -21,6 +22,7 @@ export interface SampleRepository {
   list(filter?: SampleListFilter): Promise<Sample[]>;
   listByClient(clientId: ClientId): Promise<Sample[]>;
   listInventory(filter?: { brands?: readonly BrandId[] }): Promise<SampleInventoryItem[]>;
+  create(input: Omit<Sample, "id">): Promise<Sample>;
 }
 
 const SAMPLES: Sample[] = persistent("__clienteling.samples", () => [...SEED_SAMPLES]);
@@ -49,5 +51,12 @@ export const sampleRepository: SampleRepository = {
     const scope = filter.brands;
     if (!scope || scope.length === 0) return [...INVENTORY];
     return INVENTORY.filter((i) => scope.includes(i.brand));
+  },
+
+  async create(input) {
+    const id = generateId("sm") as SampleId;
+    const sample: Sample = { ...input, id };
+    SAMPLES.unshift(sample);
+    return sample;
   },
 };

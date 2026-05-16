@@ -1,10 +1,12 @@
 import "server-only";
 import type { Appointment } from "@/types/appointment";
 import type { Client } from "@/types/client";
+import type { FollowupTask } from "@/types/followup-task";
 import type { LifeEvent } from "@/types/life-event";
 import type { Staff } from "@/types/staff";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import { clientRepository } from "@/server/repositories/client.repository";
+import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { listUpcomingEvents } from "@/features/clients/services/list-upcoming-events";
 
 export interface AgendaItem {
@@ -21,6 +23,10 @@ export interface BaDaySnapshot {
   today: AgendaItem[];
   tomorrow: AgendaItem[];
   upcomingEvents: UpcomingEventEntry[];
+  /** Pending follow-up tasks for the BA. Used to drive the "Pendientes" card. */
+  pendingTasks: readonly FollowupTask[];
+  /** Map clientId → name, for displaying task subtitles. */
+  clientLookup: Readonly<Record<string, string>>;
 }
 
 /**
@@ -33,7 +39,7 @@ export async function getBaDaySnapshot(staff: Staff, now = new Date()): Promise<
   const startTomorrow = addDays(startToday, 1);
   const startDayAfter = addDays(startToday, 2);
 
-  const [todayAppts, tomorrowAppts, clients] = await Promise.all([
+  const [todayAppts, tomorrowAppts, clients, pendingTasks] = await Promise.all([
     appointmentRepository.list({
       baId: staff.id,
       brands: staff.brands,
@@ -47,10 +53,15 @@ export async function getBaDaySnapshot(staff: Staff, now = new Date()): Promise<
       to: startDayAfter,
     }),
     clientRepository.list({ brands: staff.brands }),
+    followupTaskRepository.listByBA(staff.id, { status: "pending" }),
   ]);
 
   const clientById = new Map(clients.map((c) => [c.id, c]));
   const resolveName = (a: Appointment) => clientById.get(a.clientId)?.name ?? "—";
+  const clientLookup = Object.fromEntries(clients.map((c) => [c.id, c.name])) as Record<
+    string,
+    string
+  >;
 
   const upcomingEvents = collectUpcomingEvents(clients, now).slice(0, 5);
 
@@ -58,6 +69,8 @@ export async function getBaDaySnapshot(staff: Staff, now = new Date()): Promise<
     today: todayAppts.map((a) => ({ appointment: a, clientName: resolveName(a) })),
     tomorrow: tomorrowAppts.map((a) => ({ appointment: a, clientName: resolveName(a) })),
     upcomingEvents,
+    pendingTasks,
+    clientLookup,
   };
 }
 

@@ -27,6 +27,8 @@ export interface Purchase {
   /** Dominant brand of the items (set at create-time). */
   brand?: BrandId;
   ticketRef?: string;
+  /** Free-form payment detail (e.g. "Visa · 4321"). */
+  paymentDetail?: string;
   recommendationId?: string;
   /** True when the BA captured the sale via the manual flow (no POS handoff). */
   manual?: boolean;

@@ -1,50 +1,56 @@
 import { z } from "zod";
-import { BRAND_IDS } from "@/types/brand";
 
-export const VISIT_KINDS = [
-  "consultation",
-  "purchase",
-  "sample",
-  "courtesy",
-  "return",
-  "followup",
-] as const;
-
-export const VISIT_REASONS = [
-  "skincare-consult",
-  "new-launch",
+const motiveEnum = z.enum([
+  "new-purchase",
+  "repurchase",
   "gift",
-  "diagnosis",
-  "loyalty-redemption",
-  "other",
-] as const;
+  "concern",
+  "promo",
+  "browse",
+]);
 
-export const registerVisitSchema = z
-  .object({
-    clientId: z.string().min(1),
-    kind: z.enum(VISIT_KINDS),
-    reason: z.enum(VISIT_REASONS),
-    brand: z.enum(BRAND_IDS),
-    notes: z.string().max(500).optional(),
-    amount: z.number().positive().optional(),
-    durationMin: z.number().int().positive().max(480).optional(),
-    skus: z.array(z.string()).optional(),
-  })
-  .superRefine((data, ctx) => {
-    if ((data.kind === "purchase" || data.kind === "return") && data.amount === undefined) {
-      ctx.addIssue({
-        path: ["amount"],
-        code: z.ZodIssueCode.custom,
-        message: "Monto requerido para venta o devolución",
-      });
-    }
-    if (data.kind === "sample" && (!data.skus || data.skus.length === 0)) {
-      ctx.addIssue({
-        path: ["skus"],
-        code: z.ZodIssueCode.custom,
-        message: "Selecciona al menos un SKU de muestra",
-      });
-    }
-  });
+const followupTypeEnum = z.enum([
+  "call",
+  "whatsapp",
+  "email",
+  "sample-feedback",
+  "appointment",
+  "other",
+]);
+
+/**
+ * Visit form input. Distinct from the sale form: no products with prices, no
+ * payment. Optional outcomes are captured inline (samples given, recommendations
+ * made) plus an optional follow-up task.
+ *
+ * `kind` is derived server-side from the outcomes:
+ *  - any `samples`        → "sample"
+ *  - any `recommendations`→ "consultation"
+ *  - neither              → "courtesy"
+ */
+export const registerVisitSchema = z.object({
+  clientId: z.string().min(1),
+  motive: motiveEnum,
+  notes: z.string().max(500).optional(),
+  durationMin: z.number().int().positive().max(480).optional(),
+  /** SKUs of samples given during the visit. */
+  samples: z.array(z.string().min(1)).default([]),
+  /** SKUs of products recommended (without sale) during the visit. */
+  recommendations: z.array(z.string().min(1)).default([]),
+  /** Optional follow-up task to schedule after the visit. */
+  followup: z
+    .object({
+      type: followupTypeEnum,
+      description: z.string().trim().min(1, "Describe la tarea"),
+      dueAt: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida")
+        .refine(
+          (s) => new Date(s + "T00:00:00").getTime() >= new Date().setHours(0, 0, 0, 0),
+          { message: "La fecha no puede ser pasada" },
+        ),
+    })
+    .optional(),
+});
 
 export type RegisterVisitInput = z.infer<typeof registerVisitSchema>;

@@ -1,16 +1,25 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { Purchase } from "@/types/purchase";
-import { Icon } from "@/components/primitives";
+import { BrandTag, Icon } from "@/components/primitives";
 import { formatCurrency } from "@/lib/format/format-currency";
 import { formatDate } from "@/lib/format/format-date";
 
 export interface PurchasesPreviewProps {
   purchases: readonly Purchase[];
+  clientId: string;
 }
 
-export function PurchasesPreview({ purchases }: PurchasesPreviewProps) {
+const PREVIEW_COUNT = 4;
+
+/**
+ * Inline preview shown inside the client-profile "Compras" tab.
+ * Each row is a clickable link to the purchase detail page. The full history
+ * lives at `/ba/clients/[id]/purchases`.
+ */
+export function PurchasesPreview({ purchases, clientId }: PurchasesPreviewProps) {
   const t = useTranslations();
   if (purchases.length === 0) {
     return (
@@ -21,33 +30,61 @@ export function PurchasesPreview({ purchases }: PurchasesPreviewProps) {
   }
 
   return (
-    <ul className="list-none m-0 p-0 flex flex-col">
-      {purchases.slice(0, 4).map((p) => (
-        <li
-          key={p.id}
-          className="grid grid-cols-[36px_1fr_auto_auto] items-center gap-3 py-3 border-b border-dashed border-line last:border-b-0"
-        >
-          <span
-            aria-hidden
-            className="inline-flex w-9 h-9 items-center justify-center rounded-full bg-bone text-ink/60"
-          >
-            <Icon name="bag" />
-          </span>
-          <div className="flex flex-col gap-0.5 min-w-0">
-            <span className="text-[16px] font-semibold leading-snug text-ink">
-              {p.items.length} {p.items.length === 1 ? "producto" : "productos"} ·{" "}
-              {t(`sale.payment.${p.payment}`)}
-            </span>
-            {p.ticketRef ? (
-              <span className="text-xs font-medium leading-snug text-ink/60">Ticket {p.ticketRef}</span>
-            ) : null}
+    <div className="flex flex-col gap-3">
+      <header className="flex items-baseline justify-between gap-3 flex-wrap">
+        <div>
+          <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+            Historial de compras
           </div>
-          <span className="text-xs font-medium leading-none text-ink/60">{formatDate(p.at)}</span>
-          <span className="text-[16px] font-semibold leading-none tabular">
-            {formatCurrency(p.total)}
-          </span>
-        </li>
-      ))}
-    </ul>
+          <p className="m-0 mt-1 text-[14.5px] text-ink/60 leading-snug">
+            Tickets registrados con SKUs, monto y BA responsable.
+          </p>
+        </div>
+        <Link
+          href={`/ba/clients/${clientId}/purchases`}
+          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-[14px] font-semibold text-ink no-underline transition-colors hover:bg-bone"
+        >
+          Ver todo
+          <Icon name="arrow-right" size={13} />
+        </Link>
+      </header>
+
+      <ul className="list-none m-0 p-0 flex flex-col">
+        {purchases.slice(0, PREVIEW_COUNT).map((p) => {
+          const ticketLabel = p.ticketRef ?? `MAN-${p.id.toUpperCase().slice(-8)}`;
+          const ba = "Valentina Ríos";
+          return (
+            <li key={p.id} className="border-b border-line last:border-b-0">
+              <Link
+                href={`/ba/clients/${clientId}/purchases/${p.id}`}
+                className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
+              >
+                <span
+                  aria-hidden
+                  className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60"
+                >
+                  <Icon name="bag" size={18} />
+                </span>
+                <div className="min-w-0 flex flex-col gap-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[15px] font-semibold leading-tight">
+                      Ticket {ticketLabel}
+                    </span>
+                    {p.brand ? <BrandTag brand={p.brand} alwaysShow /> : null}
+                  </div>
+                  <span className="text-[14px] text-ink/60 leading-tight">
+                    {formatDate(p.at)} · {p.items.length}{" "}
+                    {p.items.length === 1 ? "producto" : "productos"} · por {ba}
+                  </span>
+                </div>
+                <span className="text-[16px] font-semibold tabular text-ink whitespace-nowrap">
+                  {formatCurrency(p.total)}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

@@ -16,6 +16,7 @@ export interface PurchaseListFilter {
 export interface PurchaseRepository {
   list(filter?: PurchaseListFilter): Promise<Purchase[]>;
   listByClient(clientId: ClientId): Promise<Purchase[]>;
+  findById(id: PurchaseId): Promise<Purchase | null>;
   create(input: Omit<Purchase, "id">): Promise<Purchase>;
 }
 
@@ -34,6 +35,10 @@ export const purchaseRepository: PurchaseRepository = {
 
   async listByClient(clientId) {
     return PURCHASES.filter((p) => p.clientId === clientId).sort((a, b) => b.at.localeCompare(a.at));
+  },
+
+  async findById(id) {
+    return PURCHASES.find((p) => p.id === id) ?? null;
   },
 
   async create(input) {

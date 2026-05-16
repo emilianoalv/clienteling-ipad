@@ -22,7 +22,7 @@ export function BaTodayScreen({ baName, storeName, snapshot, now = new Date() }:
   const firstName = baName.split(/\s+/)[0] ?? baName;
   const dateLabel = formatDateLabel(now);
   const greeting = greetingFor(now);
-  const pendingCount = 5 + 2; // matches PendingList items + 2 hardcoded confirmaciones
+  const pendingCount = snapshot.pendingTasks.length;
   const monthGoalPct = 72;
   const monthGoalAmount = 1_184_020;
   const monthGoalTarget = 1_650_000;
@@ -46,7 +46,7 @@ export function BaTodayScreen({ baName, storeName, snapshot, now = new Date() }:
       {snapshot.upcomingEvents.length > 0 && <TodayEvents entries={snapshot.upcomingEvents} />}
 
       <div className="grid gap-5 grid-cols-1 xl:grid-cols-[1fr_1.1fr]">
-        <PendingList />
+        <PendingList tasks={snapshot.pendingTasks} clientLookup={snapshot.clientLookup} />
         <TodayAgenda today={snapshot.today} tomorrow={snapshot.tomorrow} />
       </div>
     </div>
@@ -77,5 +77,5 @@ const MONTHS = [
 ];
 
 function formatDateLabel(d: Date): string {
-  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} · ${MONTHS[d.getMonth()]}`;
+  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} · ${MONTHS[d.getMonth()]} · ${d.getFullYear()}`;
 }
