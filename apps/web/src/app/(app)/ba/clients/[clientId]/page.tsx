@@ -1,4 +1,5 @@
 import { ClientProfile, fetchClientWithHistory } from "@/features/clients";
+import { requireSession } from "@/server/auth/session";
 
 export default async function ClientProfilePage({
   params,
@@ -6,6 +7,7 @@ export default async function ClientProfilePage({
   params: Promise<{ clientId: string }>;
 }) {
   const { clientId } = await params;
-  const data = await fetchClientWithHistory(clientId);
+  const { staff } = await requireSession();
+  const data = await fetchClientWithHistory(clientId, staff);
   return <ClientProfile {...data} />;
 }

@@ -1,6 +1,7 @@
 import "server-only";
 import { notFound } from "next/navigation";
 import type { Client, ClientId } from "@/types/client";
+import type { Staff } from "@/types/staff";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { interactionRepository } from "@/server/repositories/interaction.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
@@ -10,15 +11,32 @@ import { consentRepository } from "@/server/repositories/consent.repository";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import { communicationRepository } from "@/server/repositories/communication.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
+import { isStoreInScope } from "@/server/auth/scope";
 
-export async function fetchClient(id: string): Promise<Client> {
+/**
+ * Loads a single client by id, enforcing the caller's store scope. Returns
+ * `notFound()` (404) if either the client doesn't exist OR the client's
+ * `storeId` is outside the caller's `visibleStoreIds` — the same response
+ * for both, so the API doesn't leak existence to out-of-scope callers.
+ *
+ * Per `docs/06-routing-and-rbac.md`: silent 404 is the agreed pattern for
+ * scope violations.
+ */
+export async function fetchClient(id: string, staff: Staff): Promise<Client> {
   const client = await clientRepository.findById(id as ClientId);
   if (!client) notFound();
+  if (!isStoreInScope(staff, client.storeId)) notFound();
   return client;
 }
 
-export async function fetchClientWithHistory(id: string) {
+export async function fetchClientWithHistory(id: string, staff: Staff) {
   const clientId = id as ClientId;
+  // Validate scope upfront so we don't even start the parallel reads if the
+  // caller is out of scope.
+  const initial = await clientRepository.findById(clientId);
+  if (!initial) notFound();
+  if (!isStoreInScope(staff, initial.storeId)) notFound();
+
   const [
     client,
     interactions,

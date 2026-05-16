@@ -9,6 +9,7 @@ export { Basket, type BasketProps } from "./components/basket";
 
 export { fetchConsultationContext } from "./server/fetch-consultation-context";
 export { fetchBasketContext } from "./server/fetch-basket-context";
+export { listRecommendations, type ListRecommendationsArgs } from "./server/list-recommendations";
 
 export { saveRecommendation } from "./actions/save-recommendation";
 export { handoffRecommendation } from "./actions/handoff-recommendation";

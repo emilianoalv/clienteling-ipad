@@ -12,7 +12,7 @@ export default async function RegisterVisitPage({
   const { clientId } = await params;
   const { staff } = await requireSession();
   const [client, products] = await Promise.all([
-    fetchClient(clientId),
+    fetchClient(clientId, staff),
     productRepository.list({ brands: staff.brands }),
   ]);
 

@@ -30,7 +30,7 @@ function purchase(id: string, total: number): Purchase {
     id: id as PurchaseId,
     clientId: "cl-x" as ClientId,
     baId: "ba-x" as StaffId,
-    storeId: "st-polanco" as StoreId,
+    storeId: "st-pol" as StoreId,
     at: "2026-05-01T00:00:00.000Z",
     items: [],
     total,

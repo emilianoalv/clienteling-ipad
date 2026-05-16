@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Client, ClientId } from "@/types/client";
 import type { Product, Sku } from "@/types/product";
+import type { StoreId } from "@/types/store";
 import {
   rankProductsForClient,
   scoreProductCompatibility,
@@ -19,6 +20,7 @@ function makeClient(overrides: Partial<Client> = {}): Client {
     since: "2025-01-01",
     tier: "Atelier",
     brands: ["Lancôme"],
+    storeId: "st-pol" as StoreId,
     skin: { type: "Mixta", concerns: ["Hidratación"], tone: "Medio" },
     allergies: [],
     loyalty: { name: "Luxe Circle", tier: "Atelier", points: 0, toNext: 10_000 },

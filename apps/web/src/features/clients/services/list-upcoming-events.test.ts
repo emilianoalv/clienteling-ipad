@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Client } from "@/types/client";
+import type { StoreId } from "@/types/store";
 import { listUpcomingEvents } from "./list-upcoming-events";
 
 function client(overrides: Partial<Pick<Client, "birthday" | "since">> & { lastPurchase?: string | null } = {}): Client {
@@ -15,6 +16,7 @@ function client(overrides: Partial<Pick<Client, "birthday" | "since">> & { lastP
     since: overrides.since ?? "2020-06-15",
     tier: "Signature",
     brands: ["Lancôme"],
+    storeId: "st-pol" as StoreId,
     skin: { type: "Normal", concerns: [], tone: "medio" },
     allergies: [],
     loyalty: { name: "Luxe Circle", tier: "Signature", points: 0, toNext: 0 },

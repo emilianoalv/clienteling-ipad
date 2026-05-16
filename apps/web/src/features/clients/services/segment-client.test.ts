@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Client } from "@/types/client";
+import type { StoreId } from "@/types/store";
 import { segmentClient } from "./segment-client";
 
 function makeClient(overrides: Partial<Client["stats"]> & { lastPurchase?: string | null } = {}): Client {
@@ -15,6 +16,7 @@ function makeClient(overrides: Partial<Client["stats"]> & { lastPurchase?: strin
     since: "2024-01-01",
     tier: "Signature",
     brands: ["Lancôme"],
+    storeId: "st-pol" as StoreId,
     skin: { type: "Normal", concerns: [], tone: "medio" },
     allergies: [],
     loyalty: { name: "Luxe Circle", tier: "Signature", points: 0, toNext: 1000 },

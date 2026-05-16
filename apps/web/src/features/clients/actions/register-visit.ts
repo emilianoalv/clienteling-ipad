@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
+import { homeStoreFor, isStoreInScope } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { interactionRepository } from "@/server/repositories/interaction.repository";
@@ -35,7 +36,13 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
   const input = parsed.data;
   const clientId = input.clientId as ClientId;
   const client = await clientRepository.findById(clientId);
-  if (!client) return { ok: false, message: "Cliente no encontrado" };
+  // Out-of-scope and not-found return the same error (no existence leak).
+  if (!client || !isStoreInScope(staff, client.storeId)) {
+    return { ok: false, message: "Cliente no encontrado" };
+  }
+
+  const storeId = homeStoreFor(staff);
+  if (!storeId) return { ok: false, message: "Tu rol no tiene tienda asignada para registrar visitas." };
 
   const at = new Date().toISOString();
 
@@ -81,6 +88,7 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
     await recommendationRepository.create({
       clientId,
       baId: staff.id,
+      storeId,
       at,
       items: input.recommendations.map((s) => s as Sku),
       status: "pending",

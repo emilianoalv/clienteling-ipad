@@ -1,10 +1,13 @@
 import "server-only";
 import type { BrandId } from "@/types/brand";
 import type { Purchase } from "@/types/purchase";
+import type { StoreId } from "@/types/store";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
 
 export interface ListPurchasesArgs {
   brands?: readonly BrandId[];
+  /** Store scope. Pass `storeScopeFor(staff)`. Omit for HQ/Admin. */
+  storeIds?: readonly StoreId[];
   query?: string;
 }
 

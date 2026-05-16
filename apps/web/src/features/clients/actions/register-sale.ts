@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
+import { homeStoreFor, isStoreInScope } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
@@ -11,10 +12,8 @@ import { followupTaskRepository } from "@/server/repositories/followup-task.repo
 import { applyPurchaseToStats } from "../services/update-client-stats";
 import { registerSaleSchema, type RegisterSaleInput } from "../schemas/register-sale.schema";
 import type { ClientId } from "@/types/client";
-import type { StoreId } from "@/types/store";
 import type { Sku } from "@/types/product";
 
-const DEFAULT_STORE = "st-polanco" as StoreId;
 const DEFAULT_BRAND = "Lancôme" as const;
 
 export interface RegisterSaleError {
@@ -27,13 +26,19 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
   const { staff } = await requireSession();
   if (!can(staff.role, "purchases:write")) return { ok: false, message: "Sin permiso" };
 
+  const storeId = homeStoreFor(staff);
+  if (!storeId) return { ok: false, message: "Tu rol no tiene tienda asignada para registrar ventas." };
+
   const parsed = registerSaleSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors };
 
   const input = parsed.data;
   const clientId = input.clientId as ClientId;
   const client = await clientRepository.findById(clientId);
-  if (!client) return { ok: false, message: "Cliente no encontrado" };
+  // Out-of-scope returns the same error as not-found (no existence leak).
+  if (!client || !isStoreInScope(staff, client.storeId)) {
+    return { ok: false, message: "Cliente no encontrado" };
+  }
 
   const total = input.items.reduce((acc, i) => acc + i.qty * i.unitPrice, 0);
   const at = new Date(`${input.purchaseDate}T${input.purchaseTime}:00`).toISOString();
@@ -41,7 +46,7 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
   const purchase = await purchaseRepository.create({
     clientId,
     baId: staff.id,
-    storeId: "storeId" in staff && staff.storeId ? (staff.storeId as StoreId) : DEFAULT_STORE,
+    storeId,
     at,
     items: input.items.map((i) => ({ sku: i.sku as Sku, qty: i.qty, unitPrice: i.unitPrice })),
     total,

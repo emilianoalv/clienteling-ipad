@@ -2,6 +2,7 @@ import type { BrandId } from "./brand";
 import type { Branded } from "./branded";
 import type { ClientId } from "./client";
 import type { StaffId } from "./staff";
+import type { StoreId } from "./store";
 
 export type CommunicationId = Branded<string, "Communication">;
 
@@ -14,6 +15,8 @@ export interface Communication {
   clientId: ClientId;
   baId: StaffId;
   brand: BrandId;
+  /** Store the BA was working from when the message was sent (denormalized from BA at send time). */
+  storeId: StoreId;
   channel: Channel;
   direction: CommunicationDirection;
   at: string;

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Appointment, AppointmentId, AppointmentStatus } from "@/types/appointment";
 import type { ClientId } from "@/types/client";
 import type { StaffId } from "@/types/staff";
+import type { StoreId } from "@/types/store";
 import { aggregateAppointmentStats } from "./appointment-stats";
 
 function make(status: AppointmentStatus): Appointment {
@@ -10,6 +11,7 @@ function make(status: AppointmentStatus): Appointment {
     clientId: "cl-x" as ClientId,
     baId: "ba-x" as StaffId,
     brand: "Lancôme",
+    storeId: "st-pol" as StoreId,
     at: "2026-04-24T10:00:00.000Z",
     durationMin: 30,
     kind: "consultation",

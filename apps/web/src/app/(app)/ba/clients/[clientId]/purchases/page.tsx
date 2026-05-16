@@ -16,7 +16,7 @@ export default async function ClientPurchasesPage({
   const { clientId } = await params;
   const { staff } = await requireSession();
   const [client, purchases, products] = await Promise.all([
-    fetchClient(clientId),
+    fetchClient(clientId, staff),
     purchaseRepository.listByClient(clientId as ClientId),
     productRepository.list({ brands: staff.brands }),
   ]);

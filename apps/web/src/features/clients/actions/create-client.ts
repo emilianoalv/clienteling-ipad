@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
+import { homeStoreFor } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { consentRepository } from "@/server/repositories/consent.repository";
@@ -19,6 +20,11 @@ export interface ActionError {
 export async function createClient(raw: NewClientInput): Promise<ActionError | void> {
   const { staff } = await requireSession();
   if (!can(staff.role, "clients:write")) return { ok: false, message: "Sin permiso para crear clientas" };
+
+  const storeId = homeStoreFor(staff);
+  if (!storeId) {
+    return { ok: false, message: "Tu rol no tiene tienda asignada; no puedes crear clientas directamente." };
+  }
 
   const parsed = newClientSchema.safeParse(raw);
   if (!parsed.success) {
@@ -40,6 +46,7 @@ export async function createClient(raw: NewClientInput): Promise<ActionError | v
     since: now.toISOString().slice(0, 10),
     tier: "Atelier",
     brands: input.brands,
+    storeId,
     skin: { type: input.skin.type, concerns: input.skin.concerns, tone: input.skin.tone },
     allergies: input.allergies,
     loyalty: { name: "Luxe Circle", tier: "Atelier", points: 0, toNext: 10_000 },

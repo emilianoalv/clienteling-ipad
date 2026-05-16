@@ -13,7 +13,7 @@ export default async function ConsultationPage({
   const { clientId } = await params;
   const { staff } = await requireSession();
   const [{ client, products }, t] = await Promise.all([
-    fetchConsultationContext(clientId, staff.brands),
+    fetchConsultationContext(clientId, staff),
     getTranslations(),
   ]);
 

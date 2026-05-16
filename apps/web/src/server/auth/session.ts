@@ -3,7 +3,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { Role, Staff, StaffId } from "@/types/staff";
+import type { User, UserId } from "@/types/user";
 import { routes } from "@/config/routes";
+import { userRepository } from "@/server/repositories/user.repository";
 
 const SESSION_COOKIE = "session";
 const SESSION_TTL_HOURS = 12;
@@ -72,16 +74,51 @@ export async function requireSession(): Promise<{ session: SessionPayload; staff
   return { session, staff };
 }
 
-// Placeholder. F4 swaps this for a real repository call.
+/**
+ * Loads a Staff from the user repository and maps it to the discriminated
+ * Staff union. Returns null if the user doesn't exist or if the role doesn't
+ * match what's in the session (defensive — should never happen unless a user
+ * was deleted mid-session).
+ */
 async function loadStaff(id: string, role: Role): Promise<Staff | null> {
-  return {
-    id: id as StaffId,
-    name: "Demo User",
-    initials: "DU",
-    brands: ["Lancôme"],
-    role,
-    storeId: "st-demo" as never,
-  } as Staff;
+  const user = await userRepository.findById(id as UserId);
+  if (!user || user.role !== role) return null;
+  return userToStaff(user);
+}
+
+/**
+ * Converts a User record into the discriminated Staff union.
+ * Returns null if required role-specific fields are missing in the user record.
+ */
+export function userToStaff(user: User): Staff | null {
+  const base = {
+    id: user.id as unknown as StaffId,
+    name: user.name,
+    initials: initialsOf(user.name),
+    brands: user.brands,
+  };
+  switch (user.role) {
+    case "BA":
+      if (!user.storeId) return null;
+      return { ...base, role: "BA", storeId: user.storeId };
+    case "Manager":
+      if (!user.storeId) return null;
+      return { ...base, role: "Manager", storeId: user.storeId };
+    case "Supervisor":
+      if (!user.storeIds) return null;
+      return { ...base, role: "Supervisor", storeIds: user.storeIds };
+    case "HQ":
+      return { ...base, role: "HQ" };
+    case "Admin":
+      return { ...base, role: "Admin" };
+  }
+}
+
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
+  return (first + last).toUpperCase() || "??";
 }
 
 function safeJson(value: string): unknown {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Client } from "@/types/client";
+import type { StoreId } from "@/types/store";
 import { groupClientsBySegment } from "./group-clients-by-segment";
 
 function client(overrides: {
@@ -20,6 +21,7 @@ function client(overrides: {
     since: "2024-01-01",
     tier: "Atelier",
     brands: ["Lancôme"],
+    storeId: "st-pol" as StoreId,
     skin: { type: "Normal", concerns: [], tone: "medio" },
     allergies: [],
     loyalty: { name: "Luxe Circle", tier: "Atelier", points: 0, toNext: 0 },

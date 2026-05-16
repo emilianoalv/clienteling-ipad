@@ -7,9 +7,9 @@ import { productRepository } from "@/server/repositories/product.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
 import { storeRepository } from "@/server/repositories/store.repository";
 import { requireSession } from "@/server/auth/session";
+import { homeStoreFor } from "@/server/auth/scope";
 import type { PurchaseId } from "@/types/purchase";
 import type { Product, Sku } from "@/types/product";
-import type { StoreId } from "@/types/store";
 
 export default async function PurchaseDetailPage({
   params,
@@ -22,9 +22,11 @@ export default async function PurchaseDetailPage({
   const purchase = await purchaseRepository.findById(purchaseId as PurchaseId);
   if (!purchase || purchase.clientId !== clientId) notFound();
 
-  const storeId = "storeId" in staff ? (staff.storeId as StoreId) : null;
+  const storeId = homeStoreFor(staff);
   const [client, products, store] = await Promise.all([
-    fetchClient(clientId),
+    // fetchClient enforces the scope-404 — if the BA can see the client, they
+    // can see all of that client's purchase history (per the cross-store rule).
+    fetchClient(clientId, staff),
     productRepository.list({ brands: staff.brands }),
     storeId ? storeRepository.findById(storeId) : Promise.resolve(null),
   ]);

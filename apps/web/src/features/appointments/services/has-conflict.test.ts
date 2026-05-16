@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { hasConflict } from "./has-conflict";
 import type { Appointment } from "@/types/appointment";
+import type { StoreId } from "@/types/store";
 
 const BA_A = "ba-1" as Appointment["baId"];
 const BA_B = "ba-2" as Appointment["baId"];
@@ -11,6 +12,7 @@ function appt(over: Partial<Appointment>): Appointment {
     clientId: "cl-1" as Appointment["clientId"],
     baId: BA_A,
     brand: "Lancôme",
+    storeId: "st-pol" as StoreId,
     at: "2026-05-12T10:00:00.000Z",
     durationMin: 45,
     kind: "consultation",

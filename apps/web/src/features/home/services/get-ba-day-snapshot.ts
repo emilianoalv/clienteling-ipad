@@ -8,6 +8,7 @@ import { appointmentRepository } from "@/server/repositories/appointment.reposit
 import { clientRepository } from "@/server/repositories/client.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { listUpcomingEvents } from "@/features/clients/services/list-upcoming-events";
+import { storeScopeFor } from "@/server/auth/scope";
 
 export interface AgendaItem {
   appointment: Appointment;
@@ -38,21 +39,24 @@ export async function getBaDaySnapshot(staff: Staff, now = new Date()): Promise<
   const startToday = startOfDay(now);
   const startTomorrow = addDays(startToday, 1);
   const startDayAfter = addDays(startToday, 2);
+  const storeIds = storeScopeFor(staff);
 
   const [todayAppts, tomorrowAppts, clients, pendingTasks] = await Promise.all([
     appointmentRepository.list({
       baId: staff.id,
       brands: staff.brands,
+      storeIds,
       from: startToday,
       to: startTomorrow,
     }),
     appointmentRepository.list({
       baId: staff.id,
       brands: staff.brands,
+      storeIds,
       from: startTomorrow,
       to: startDayAfter,
     }),
-    clientRepository.list({ brands: staff.brands }),
+    clientRepository.list({ brands: staff.brands, storeIds }),
     followupTaskRepository.listByBA(staff.id, { status: "pending" }),
   ]);
 

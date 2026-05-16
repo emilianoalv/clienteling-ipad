@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
+import { homeStoreFor } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { recommendationRepository } from "@/server/repositories/recommendation.repository";
 import {
@@ -25,6 +26,9 @@ export async function saveRecommendation(
   if (!can(staff.role, "recommendations:write"))
     return { ok: false, message: "Sin permiso" };
 
+  const storeId = homeStoreFor(staff);
+  if (!storeId) return { ok: false, message: "Tu rol no tiene tienda asignada para guardar recomendaciones." };
+
   const parsed = saveRecommendationSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors };
 
@@ -32,6 +36,7 @@ export async function saveRecommendation(
   const created = await recommendationRepository.create({
     clientId: input.clientId as ClientId,
     baId: staff.id,
+    storeId,
     at: new Date().toISOString(),
     items: input.items as Sku[],
     status: "pending",

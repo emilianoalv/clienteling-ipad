@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
+import { isStoreInScope } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import type { AppointmentId } from "@/types/appointment";
@@ -20,6 +21,11 @@ export async function transitionAppointment(
 ): Promise<{ ok: false; message: string } | { ok: true }> {
   const { staff } = await requireSession();
   if (!can(staff.role, "appointments:write")) return { ok: false, message: "Sin permiso" };
+
+  const current = await appointmentRepository.findById(appointmentId as AppointmentId);
+  if (!current || !isStoreInScope(staff, current.storeId)) {
+    return { ok: false, message: "Cita no encontrada" };
+  }
 
   await appointmentRepository.patch(appointmentId as AppointmentId, {
     status: STATUS_BY_TRANSITION[transition],

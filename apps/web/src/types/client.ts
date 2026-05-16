@@ -1,6 +1,7 @@
 import type { BrandId } from "./brand";
 import type { Branded } from "./branded";
 import type { Locale } from "./locale";
+import type { StoreId } from "./store";
 
 export type ClientId = Branded<string, "Client">;
 
@@ -44,6 +45,8 @@ export interface Client {
   since: string;
   tier: ClientTier;
   brands: readonly BrandId[];
+  /** Home store — the BA / Manager who "owns" this client lives here. One client = one home store. */
+  storeId: StoreId;
   skin: SkinProfile;
   allergies: readonly string[];
   loyalty: LoyaltyState;

@@ -2,6 +2,7 @@ import "server-only";
 import type { BrandId } from "@/types/brand";
 import type { ClientId } from "@/types/client";
 import type { Purchase, PurchaseId } from "@/types/purchase";
+import type { StoreId } from "@/types/store";
 import { generateId } from "@/lib/id/generate-id";
 import { SEED_PURCHASES } from "./seed";
 import { persistent } from "./_persist";
@@ -9,6 +10,11 @@ import { persistent } from "./_persist";
 export interface PurchaseListFilter {
   /** Brand scope (intersection). Skips entries whose `brand` is set and not in the scope. */
   brands?: readonly BrandId[];
+  /**
+   * Store scope of the requesting staff. Use `visibleStoreIds(staff, allStoreIds)` to compute.
+   * Omit to disable scoping (Admin/HQ).
+   */
+  storeIds?: readonly StoreId[];
   /** Free-text matched against ticketRef / id. Client-name matching happens in the feature layer. */
   query?: string;
 }
@@ -20,14 +26,16 @@ export interface PurchaseRepository {
   create(input: Omit<Purchase, "id">): Promise<Purchase>;
 }
 
-const PURCHASES: Purchase[] = persistent("__clienteling.purchases", () => [...SEED_PURCHASES]);
+const PURCHASES: Purchase[] = persistent("__clienteling.purchases.v2", () => [...SEED_PURCHASES]);
 
 export const purchaseRepository: PurchaseRepository = {
   async list(filter = {}) {
-    const scope = filter.brands;
+    const brandScope = filter.brands;
+    const storeScope = filter.storeIds;
     const query = filter.query?.trim().toLowerCase();
     return PURCHASES.filter((p) => {
-      if (scope && scope.length && p.brand && !scope.includes(p.brand)) return false;
+      if (brandScope && brandScope.length && p.brand && !brandScope.includes(p.brand)) return false;
+      if (storeScope && storeScope.length && !storeScope.includes(p.storeId)) return false;
       if (!query) return true;
       return `${p.id} ${p.ticketRef ?? ""}`.toLowerCase().includes(query);
     }).sort((a, b) => b.at.localeCompare(a.at));

@@ -5,11 +5,11 @@ import { listClients } from "@/features/clients";
 import { TaskInbox } from "@/features/clients/components/task-inbox";
 import { listCommunications } from "@/features/communications/server/list-communications";
 import { requireSession } from "@/server/auth/session";
+import { homeStoreFor, storeScopeFor } from "@/server/auth/scope";
 import { storeRepository } from "@/server/repositories/store.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { cn } from "@/lib/cn";
 import type { ClientId } from "@/types/client";
-import type { StoreId } from "@/types/store";
 
 type View = "tasks" | "messages";
 type InnerTab = "composer" | "log";
@@ -23,8 +23,10 @@ export default async function FollowupPage({
   const params = await searchParams;
   const view: View = params.view === "messages" ? "messages" : "tasks";
 
+  const scope = storeScopeFor(staff);
+
   // Always-loaded: clients (used by both views for name lookup).
-  const clients = await listClients({ brands: staff.brands });
+  const clients = await listClients({ brands: staff.brands, storeIds: scope });
   if (clients.length === 0) notFound();
 
   const clientLookup = Object.fromEntries(clients.map((c) => [c.id, c.name])) as Record<
@@ -54,10 +56,11 @@ export default async function FollowupPage({
     );
   }
 
+  const homeStore = homeStoreFor(staff);
   const [templates, communications, store] = await Promise.all([
     listTemplates({ brands: staff.brands }),
-    listCommunications({ brands: staff.brands }),
-    "storeId" in staff ? storeRepository.findById(staff.storeId as StoreId) : Promise.resolve(null),
+    listCommunications({ brands: staff.brands, storeIds: scope }),
+    homeStore ? storeRepository.findById(homeStore) : Promise.resolve(null),
   ]);
 
   return (

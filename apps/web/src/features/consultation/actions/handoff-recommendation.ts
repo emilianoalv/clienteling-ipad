@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSession } from "@/server/auth/session";
+import { isStoreInScope } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { recommendationRepository } from "@/server/repositories/recommendation.repository";
 import type { RecommendationId } from "@/types/recommendation";
@@ -23,6 +24,11 @@ export async function handoffRecommendation(raw: z.infer<typeof schema>): Promis
 
   const parsed = schema.safeParse(raw);
   if (!parsed.success) return { ok: false, message: "Datos inválidos" };
+
+  const current = await recommendationRepository.findById(parsed.data.recommendationId as RecommendationId);
+  if (!current || !isStoreInScope(staff, current.storeId)) {
+    return { ok: false, message: "Recomendación no encontrada" };
+  }
 
   const updated = await recommendationRepository.patch(parsed.data.recommendationId as RecommendationId, {
     status: "converted",

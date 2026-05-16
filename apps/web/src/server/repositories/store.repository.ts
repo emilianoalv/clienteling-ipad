@@ -3,25 +3,25 @@ import type { Store, StoreId } from "@/types/store";
 
 const SEED: Store[] = [
   {
-    id: "st-polanco" as StoreId,
+    id: "st-pol" as StoreId,
     name: "Liverpool Polanco",
     chain: "Liverpool",
     city: "CDMX",
     address: "Mariano Escobedo 425",
   },
   {
-    id: "st-santa-fe" as StoreId,
-    name: "Liverpool Santa Fe",
+    id: "st-per" as StoreId,
+    name: "Liverpool Perisur",
     chain: "Liverpool",
     city: "CDMX",
-    address: "Vasco de Quiroga 3800",
+    address: "Periférico Sur 4690",
   },
   {
-    id: "st-palacio-polanco" as StoreId,
-    name: "Palacio de Hierro Polanco",
+    id: "st-stf" as StoreId,
+    name: "Palacio Santa Fe",
     chain: "Palacio",
     city: "CDMX",
-    address: "Moliere 222",
+    address: "Vasco de Quiroga 3800",
   },
 ];
 

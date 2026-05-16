@@ -9,6 +9,7 @@ import {
 } from "@/features/appointments";
 import { listClients } from "@/features/clients";
 import { requireSession } from "@/server/auth/session";
+import { storeScopeFor } from "@/server/auth/scope";
 
 type Tab = "calendar" | "management";
 
@@ -23,9 +24,10 @@ export default async function AppointmentsPage({
   const tab: Tab = params.tab === "management" ? "management" : "calendar";
   const savedId = params.saved;
 
+  const scope = storeScopeFor(staff);
   const [appointments, clients] = await Promise.all([
-    listAppointments({ brands: staff.brands }),
-    listClients({ brands: staff.brands }),
+    listAppointments({ brands: staff.brands, storeIds: scope }),
+    listClients({ brands: staff.brands, storeIds: scope }),
   ]);
   const clientLookup = Object.fromEntries(clients.map((c) => [c.id, c.name]));
   const savedAppointment = savedId ? appointments.find((a) => a.id === savedId) : undefined;

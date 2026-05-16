@@ -8,6 +8,7 @@ import type {
 } from "@/types/communication";
 import type { ClientId } from "@/types/client";
 import type { StaffId } from "@/types/staff";
+import type { StoreId } from "@/types/store";
 import { aggregateCommStats } from "./comm-stats";
 
 function comm(
@@ -21,6 +22,7 @@ function comm(
     clientId: "cl-x" as ClientId,
     baId: "ba-x" as StaffId,
     brand: "Lancôme",
+    storeId: "st-pol" as StoreId,
     channel,
     direction,
     at: "2026-05-01T00:00:00.000Z",

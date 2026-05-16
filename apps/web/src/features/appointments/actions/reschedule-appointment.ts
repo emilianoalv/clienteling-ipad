@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
+import { isStoreInScope } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import { hasConflict } from "../services/has-conflict";
@@ -25,7 +26,10 @@ export async function rescheduleAppointment(
 
   const appointmentId = parsed.data.appointmentId as AppointmentId;
   const current = await appointmentRepository.findById(appointmentId);
-  if (!current) return { ok: false, message: "Cita no encontrada" };
+  // Out-of-scope returns the same error as not-found (no existence leak).
+  if (!current || !isStoreInScope(staff, current.storeId)) {
+    return { ok: false, message: "Cita no encontrada" };
+  }
 
   const newAt = new Date(`${parsed.data.date}T${parsed.data.time}:00`).toISOString();
 

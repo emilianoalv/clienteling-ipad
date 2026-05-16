@@ -13,7 +13,7 @@ export default async function BasketPage({
   const { clientId, recId } = await params;
   const { staff } = await requireSession();
   const [{ client, recommendation, productLookup }, t] = await Promise.all([
-    fetchBasketContext(clientId, recId),
+    fetchBasketContext(clientId, recId, staff),
     getTranslations(),
   ]);
 

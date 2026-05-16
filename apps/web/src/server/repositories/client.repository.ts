@@ -1,6 +1,7 @@
 import "server-only";
 import type { Client, ClientId, ClientStats } from "@/types/client";
 import type { BrandId } from "@/types/brand";
+import type { StoreId } from "@/types/store";
 import { generateId } from "@/lib/id/generate-id";
 import { SEED_CLIENTS } from "./seed";
 import { persistent } from "./_persist";
@@ -14,6 +15,12 @@ export interface ClientListFilter {
    * Omit to disable scoping (Admin/HQ).
    */
   brands?: readonly BrandId[];
+  /**
+   * Store scope of the requesting staff. A client is visible if its `storeId`
+   * is in this set. Use `visibleStoreIds(staff, allStoreIds)` to compute.
+   * Omit to disable scoping (Admin/HQ).
+   */
+  storeIds?: readonly StoreId[];
 }
 
 export interface ClientRepository {
@@ -24,7 +31,7 @@ export interface ClientRepository {
 }
 
 const CLIENTS = persistent(
-  "__clienteling.clients",
+  "__clienteling.clients.v2",
   () => new Map<ClientId, Client>(SEED_CLIENTS.map((c) => [c.id, c])),
 );
 
@@ -36,10 +43,12 @@ export const clientRepository: ClientRepository = {
   async list(filter = {}) {
     const all = Array.from(CLIENTS.values());
     const query = filter.query?.trim().toLowerCase();
-    const scope = filter.brands;
+    const brandScope = filter.brands;
+    const storeScope = filter.storeIds;
     return all.filter((c) => {
       if (filter.brand && !c.brands.includes(filter.brand)) return false;
-      if (scope && scope.length && !c.brands.some((b) => scope.includes(b))) return false;
+      if (brandScope && brandScope.length && !c.brands.some((b) => brandScope.includes(b))) return false;
+      if (storeScope && storeScope.length && !storeScope.includes(c.storeId)) return false;
       if (!query) return true;
       const haystack = `${c.name} ${c.email} ${c.phone}`.toLowerCase();
       return haystack.includes(query);

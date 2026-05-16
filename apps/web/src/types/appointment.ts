@@ -2,6 +2,7 @@ import type { BrandId } from "./brand";
 import type { Branded } from "./branded";
 import type { ClientId } from "./client";
 import type { StaffId } from "./staff";
+import type { StoreId } from "./store";
 
 export type AppointmentId = Branded<string, "Appointment">;
 
@@ -30,6 +31,8 @@ export interface Appointment {
   clientId: ClientId;
   baId: StaffId;
   brand: BrandId;
+  /** Store where the appointment takes place (denormalized from the BA's home store at creation time). */
+  storeId: StoreId;
   /** ISO 8601 date-time. */
   at: string;
   durationMin: number;
