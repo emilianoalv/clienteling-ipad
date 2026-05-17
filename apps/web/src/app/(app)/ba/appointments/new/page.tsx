@@ -5,16 +5,17 @@ import { SectionHeader } from "@/components/patterns";
 import { NewAppointmentForm, listAppointments } from "@/features/appointments";
 import { listClients } from "@/features/clients";
 import { requireSession } from "@/server/auth/session";
-import { storeScopeFor } from "@/server/auth/scope";
+import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 import type { StaffId } from "@/types/staff";
 
 export default async function NewAppointmentPage() {
   const t = await getTranslations();
   const { staff } = await requireSession();
-  const scope = storeScopeFor(staff);
+  const storeIds = storeScopeFor(staff);
+  const brands = brandScopeFor(staff);
   const [clients, appointments] = await Promise.all([
-    listClients({ brands: staff.brands, storeIds: scope }),
-    listAppointments({ brands: staff.brands, storeIds: scope }),
+    listClients({ brands, storeIds }),
+    listAppointments({ brands, storeIds }),
   ]);
 
   const baOptions: ReadonlyArray<{ id: StaffId; label: string }> = [

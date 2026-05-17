@@ -7,7 +7,7 @@ import { productRepository } from "@/server/repositories/product.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
 import { storeRepository } from "@/server/repositories/store.repository";
 import { requireSession } from "@/server/auth/session";
-import { homeStoreFor } from "@/server/auth/scope";
+import { brandScopeFor, homeStoreFor } from "@/server/auth/scope";
 import type { PurchaseId } from "@/types/purchase";
 import type { Product, Sku } from "@/types/product";
 
@@ -27,7 +27,7 @@ export default async function PurchaseDetailPage({
     // fetchClient enforces the scope-404 — if the BA can see the client, they
     // can see all of that client's purchase history (per the cross-store rule).
     fetchClient(clientId, staff),
-    productRepository.list({ brands: staff.brands }),
+    productRepository.list({ brands: brandScopeFor(staff) }),
     storeId ? storeRepository.findById(storeId) : Promise.resolve(null),
   ]);
 

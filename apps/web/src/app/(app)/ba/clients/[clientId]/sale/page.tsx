@@ -4,7 +4,7 @@ import { fetchClient, RegisterSaleForm } from "@/features/clients";
 import { productRepository } from "@/server/repositories/product.repository";
 import { storeRepository } from "@/server/repositories/store.repository";
 import { requireSession } from "@/server/auth/session";
-import { homeStoreFor } from "@/server/auth/scope";
+import { brandScopeFor, homeStoreFor } from "@/server/auth/scope";
 
 export default async function RegisterSalePage({
   params,
@@ -16,7 +16,7 @@ export default async function RegisterSalePage({
   const storeId = homeStoreFor(staff);
   const [client, products, store] = await Promise.all([
     fetchClient(clientId, staff),
-    productRepository.list({ brands: staff.brands }),
+    productRepository.list({ brands: brandScopeFor(staff) }),
     storeId ? storeRepository.findById(storeId) : Promise.resolve(null),
   ]);
 

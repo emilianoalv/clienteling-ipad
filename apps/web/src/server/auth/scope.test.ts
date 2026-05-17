@@ -1,232 +1,313 @@
 import { describe, expect, it } from "vitest";
-import { homeStoreFor, isStoreInScope, storeScopeFor } from "./scope";
+import {
+  brandScopeFor,
+  homeBrandFor,
+  homeStoreFor,
+  isBrandInScope,
+  isStoreInScope,
+  storeScopeFor,
+} from "./scope";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import { recommendationRepository } from "@/server/repositories/recommendation.repository";
 import { communicationRepository } from "@/server/repositories/communication.repository";
-import type { BrandId } from "@/types/brand";
 import type { Staff, StaffId } from "@/types/staff";
 import type { StoreId } from "@/types/store";
 
 /**
- * End-to-end tests of the multi-store scope.
+ * End-to-end tests of multi-tienda + multi-marca scope (RF-52..RF-54, RNF-13/14).
  *
- * Exercises the four roles from RF-52..RF-54 + the Admin global-access case
- * against the real seed data in `server/repositories/seed.ts`. Covers:
+ * Roles per BRD:
+ *   - BA: single store + single brand (Lancôme OR YSL, not both)
+ *   - Gerente de Tienda: single store, all brands of that store
+ *   - Supervisor de Zona: multi-store, all brands of zone
+ *   - Administrador Central: nacional, all brands
  *
- *   1. `storeScopeFor` / `isStoreInScope` / `homeStoreFor` (pure helpers)
- *   2. List queries respect store scope (Client/Purchase/Appointment/Rec/Comm)
- *   3. Direct ID access (the predicate used inside `fetchClient`/`fetchAppointment`)
- *      blocks out-of-scope entities silently — same response as a real 404.
+ * Seed (see seed.ts and user.repository.ts):
+ *   Polanco  (st-pol): 5 clientas — 2 multi-brand · 2 LCM-only · 1 YSL-only
+ *   Perisur  (st-per): 5 clientas — 2 multi-brand · 1 LCM-only · 2 YSL-only
+ *   Santa Fe (st-stf): 5 clientas — 2 multi-brand · 2 LCM-only · 1 YSL-only
  *
- * Seed distribution (see seed.ts header):
- *   - Polanco  (st-pol): 5 clientas
- *   - Perisur  (st-per): 5 clientas
- *   - Santa Fe (st-stf): 5 clientas
+ * Supervisor "Centro" covers Polanco + Santa Fe (Perisur out of zone).
  */
 
 const ST_POL = "st-pol" as StoreId;
 const ST_PER = "st-per" as StoreId;
 const ST_STF = "st-stf" as StoreId;
-const BOTH_BRANDS: readonly BrandId[] = ["Lancôme", "YSL"];
 
 function baseStaff(overrides: { id: string; name: string }) {
   return {
     id: overrides.id as StaffId,
     name: overrides.name,
     initials: "DU",
-    brands: BOTH_BRANDS,
   } as const;
 }
 
-const baPolanco: Staff = { ...baseStaff({ id: "us-ba-pol-1", name: "Valentina Ríos" }), role: "BA", storeId: ST_POL };
-const baPerisur: Staff = { ...baseStaff({ id: "us-ba-per-1", name: "Daniela Castro" }), role: "BA", storeId: ST_PER };
-const baSantaFe: Staff = { ...baseStaff({ id: "us-ba-stf-1", name: "Camila Santos" }), role: "BA", storeId: ST_STF };
-const mgrPolanco: Staff = { ...baseStaff({ id: "us-mgr-pol", name: "Paulina Treviño" }), role: "Manager", storeId: ST_POL };
-const supervisorNorte: Staff = {
-  ...baseStaff({ id: "us-sup-norte", name: "Diego Salvatierra" }),
+// Polanco BAs (1 LCM, 1 YSL)
+const baPolLcm: Staff = { ...baseStaff({ id: "us-ba-pol-lcm-1", name: "Valentina Ríos" }), role: "BA", storeId: ST_POL, brand: "Lancôme" };
+const baPolYsl: Staff = { ...baseStaff({ id: "us-ba-pol-ysl-1", name: "Daniela Castro" }), role: "BA", storeId: ST_POL, brand: "YSL" };
+// Perisur BAs
+const baPerLcm: Staff = { ...baseStaff({ id: "us-ba-per-lcm-1", name: "Regina Mendoza" }), role: "BA", storeId: ST_PER, brand: "Lancôme" };
+// Santa Fe BAs
+const baStfYsl: Staff = { ...baseStaff({ id: "us-ba-stf-ysl-1", name: "Paulina Treviño" }), role: "BA", storeId: ST_STF, brand: "YSL" };
+// Gerente Polanco
+const gtePol: Staff = { ...baseStaff({ id: "us-gte-pol", name: "Camila Santos" }), role: "Gerente", storeId: ST_POL };
+// Supervisor Zona Centro (Pol + StF, NOT Per)
+const supCentro: Staff = {
+  ...baseStaff({ id: "us-sup-centro", name: "Diego Salvatierra" }),
   role: "Supervisor",
-  storeIds: [ST_POL, ST_PER],
+  storeIds: [ST_POL, ST_STF],
 };
+// Admin Central
 const admin: Staff = { ...baseStaff({ id: "us-admin", name: "Ana Lucía Ferrer" }), role: "Admin" };
-const hq: Staff = { ...baseStaff({ id: "us-hq", name: "HQ User" }), role: "HQ" };
 
 describe("storeScopeFor (helper)", () => {
-  it("BA → [own store]", () => {
-    expect(storeScopeFor(baPolanco)).toEqual([ST_POL]);
-  });
-  it("Manager → [own store]", () => {
-    expect(storeScopeFor(mgrPolanco)).toEqual([ST_POL]);
+  it("BA / Gerente → [own store]", () => {
+    expect(storeScopeFor(baPolLcm)).toEqual([ST_POL]);
+    expect(storeScopeFor(gtePol)).toEqual([ST_POL]);
   });
   it("Supervisor → zone storeIds", () => {
-    expect(storeScopeFor(supervisorNorte)).toEqual([ST_POL, ST_PER]);
-  });
-  it("HQ → undefined (no scope = sees everything)", () => {
-    expect(storeScopeFor(hq)).toBeUndefined();
+    expect(storeScopeFor(supCentro)).toEqual([ST_POL, ST_STF]);
   });
   it("Admin → undefined (no scope = sees everything)", () => {
     expect(storeScopeFor(admin)).toBeUndefined();
   });
 });
 
+describe("brandScopeFor (helper)", () => {
+  it("BA → [single assigned brand]", () => {
+    expect(brandScopeFor(baPolLcm)).toEqual(["Lancôme"]);
+    expect(brandScopeFor(baPolYsl)).toEqual(["YSL"]);
+  });
+  it("Gerente / Supervisor / Admin → undefined (no brand filter)", () => {
+    expect(brandScopeFor(gtePol)).toBeUndefined();
+    expect(brandScopeFor(supCentro)).toBeUndefined();
+    expect(brandScopeFor(admin)).toBeUndefined();
+  });
+});
+
 describe("isStoreInScope (predicate used by fetch-* guards)", () => {
-  it("BA in scope when entity is in their store", () => {
-    expect(isStoreInScope(baPolanco, ST_POL)).toBe(true);
+  it("BA in scope for own store, out of scope for others", () => {
+    expect(isStoreInScope(baPolLcm, ST_POL)).toBe(true);
+    expect(isStoreInScope(baPolLcm, ST_PER)).toBe(false);
+    expect(isStoreInScope(baPolLcm, ST_STF)).toBe(false);
   });
-  it("BA out of scope for another store (silent 404 trigger)", () => {
-    expect(isStoreInScope(baPolanco, ST_PER)).toBe(false);
-    expect(isStoreInScope(baPolanco, ST_STF)).toBe(false);
+  it("Supervisor zone Centro covers Pol + StF, NOT Per", () => {
+    expect(isStoreInScope(supCentro, ST_POL)).toBe(true);
+    expect(isStoreInScope(supCentro, ST_STF)).toBe(true);
+    expect(isStoreInScope(supCentro, ST_PER)).toBe(false);
   });
-  it("Manager out of scope for any other store", () => {
-    expect(isStoreInScope(mgrPolanco, ST_PER)).toBe(false);
-    expect(isStoreInScope(mgrPolanco, ST_STF)).toBe(false);
-  });
-  it("Supervisor in scope for all stores of their zone", () => {
-    expect(isStoreInScope(supervisorNorte, ST_POL)).toBe(true);
-    expect(isStoreInScope(supervisorNorte, ST_PER)).toBe(true);
-  });
-  it("Supervisor out of scope for stores outside their zone", () => {
-    expect(isStoreInScope(supervisorNorte, ST_STF)).toBe(false);
-  });
-  it("Admin / HQ in scope for any store", () => {
+  it("Admin in scope for any store", () => {
     expect(isStoreInScope(admin, ST_POL)).toBe(true);
+    expect(isStoreInScope(admin, ST_PER)).toBe(true);
     expect(isStoreInScope(admin, ST_STF)).toBe(true);
-    expect(isStoreInScope(hq, ST_STF)).toBe(true);
   });
 });
 
-describe("homeStoreFor (helper for create-* actions)", () => {
-  it("BA / Manager → assigned store", () => {
-    expect(homeStoreFor(baPolanco)).toBe(ST_POL);
-    expect(homeStoreFor(mgrPolanco)).toBe(ST_POL);
+describe("isBrandInScope (predicate)", () => {
+  it("BA Lancôme in scope for Lancôme, out for YSL", () => {
+    expect(isBrandInScope(baPolLcm, "Lancôme")).toBe(true);
+    expect(isBrandInScope(baPolLcm, "YSL")).toBe(false);
   });
-  it("Supervisor → first store of zone", () => {
-    expect(homeStoreFor(supervisorNorte)).toBe(ST_POL);
+  it("Gerente / Supervisor / Admin in scope for any brand", () => {
+    expect(isBrandInScope(gtePol, "Lancôme")).toBe(true);
+    expect(isBrandInScope(gtePol, "YSL")).toBe(true);
+    expect(isBrandInScope(supCentro, "Lancôme")).toBe(true);
+    expect(isBrandInScope(admin, "YSL")).toBe(true);
   });
-  it("HQ / Admin → null (no implicit home store)", () => {
-    expect(homeStoreFor(hq)).toBeNull();
+});
+
+describe("homeStoreFor / homeBrandFor (stamp helpers for create-* actions)", () => {
+  it("BA → own store + own brand", () => {
+    expect(homeStoreFor(baPolLcm)).toBe(ST_POL);
+    expect(homeBrandFor(baPolLcm)).toBe("Lancôme");
+    expect(homeBrandFor(baPolYsl)).toBe("YSL");
+  });
+  it("Gerente → own store, no implicit brand", () => {
+    expect(homeStoreFor(gtePol)).toBe(ST_POL);
+    expect(homeBrandFor(gtePol)).toBeNull();
+  });
+  it("Supervisor → first store of zone, no implicit brand", () => {
+    expect(homeStoreFor(supCentro)).toBe(ST_POL);
+    expect(homeBrandFor(supCentro)).toBeNull();
+  });
+  it("Admin → no implicit store, no implicit brand", () => {
     expect(homeStoreFor(admin)).toBeNull();
+    expect(homeBrandFor(admin)).toBeNull();
   });
 });
 
-describe("Client list isolation (RF-52)", () => {
-  it("BA in Polanco only sees Polanco's 5 clientas", async () => {
+// ───────────────────────────────────────────────────────────────────────────
+// Integration tests against the seed
+// ───────────────────────────────────────────────────────────────────────────
+
+describe("BA isolation by tienda + marca (RF-52)", () => {
+  it("BA Lancôme Polanco sees only Polanco clientas that include Lancôme", async () => {
     const clients = await clientRepository.list({
-      brands: baPolanco.brands,
-      storeIds: storeScopeFor(baPolanco),
+      brands: brandScopeFor(baPolLcm),
+      storeIds: storeScopeFor(baPolLcm),
     });
-    expect(clients).toHaveLength(5);
     expect(clients.every((c) => c.storeId === ST_POL)).toBe(true);
+    expect(clients.every((c) => c.brands.includes("Lancôme"))).toBe(true);
+    // Adriana (YSL-only Polanco) must NOT appear for the LCM BA.
+    expect(clients.some((c) => c.id === ("cl-adriana" as typeof clients[0]["id"]))).toBe(false);
   });
 
-  it("BA in Perisur sees only Perisur clientas — no leak from Polanco/SantaFe", async () => {
+  it("BA YSL Polanco sees only Polanco clientas that include YSL", async () => {
     const clients = await clientRepository.list({
-      brands: baPerisur.brands,
-      storeIds: storeScopeFor(baPerisur),
+      brands: brandScopeFor(baPolYsl),
+      storeIds: storeScopeFor(baPolYsl),
     });
-    expect(clients).toHaveLength(5);
+    expect(clients.every((c) => c.storeId === ST_POL)).toBe(true);
+    expect(clients.every((c) => c.brands.includes("YSL"))).toBe(true);
+    // Ofelia (LCM-only Polanco) must NOT appear for the YSL BA.
+    expect(clients.some((c) => c.id === ("cl-ofelia" as typeof clients[0]["id"]))).toBe(false);
+  });
+
+  it("Clienta multi-brand de Polanco (cl-constanza) es visible para AMBOS BAs (Opción A)", async () => {
+    const lcmList = await clientRepository.list({
+      brands: brandScopeFor(baPolLcm),
+      storeIds: storeScopeFor(baPolLcm),
+    });
+    const yslList = await clientRepository.list({
+      brands: brandScopeFor(baPolYsl),
+      storeIds: storeScopeFor(baPolYsl),
+    });
+    const ids = (xs: typeof lcmList) => xs.map((c) => c.id as string);
+    expect(ids(lcmList)).toContain("cl-constanza");
+    expect(ids(yslList)).toContain("cl-constanza");
+  });
+
+  it("BA Perisur Lancôme NO ve clientas de Polanco ni Santa Fe", async () => {
+    const clients = await clientRepository.list({
+      brands: brandScopeFor(baPerLcm),
+      storeIds: storeScopeFor(baPerLcm),
+    });
     expect(clients.every((c) => c.storeId === ST_PER)).toBe(true);
-    expect(clients.some((c) => c.id === ("cl-valentina" as typeof clients[0]["id"]))).toBe(false);
+    expect(clients.every((c) => c.brands.includes("Lancôme"))).toBe(true);
   });
+});
 
-  it("Manager sees the full store (RF-53)", async () => {
+describe("Gerente — ve toda su tienda (RF-53)", () => {
+  it("Gerente Polanco ve las 5 clientas de Polanco (ambas marcas)", async () => {
     const clients = await clientRepository.list({
-      brands: mgrPolanco.brands,
-      storeIds: storeScopeFor(mgrPolanco),
+      brands: brandScopeFor(gtePol),
+      storeIds: storeScopeFor(gtePol),
     });
     expect(clients).toHaveLength(5);
     expect(clients.every((c) => c.storeId === ST_POL)).toBe(true);
+    // Includes both LCM-only and YSL-only clientas:
+    const ids = new Set(clients.map((c) => c.id as string));
+    expect(ids.has("cl-ofelia")).toBe(true);   // LCM-only
+    expect(ids.has("cl-adriana")).toBe(true);  // YSL-only
+    expect(ids.has("cl-constanza")).toBe(true); // multi-brand
   });
+});
 
-  it("Supervisor sees only the stores of their zone (RF-54)", async () => {
+describe("Supervisor — ve su zona (RF-54)", () => {
+  it("Supervisor Centro ve Polanco + Santa Fe (10 clientas), NO Perisur", async () => {
     const clients = await clientRepository.list({
-      brands: supervisorNorte.brands,
-      storeIds: storeScopeFor(supervisorNorte),
+      brands: brandScopeFor(supCentro),
+      storeIds: storeScopeFor(supCentro),
     });
     expect(clients).toHaveLength(10);
-    expect(clients.every((c) => c.storeId === ST_POL || c.storeId === ST_PER)).toBe(true);
-    expect(clients.some((c) => c.storeId === ST_STF)).toBe(false);
+    expect(clients.every((c) => c.storeId === ST_POL || c.storeId === ST_STF)).toBe(true);
+    expect(clients.some((c) => c.storeId === ST_PER)).toBe(false);
   });
+});
 
-  it("Admin sees all 15 across the 3 stores", async () => {
+describe("Administrador Central — ve todo (RF-55)", () => {
+  it("Admin ve las 15 clientas (todas las tiendas, todas las marcas)", async () => {
     const clients = await clientRepository.list({
-      brands: admin.brands,
+      brands: brandScopeFor(admin),
       storeIds: storeScopeFor(admin),
     });
     expect(clients).toHaveLength(15);
     const storeIds = new Set(clients.map((c) => c.storeId));
-    expect(storeIds.has(ST_POL)).toBe(true);
-    expect(storeIds.has(ST_PER)).toBe(true);
-    expect(storeIds.has(ST_STF)).toBe(true);
+    expect(storeIds).toEqual(new Set([ST_POL, ST_PER, ST_STF]));
   });
 });
 
-describe("Purchase list isolation (feeds RF-40 / RF-44 / RF-45 store-scoped reports)", () => {
-  it("BA in Polanco only sees Polanco purchases", async () => {
-    const purchases = await purchaseRepository.list({ storeIds: storeScopeFor(baPolanco) });
-    expect(purchases.every((p) => p.storeId === ST_POL)).toBe(true);
-    expect(purchases.length).toBe(4);
+describe("Purchase / Appointment / Recommendation / Communication respetan el scope", () => {
+  it("BA Lancôme Polanco solo ve compras Lancôme en Polanco", async () => {
+    const purchases = await purchaseRepository.list({
+      brands: brandScopeFor(baPolLcm),
+      storeIds: storeScopeFor(baPolLcm),
+    });
+    expect(purchases.every((p) => p.storeId === ST_POL && p.brand === "Lancôme")).toBe(true);
   });
-  it("Supervisor sees Polanco + Perisur purchases", async () => {
-    const purchases = await purchaseRepository.list({ storeIds: storeScopeFor(supervisorNorte) });
-    expect(purchases.length).toBe(8);
-    expect(purchases.every((p) => p.storeId === ST_POL || p.storeId === ST_PER)).toBe(true);
-  });
-  it("Admin sees all purchases (12)", async () => {
-    const purchases = await purchaseRepository.list({ storeIds: storeScopeFor(admin) });
-    expect(purchases.length).toBe(12);
-  });
-});
 
-describe("Appointment / Recommendation / Communication list isolation", () => {
-  it("Appointments respect store scope for a BA", async () => {
-    const appts = await appointmentRepository.list({ storeIds: storeScopeFor(baSantaFe) });
+  it("BA YSL Polanco solo ve compras YSL en Polanco", async () => {
+    const purchases = await purchaseRepository.list({
+      brands: brandScopeFor(baPolYsl),
+      storeIds: storeScopeFor(baPolYsl),
+    });
+    expect(purchases.every((p) => p.storeId === ST_POL && p.brand === "YSL")).toBe(true);
+  });
+
+  it("BA Santa Fe YSL solo ve citas YSL en Santa Fe", async () => {
+    const appts = await appointmentRepository.list({
+      brands: brandScopeFor(baStfYsl),
+      storeIds: storeScopeFor(baStfYsl),
+    });
+    expect(appts.every((a) => a.storeId === ST_STF && a.brand === "YSL")).toBe(true);
     expect(appts.length).toBeGreaterThan(0);
-    expect(appts.every((a) => a.storeId === ST_STF)).toBe(true);
   });
 
-  it("Recommendations respect store scope for a Manager", async () => {
-    const recs = await recommendationRepository.list({ storeIds: storeScopeFor(mgrPolanco) });
-    expect(recs.every((r) => r.storeId === ST_POL)).toBe(true);
+  it("Recomendaciones respetan brand+store scope", async () => {
+    const recsLcm = await recommendationRepository.list({
+      brands: brandScopeFor(baPolLcm),
+      storeIds: storeScopeFor(baPolLcm),
+    });
+    expect(recsLcm.every((r) => r.storeId === ST_POL && r.brand === "Lancôme")).toBe(true);
   });
 
-  it("Communications respect store scope for a Supervisor (zona)", async () => {
-    const comms = await communicationRepository.list({ storeIds: storeScopeFor(supervisorNorte) });
-    expect(comms.every((c) => c.storeId === ST_POL || c.storeId === ST_PER)).toBe(true);
-    expect(comms.some((c) => c.storeId === ST_STF)).toBe(false);
+  it("Comunicaciones del Supervisor Centro cubren Pol + StF, todas las marcas", async () => {
+    const comms = await communicationRepository.list({
+      brands: brandScopeFor(supCentro),
+      storeIds: storeScopeFor(supCentro),
+    });
+    expect(comms.every((c) => c.storeId === ST_POL || c.storeId === ST_STF)).toBe(true);
+    expect(comms.some((c) => c.storeId === ST_PER)).toBe(false);
+  });
+
+  it("Admin ve todas las compras (12) independientemente de marca/tienda", async () => {
+    const purchases = await purchaseRepository.list({
+      brands: brandScopeFor(admin),
+      storeIds: storeScopeFor(admin),
+    });
+    expect(purchases).toHaveLength(12);
   });
 });
 
-describe("Direct-by-ID access is blocked silently (404 trigger predicate)", () => {
-  it("BA in Polanco trying to fetch a Perisur client → out of scope", async () => {
-    // cl-paola lives in Perisur per seed.ts
-    const perisurClient = await clientRepository.findById("cl-paola" as never);
+describe("Acceso directo por ID es bloqueado silenciosamente (404 trigger)", () => {
+  it("BA Polanco no puede acceder a cliente de Perisur (out of store)", async () => {
+    const perisurClient = await clientRepository.findById("cl-cristina" as never);
     expect(perisurClient).not.toBeNull();
-    // The repo returns the client, but the fetch-client guard would notFound():
-    expect(isStoreInScope(baPolanco, perisurClient!.storeId)).toBe(false);
+    expect(isStoreInScope(baPolLcm, perisurClient!.storeId)).toBe(false);
   });
 
-  it("BA in Polanco can fetch a Polanco client directly", async () => {
-    const polancoClient = await clientRepository.findById("cl-valentina" as never);
-    expect(polancoClient).not.toBeNull();
-    expect(isStoreInScope(baPolanco, polancoClient!.storeId)).toBe(true);
+  it("BA Lancôme Polanco no puede acceder a clienta YSL-only de su tienda (out of brand)", async () => {
+    const adriana = await clientRepository.findById("cl-adriana" as never);
+    expect(adriana).not.toBeNull();
+    // Store check passes (Polanco), but brand check fails: Adriana is YSL-only.
+    expect(isStoreInScope(baPolLcm, adriana!.storeId)).toBe(true);
+    const matchesBrand = adriana!.brands.some((b) => brandScopeFor(baPolLcm)!.includes(b));
+    expect(matchesBrand).toBe(false);
   });
 
-  it("BA trying to access an out-of-zone appointment by ID is blocked", async () => {
-    // ap-10 is a Santa Fe appointment per appointment.repository.ts seed
-    const stfAppointment = await appointmentRepository.findById("ap-10" as never);
-    expect(stfAppointment).not.toBeNull();
-    expect(isStoreInScope(baPolanco, stfAppointment!.storeId)).toBe(false);
-    expect(isStoreInScope(supervisorNorte, stfAppointment!.storeId)).toBe(false);
-    expect(isStoreInScope(admin, stfAppointment!.storeId)).toBe(true);
+  it("Supervisor Centro no puede acceder a citas de Perisur por id (out of zone)", async () => {
+    const apPer = await appointmentRepository.findById("ap-6" as never);
+    expect(apPer).not.toBeNull();
+    expect(apPer!.storeId).toBe(ST_PER);
+    expect(isStoreInScope(supCentro, apPer!.storeId)).toBe(false);
   });
 
-  it("Out-of-scope and not-found are indistinguishable to the caller", () => {
-    // Both paths return the same falsy outcome (notFound() in real code).
-    const fakeStoreId = "st-does-not-exist" as StoreId;
-    expect(isStoreInScope(baPolanco, fakeStoreId)).toBe(false);
-    expect(isStoreInScope(baPolanco, ST_PER)).toBe(false);
-    // Same response for both: the guard would call notFound() in either case.
+  it("Admin puede acceder a cualquier ID", async () => {
+    const apPer = await appointmentRepository.findById("ap-6" as never);
+    expect(apPer).not.toBeNull();
+    expect(isStoreInScope(admin, apPer!.storeId)).toBe(true);
+    expect(isBrandInScope(admin, apPer!.brand)).toBe(true);
   });
 });

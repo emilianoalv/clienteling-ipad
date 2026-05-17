@@ -9,14 +9,13 @@ import { persistent } from "./_persist";
 
 export interface RecommendationListFilter {
   /**
-   * Brand scope of the requesting staff. Currently Recommendations don't carry
-   * a brand directly — the field is reserved for future brand-tagged recs.
-   * Omit to disable scoping (Admin/HQ).
+   * Brand scope of the requesting staff. A recommendation is visible if its
+   * `brand` is in this set. Omit (Admin) to disable.
    */
   brands?: readonly BrandId[];
   /**
    * Store scope of the requesting staff. Use `visibleStoreIds(staff, allStoreIds)`
-   * to compute. Omit to disable scoping (Admin/HQ).
+   * to compute. Omit to disable scoping (Admin).
    */
   storeIds?: readonly StoreId[];
 }
@@ -32,13 +31,15 @@ export interface RecommendationRepository {
   ): Promise<Recommendation | null>;
 }
 
-const RECS: Recommendation[] = persistent("__clienteling.recommendations.v2", () => [...SEED_RECOMMENDATIONS]);
+const RECS: Recommendation[] = persistent("__clienteling.recommendations.v3", () => [...SEED_RECOMMENDATIONS]);
 
 export const recommendationRepository: RecommendationRepository = {
   async list(filter = {}) {
     const storeScope = filter.storeIds;
+    const brandScope = filter.brands;
     return RECS.filter((r) => {
       if (storeScope && storeScope.length && !storeScope.includes(r.storeId)) return false;
+      if (brandScope && brandScope.length && !brandScope.includes(r.brand)) return false;
       return true;
     }).sort((a, b) => b.at.localeCompare(a.at));
   },

@@ -26,7 +26,7 @@ export interface PurchaseRepository {
   create(input: Omit<Purchase, "id">): Promise<Purchase>;
 }
 
-const PURCHASES: Purchase[] = persistent("__clienteling.purchases.v2", () => [...SEED_PURCHASES]);
+const PURCHASES: Purchase[] = persistent("__clienteling.purchases.v3", () => [...SEED_PURCHASES]);
 
 export const purchaseRepository: PurchaseRepository = {
   async list(filter = {}) {

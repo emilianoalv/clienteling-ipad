@@ -35,7 +35,7 @@ const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
     "recommendations:read",
     "recommendations:write",
   ]),
-  Manager: new Set<Permission>([
+  Gerente: new Set<Permission>([
     "clients:read",
     "clients:write",
     "purchases:read",
@@ -62,18 +62,6 @@ const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
     "templates:write",
     "recommendations:read",
     "reports:read",
-  ]),
-  HQ: new Set<Permission>([
-    "clients:read",
-    "purchases:read",
-    "appointments:read",
-    "communications:read",
-    "templates:read",
-    "templates:write",
-    "recommendations:read",
-    "reports:read",
-    "devices:read",
-    "devices:write",
   ]),
   Admin: new Set<Permission>([
     "clients:read",

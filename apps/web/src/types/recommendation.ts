@@ -1,3 +1,4 @@
+import type { BrandId } from "./brand";
 import type { Branded } from "./branded";
 import type { ClientId } from "./client";
 import type { Sku } from "./product";
@@ -15,6 +16,8 @@ export interface Recommendation {
   baId: StaffId;
   /** Store where the BA made the recommendation (denormalized from BA at create time). */
   storeId: StoreId;
+  /** Brand the recommendation belongs to (denormalized from BA at create time). */
+  brand: BrandId;
   at: string;
   items: readonly Sku[];
   status: RecommendationStatus;

@@ -36,9 +36,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 4. Role gate by URL prefix (/ba, /manager, /supervisor, /hq, /admin).
+  // 4. Role gate by URL prefix (/ba, /gerente, /supervisor, /admin).
   const segment = pathname.split("/").filter(Boolean)[0];
-  if (segment && ["ba", "manager", "supervisor", "hq", "admin"].includes(segment)) {
+  if (segment && ["ba", "gerente", "supervisor", "admin"].includes(segment)) {
     if (!canAccessRolePrefix(session.role, segment)) {
       return NextResponse.redirect(new URL(homeFor(session.role), req.url));
     }

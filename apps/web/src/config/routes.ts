@@ -4,9 +4,8 @@ export const routes = {
   login: "/login",
   home: {
     BA: "/ba",
-    Manager: "/manager",
+    Gerente: "/gerente",
     Supervisor: "/supervisor",
-    HQ: "/hq",
     Admin: "/admin",
   },
 } as const;

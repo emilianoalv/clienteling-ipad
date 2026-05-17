@@ -8,7 +8,7 @@ import { userRepository } from "@/server/repositories/user.repository";
 import type { Role, StaffId } from "@/types/staff";
 
 const inputSchema = z.object({
-  role: z.enum(["BA", "Manager", "Supervisor", "HQ", "Admin"]),
+  role: z.enum(["BA", "Gerente", "Supervisor", "Admin"]),
   pin: z.string().regex(/^\d{6}$/),
 });
 

@@ -23,7 +23,7 @@ export interface CommunicationRepository {
   create(input: Omit<Communication, "id">): Promise<Communication>;
 }
 
-const COMMUNICATIONS: Communication[] = persistent("__clienteling.communications.v2", () => [...SEED_COMMUNICATIONS]);
+const COMMUNICATIONS: Communication[] = persistent("__clienteling.communications.v3", () => [...SEED_COMMUNICATIONS]);
 
 export const communicationRepository: CommunicationRepository = {
   async list(filter = {}) {

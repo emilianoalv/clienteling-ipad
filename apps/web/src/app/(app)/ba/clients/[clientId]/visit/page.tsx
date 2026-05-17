@@ -3,6 +3,7 @@ import { Icon } from "@/components/primitives";
 import { fetchClient, RegisterVisitForm } from "@/features/clients";
 import { productRepository } from "@/server/repositories/product.repository";
 import { requireSession } from "@/server/auth/session";
+import { brandScopeFor } from "@/server/auth/scope";
 
 export default async function RegisterVisitPage({
   params,
@@ -13,7 +14,7 @@ export default async function RegisterVisitPage({
   const { staff } = await requireSession();
   const [client, products] = await Promise.all([
     fetchClient(clientId, staff),
-    productRepository.list({ brands: staff.brands }),
+    productRepository.list({ brands: brandScopeFor(staff) }),
   ]);
 
   return (

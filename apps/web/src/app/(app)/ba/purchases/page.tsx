@@ -4,17 +4,18 @@ import { PurchasesList, listPurchases } from "@/features/purchases";
 import { listClients } from "@/features/clients";
 import { listProducts } from "@/features/catalog";
 import { requireSession } from "@/server/auth/session";
-import { storeScopeFor } from "@/server/auth/scope";
+import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 import type { Sku } from "@/types/product";
 
 export default async function PurchasesPage() {
   const t = await getTranslations();
   const { staff } = await requireSession();
-  const scope = storeScopeFor(staff);
+  const storeIds = storeScopeFor(staff);
+  const brands = brandScopeFor(staff);
 
   const [purchases, clients, products] = await Promise.all([
-    listPurchases({ brands: staff.brands, storeIds: scope }),
-    listClients({ brands: staff.brands, storeIds: scope }),
+    listPurchases({ brands, storeIds }),
+    listClients({ brands, storeIds }),
     listProducts({}),
   ]);
 

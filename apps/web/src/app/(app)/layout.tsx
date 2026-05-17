@@ -7,10 +7,9 @@ import { signOutAction } from "@/features/auth";
 
 const ROLE_SUBTITLE: Record<string, string> = {
   BA: "Beauty Advisor",
-  Manager: "Store Manager",
-  Supervisor: "Supervisor de zona",
-  HQ: "L'Oréal Luxe México · HQ",
-  Admin: "TI · Data & integraciones",
+  Gerente: "Gerente de Tienda",
+  Supervisor: "Supervisor de Zona",
+  Admin: "Administrador Central",
 };
 
 export default async function AppLayout({ children }: { children: ReactNode }) {

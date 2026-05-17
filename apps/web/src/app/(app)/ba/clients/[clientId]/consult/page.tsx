@@ -4,6 +4,7 @@ import { Icon } from "@/components/primitives";
 import { SectionHeader } from "@/components/patterns";
 import { ConsultationWizard, fetchConsultationContext } from "@/features/consultation";
 import { requireSession } from "@/server/auth/session";
+import { brandScopeFor } from "@/server/auth/scope";
 
 export default async function ConsultationPage({
   params,
@@ -31,7 +32,7 @@ export default async function ConsultationPage({
           </Link>
         }
       />
-      <ConsultationWizard client={client} products={products} brandScope={staff.brands} />
+      <ConsultationWizard client={client} products={products} brandScope={brandScopeFor(staff)} />
     </section>
   );
 }

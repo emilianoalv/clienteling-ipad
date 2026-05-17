@@ -8,12 +8,16 @@ import { generateId } from "@/lib/id/generate-id";
 import { persistent } from "./_persist";
 
 // Match user.repository.ts and seed.ts IDs.
-const BA_POL_1 = "us-ba-pol-1" as StaffId;
-const BA_POL_2 = "us-ba-pol-2" as StaffId;
-const BA_PER_1 = "us-ba-per-1" as StaffId;
-const BA_PER_2 = "us-ba-per-2" as StaffId;
-const BA_STF_1 = "us-ba-stf-1" as StaffId;
-const BA_STF_2 = "us-ba-stf-2" as StaffId;
+const BA_POL_LCM_1 = "us-ba-pol-lcm-1" as StaffId;
+const BA_POL_LCM_2 = "us-ba-pol-lcm-2" as StaffId;
+const BA_POL_YSL_1 = "us-ba-pol-ysl-1" as StaffId;
+const BA_POL_YSL_2 = "us-ba-pol-ysl-2" as StaffId;
+const BA_PER_LCM_1 = "us-ba-per-lcm-1" as StaffId;
+const BA_PER_YSL_1 = "us-ba-per-ysl-1" as StaffId;
+const BA_PER_YSL_2 = "us-ba-per-ysl-2" as StaffId;
+const BA_STF_LCM_1 = "us-ba-stf-lcm-1" as StaffId;
+const BA_STF_LCM_2 = "us-ba-stf-lcm-2" as StaffId;
+const BA_STF_YSL_1 = "us-ba-stf-ysl-1" as StaffId;
 const ST_POL = "st-pol" as StoreId;
 const ST_PER = "st-per" as StoreId;
 const ST_STF = "st-stf" as StoreId;
@@ -22,8 +26,8 @@ const SEED: Appointment[] = [
   // ── Polanco ─────────────────────────────────────────────────────────────
   {
     id: "ap-1" as AppointmentId,
-    clientId: "cl-valentina" as ClientId,
-    baId: BA_POL_1,
+    clientId: "cl-constanza" as ClientId,
+    baId: BA_POL_LCM_1,
     brand: "Lancôme",
     storeId: ST_POL,
     at: relativeISO(0, 11, 0),
@@ -34,8 +38,8 @@ const SEED: Appointment[] = [
   },
   {
     id: "ap-2" as AppointmentId,
-    clientId: "cl-renata" as ClientId,
-    baId: BA_POL_1,
+    clientId: "cl-ofelia" as ClientId,
+    baId: BA_POL_LCM_2,
     brand: "Lancôme",
     storeId: ST_POL,
     at: relativeISO(0, 14, 30),
@@ -45,19 +49,20 @@ const SEED: Appointment[] = [
   },
   {
     id: "ap-3" as AppointmentId,
-    clientId: "cl-camila" as ClientId,
-    baId: BA_POL_2,
+    clientId: "cl-constanza" as ClientId,
+    baId: BA_POL_YSL_1,
     brand: "YSL",
     storeId: ST_POL,
     at: relativeISO(1, 10, 0),
     durationMin: 60,
     kind: "fragrance-consult",
     status: "confirmed",
+    notes: "Cita YSL (mismo cliente multi-brand, otro BA).",
   },
   {
     id: "ap-4" as AppointmentId,
-    clientId: "cl-emilia" as ClientId,
-    baId: BA_POL_2,
+    clientId: "cl-adriana" as ClientId,
+    baId: BA_POL_YSL_2,
     brand: "YSL",
     storeId: ST_POL,
     at: relativeISO(2, 16, 0),
@@ -67,8 +72,8 @@ const SEED: Appointment[] = [
   },
   {
     id: "ap-5" as AppointmentId,
-    clientId: "cl-andrea" as ClientId,
-    baId: BA_POL_1,
+    clientId: "cl-lorena" as ClientId,
+    baId: BA_POL_LCM_1,
     brand: "Lancôme",
     storeId: ST_POL,
     at: relativeISO(-1, 12, 0),
@@ -80,8 +85,8 @@ const SEED: Appointment[] = [
   // ── Perisur ─────────────────────────────────────────────────────────────
   {
     id: "ap-6" as AppointmentId,
-    clientId: "cl-natalia" as ClientId,
-    baId: BA_PER_1,
+    clientId: "cl-cristina" as ClientId,
+    baId: BA_PER_LCM_1,
     brand: "Lancôme",
     storeId: ST_PER,
     at: relativeISO(0, 9, 30),
@@ -91,8 +96,8 @@ const SEED: Appointment[] = [
   },
   {
     id: "ap-7" as AppointmentId,
-    clientId: "cl-paola" as ClientId,
-    baId: BA_PER_1,
+    clientId: "cl-gabriela" as ClientId,
+    baId: BA_PER_YSL_1,
     brand: "YSL",
     storeId: ST_PER,
     at: relativeISO(1, 13, 0),
@@ -102,9 +107,9 @@ const SEED: Appointment[] = [
   },
   {
     id: "ap-8" as AppointmentId,
-    clientId: "cl-isabella" as ClientId,
-    baId: BA_PER_2,
-    brand: "Lancôme",
+    clientId: "cl-julieta" as ClientId,
+    baId: BA_PER_YSL_2,
+    brand: "YSL",
     storeId: ST_PER,
     at: relativeISO(-3, 15, 0),
     durationMin: 45,
@@ -113,8 +118,8 @@ const SEED: Appointment[] = [
   },
   {
     id: "ap-9" as AppointmentId,
-    clientId: "cl-mariana" as ClientId,
-    baId: BA_PER_2,
+    clientId: "cl-ines" as ClientId,
+    baId: BA_PER_YSL_2,
     brand: "YSL",
     storeId: ST_PER,
     at: relativeISO(-7, 12, 30),
@@ -128,8 +133,8 @@ const SEED: Appointment[] = [
   // ── Santa Fe ────────────────────────────────────────────────────────────
   {
     id: "ap-10" as AppointmentId,
-    clientId: "cl-sofia" as ClientId,
-    baId: BA_STF_1,
+    clientId: "cl-karla" as ClientId,
+    baId: BA_STF_LCM_1,
     brand: "Lancôme",
     storeId: ST_STF,
     at: relativeISO(0, 17, 0),
@@ -139,8 +144,8 @@ const SEED: Appointment[] = [
   },
   {
     id: "ap-11" as AppointmentId,
-    clientId: "cl-fernanda" as ClientId,
-    baId: BA_STF_1,
+    clientId: "cl-marina" as ClientId,
+    baId: BA_STF_LCM_2,
     brand: "Lancôme",
     storeId: ST_STF,
     at: relativeISO(2, 11, 0),
@@ -150,8 +155,8 @@ const SEED: Appointment[] = [
   },
   {
     id: "ap-12" as AppointmentId,
-    clientId: "cl-victoria" as ClientId,
-    baId: BA_STF_2,
+    clientId: "cl-nadia" as ClientId,
+    baId: BA_STF_YSL_1,
     brand: "YSL",
     storeId: ST_STF,
     at: relativeISO(-5, 14, 0),
@@ -161,7 +166,7 @@ const SEED: Appointment[] = [
   },
 ];
 
-const APPOINTMENTS: Appointment[] = persistent("__clienteling.appointments.v2", () => [...SEED]);
+const APPOINTMENTS: Appointment[] = persistent("__clienteling.appointments.v3", () => [...SEED]);
 
 export interface AppointmentListFilter {
   baId?: StaffId;

@@ -7,7 +7,7 @@ import { signInAction } from "@/features/auth/actions/sign-in";
 import { cn } from "@/lib/cn";
 import type { Role } from "@/types/staff";
 
-const ROLES: readonly Role[] = ["BA", "Manager", "Supervisor", "HQ", "Admin"];
+const ROLES: readonly Role[] = ["BA", "Gerente", "Supervisor", "Admin"];
 
 export function LoginForm() {
   const t = useTranslations("auth");

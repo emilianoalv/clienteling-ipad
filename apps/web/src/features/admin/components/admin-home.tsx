@@ -12,7 +12,7 @@ const ROLE_SCOPES: ReadonlyArray<{ role: string; scopes: readonly string[] }> = 
     role: "BA",
     scopes: ["Ver sus clientas", "Crear interacciones", "Recomendar", "Enviar seguimientos"],
   },
-  { role: "Manager", scopes: ["Ver su tienda", "Coaching", "Dispositivos", "Incidencias"] },
+  { role: "Gerente", scopes: ["Ver su tienda", "Coaching", "Dispositivos", "Incidencias"] },
   { role: "Supervisor", scopes: ["Ver su zona", "Reportes de zona", "Revisar BAs"] },
   {
     role: "Admin",

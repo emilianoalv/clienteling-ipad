@@ -12,7 +12,7 @@ const SESSION_TTL_HOURS = 12;
 
 const sessionSchema = z.object({
   userId: z.string().min(1),
-  role: z.enum(["BA", "Manager", "Supervisor", "HQ", "Admin"]),
+  role: z.enum(["BA", "Gerente", "Supervisor", "Admin"]),
   issuedAt: z.string().datetime(),
   expiresAt: z.string().datetime(),
 });
@@ -89,28 +89,29 @@ async function loadStaff(id: string, role: Role): Promise<Staff | null> {
 /**
  * Converts a User record into the discriminated Staff union.
  * Returns null if required role-specific fields are missing in the user record.
+ *
+ * Per BRD: BA is single-brand (must have `user.brand`); Gerente / Supervisor
+ * / Admin are optionally brand-restricted via `user.brands` (undefined = no
+ * brand filter).
  */
 export function userToStaff(user: User): Staff | null {
   const base = {
     id: user.id as unknown as StaffId,
     name: user.name,
     initials: initialsOf(user.name),
-    brands: user.brands,
   };
   switch (user.role) {
     case "BA":
+      if (!user.storeId || !user.brand) return null;
+      return { ...base, role: "BA", storeId: user.storeId, brand: user.brand };
+    case "Gerente":
       if (!user.storeId) return null;
-      return { ...base, role: "BA", storeId: user.storeId };
-    case "Manager":
-      if (!user.storeId) return null;
-      return { ...base, role: "Manager", storeId: user.storeId };
+      return { ...base, role: "Gerente", storeId: user.storeId, brands: user.brands };
     case "Supervisor":
       if (!user.storeIds) return null;
-      return { ...base, role: "Supervisor", storeIds: user.storeIds };
-    case "HQ":
-      return { ...base, role: "HQ" };
+      return { ...base, role: "Supervisor", storeIds: user.storeIds, brands: user.brands };
     case "Admin":
-      return { ...base, role: "Admin" };
+      return { ...base, role: "Admin", brands: user.brands };
   }
 }
 

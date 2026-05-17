@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
-import { homeStoreFor, isStoreInScope } from "@/server/auth/scope";
+import { homeBrandFor, homeStoreFor, isStoreInScope } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { interactionRepository } from "@/server/repositories/interaction.repository";
@@ -85,10 +85,14 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
 
   // Persist a single recommendation record bundling all SKUs.
   if (input.recommendations.length > 0) {
+    // Recommendation brand follows the BA's brand; fall back to the dominant
+    // client brand for non-BA roles (Gerente/Admin demoing the flow).
+    const recBrand = homeBrandFor(staff) ?? brand;
     await recommendationRepository.create({
       clientId,
       baId: staff.id,
       storeId,
+      brand: recBrand,
       at,
       items: input.recommendations.map((s) => s as Sku),
       status: "pending",

@@ -31,7 +31,7 @@ export interface ClientRepository {
 }
 
 const CLIENTS = persistent(
-  "__clienteling.clients.v2",
+  "__clienteling.clients.v3",
   () => new Map<ClientId, Client>(SEED_CLIENTS.map((c) => [c.id, c])),
 );
 
