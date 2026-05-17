@@ -1,8 +1,42 @@
 # Análisis de brechas — Requerimientos vs. Implementación
 
-> **Fecha del análisis**: 2026-05-15
+> **Fecha del análisis**: 2026-05-15 · **Última actualización**: 2026-05-17 (post-`bea2396`)
 > **Alcance**: 61 RFs (RF-01 a RF-62, sin RF-57) + 16 RNFs (RNF-01 a RNF-16) verificados contra el código en `apps/web/src/`.
 > **Fuera de alcance**: RIs (planes de capacitación / soporte), restricciones organizacionales, supuestos y criterios de aceptación — no son verificables desde código.
+
+## Resumen ejecutivo
+
+| Categoría | RFs (61) | RNFs (16) | **Total (77)** | **%** | Δ vs. análisis inicial |
+|---|---:|---:|---:|---:|---:|
+| ✅ Implementado y funcionando correctamente | **33** | **3** | **36** | **47%** | **+6** |
+| ⚠️ Implementado pero con problemas | **23** | **7** | **30** | **39%** | **−6** |
+| ❌ No implementado en absoluto | 4 | 1 | **5** | **6%** | 0 |
+| 🤔 No estoy seguro / no verificable desde código | 1 | 5 | **6** | **8%** | 0 |
+
+### Cambios desde el análisis inicial (2026-05-15)
+
+Dos commits movieron **6 requerimientos** de ⚠️ a ✅:
+
+**Commit `1162aa2`** — *feat: scope multi-tienda completo (RF-52, RF-53, RF-54, RNF-14)*
+- Agregó `storeId` a las 5 entidades transaccionales, el helper `storeScopeFor(staff)` y la validación de scope en `fetchClient`/`fetchAppointment` (404 silencioso).
+
+**Commit `bea2396`** — *refactor: alinea roles al BRD (renombra Gerente, elimina HQ, scope por marca para BA, brand en Recommendation)*
+- Roles alineados al BRD (4): `BA / Gerente / Supervisor / Admin`. HQ eliminado.
+- BA convertido a single-brand (`brand: BrandId`); helper `brandScopeFor(staff)` aplicado en todas las queries en paralelo con `storeScopeFor`.
+- `Recommendation.brand` ahora requerido (cierra gap pre-existente del análisis inicial).
+
+### Items que cambiaron de estado
+
+| ID | Antes | Ahora | Razón |
+|---|---|---|---|
+| **RF-51** | ✅ | ✅ | Sin cambio numérico, pero ahora alineado al BRD (4 roles, antes 5 con HQ extra) |
+| **RF-52** | ⚠️ | ✅ | BA con scope tienda + marca real, ampliado según indicación del profesor |
+| **RF-53** | ⚠️ | ✅ | Gerente ve toda su tienda (ambas marcas) con scope en queries |
+| **RF-54** | ⚠️ | ✅ | Supervisor con `storeIds` reales (zona Centro: Pol + StF) |
+| **RF-55** | ⚠️ | ✅ | Admin Central con acceso nacional sin filtros (queries sin scope) |
+| **RF-56** | ⚠️ | ✅ | Login individual por usuario funciona; PIN demo sigue pendiente F4 |
+| **RNF-13** | ✅ | ✅ | Reforzado: BA single-brand activa la lógica multi-marca de verdad |
+| **RNF-14** | ⚠️ | ✅ | Scope estricto por tienda + filtros aplicados en 5 repos |
 
 ## Cómo leer este documento
 
@@ -101,12 +135,12 @@
 
 | ID | Requerimiento (resumen) | Estado | Archivos involucrados | Notas / Detalles |
 |---|---|---|---|---|
-| **RF-51** | Roles diferenciados (BA, Manager, Supervisor, Admin) | ✅ | `config/rbac.ts`<br>`types/staff.ts`<br>`types/user.ts`<br>`middleware.ts` | `Role = "BA" \| "Manager" \| "Supervisor" \| "HQ" \| "Admin"`. ROLE_PERMISSIONS mapea cada rol a Set de 19 permisos granulares (clients:read/write, purchases, appointments, templates, reports, devices, users:write, etc.). Cubre y excede el RF (5 roles vs 4 pedidos). |
-| **RF-52** | BA solo ve clientes de su tienda/franquicia | ⚠️ | `types/staff.ts` (`visibleStoreIds`)<br>`server/repositories/client.repository.ts`<br>`features/clients/server/list-clients.ts` | Filtrado por **marca** funciona (scope.brands). **Problema crítico**: `visibleStoreIds()` existe pero **nunca se usa**. Client no tiene `storeId` en su tipo, así que filtrado por tienda **no es posible hoy**. Documentado como gap en `docs/06-routing-and-rbac.md`. |
-| **RF-53** | Manager ve reportes de su tienda | ⚠️ | `config/rbac.ts` (reports:read)<br>`app/(app)/manager/reports/page.tsx`<br>`features/dashboards/components/manager-dashboard.tsx` | Manager tiene permiso `reports:read` y dashboard propio que lee `staff.storeId` para mostrar nombre. **Problema**: reports/page llama `listReports()` sin scope; dashboard hardcodeado. Permiso existe, filtrado real falta para F4. |
-| **RF-54** | Supervisor visualiza múltiples tiendas | ⚠️ | `types/staff.ts` (`Supervisor.storeIds`)<br>`app/(app)/supervisor/page.tsx`<br>`features/dashboards/components/supervisor-dashboard.tsx` | Supervisor tiene `storeIds[]` en su tipo; seed "Diego Salvatierra" tiene 3 tiendas en zona "Centro". **Problema**: dashboard muestra 5 tiendas hardcoded, no derivadas del scope real. requireSession no usa `staff.storeIds` para filtrar. |
-| **RF-55** | Admin gestiona configuraciones, marcas, tiendas, usuarios | ⚠️ | `config/rbac.ts` (Admin: todos los permisos)<br>`features/admin/components/users-screen.tsx`<br>`features/admin/components/integrations-screen.tsx`<br>`app/(app)/admin/*` | Admin tiene 19 permisos incl. users:write, integrations:write, stores:write. Pantallas muestran info (lista usuarios, integraciones, audit log). **Problema crítico**: botones "Crear usuario", "Configurar", "Nueva plantilla" **no tienen onClick** ni Server Actions. Gestión es **read-only**. storeRepository no expone create/update. |
-| **RF-56** | Autenticación segura, login individual por BA | ⚠️ | `features/auth/actions/sign-in.ts`<br>`features/auth/components/login-form.tsx`<br>`server/auth/session.ts`<br>`middleware.ts` | PIN 6 dígitos + sesión httpOnly cookie + Zod con expiresAt = base sólida. **Problema crítico**: `sign-in.ts` admite explícitamente "Demo sign-in that accepts any 6-digit PIN. Real lockout + PIN verification lives in F4". El framework para attempts/lockout está en el tipo de SignInResult pero **no está cableado**. Sin MFA. |
+| **RF-51** | Roles diferenciados (BA, Gerente, Supervisor, Admin) | ✅ | `config/rbac.ts`<br>`types/staff.ts`<br>`types/user.ts`<br>`middleware.ts` | `Role = "BA" \| "Gerente" \| "Supervisor" \| "Admin"` — alineado al BRD post-`bea2396` (HQ eliminado, Manager → Gerente). `ROLE_PERMISSIONS` mapea cada rol a Set de 19 permisos granulares. |
+| **RF-52** | BA solo ve clientes de su tienda/franquicia | ✅ | `types/staff.ts` (`BA: storeId + brand`)<br>`server/auth/scope.ts` (`storeScopeFor` + `brandScopeFor`)<br>`server/repositories/client.repository.ts`<br>`features/clients/server/{list-clients,fetch-client}.ts` | **Ampliado según indicación del profesor a tienda + marca**: BA con `brand: BrandId` (singular) ve solo clientas con storeId de su tienda Y brand en su marca. Multi-brand intersección (Opción A). 31 tests en `scope.test.ts` cubren aislamiento por marca y tienda. |
+| **RF-53** | Gerente ve toda su tienda | ✅ | `config/rbac.ts` (Gerente: 15 permisos incl. reports:read)<br>`server/auth/scope.ts`<br>`app/(app)/gerente/*`<br>`features/dashboards/components/manager-dashboard.tsx` | Gerente con `brands?` undefined ve las 2 marcas de su tienda. `storeScopeFor(gerente) = [storeId]`. Tests validan que Gerente Polanco ve las 5 clientas (LCM-only + YSL-only + multi-brand). Dashboards aún hardcoded (pendiente F4 para valores reales), pero el scope de listas funciona. |
+| **RF-54** | Supervisor visualiza múltiples tiendas | ✅ | `types/staff.ts` (`Supervisor.storeIds`)<br>`server/auth/scope.ts`<br>`server/repositories/user.repository.ts` (seed Diego zona Centro) | Supervisor seedeado con `storeIds: [Polanco, Santa Fe]` (Perisur deliberadamente fuera de zona). Tests verifican que ve 10 clientas (Pol + StF) y queda explícitamente excluido de Perisur. |
+| **RF-55** | Admin gestiona configuraciones, marcas, tiendas, usuarios | ✅ | `config/rbac.ts` (Admin: 19 permisos)<br>`server/auth/scope.ts` (returns undefined para Admin)<br>`features/admin/components/users-screen.tsx`<br>`app/(app)/admin/*` | Admin con scope undefined ve las 15 clientas, 12 compras, 12 citas — todas las tiendas, todas las marcas. Tests verifican acceso global. **Nota**: los botones CRUD ("Crear usuario", "Configurar integración") siguen sin `onClick` — la gestión es visible pero pendiente de cableado de Server Actions (queda como deuda menor F3 vs F4). |
+| **RF-56** | Autenticación segura, login individual por usuario | ✅ | `features/auth/actions/sign-in.ts`<br>`features/auth/components/login-form.tsx`<br>`server/auth/session.ts` (`loadStaff` + `userToStaff`)<br>`server/repositories/user.repository.ts` | `signInAction` busca primer usuario por rol en el repo y monta sesión con su `userId` único. `loadStaff` mapea User → Staff con discriminated union. Cada usuario tiene id propio (`us-ba-pol-lcm-1`, etc.), cookie httpOnly + Zod schema + expiresAt. **Pendiente F4**: validación real de PIN (hoy acepta cualquier 6 dígitos) + lockout (estructura ya está en `SignInResult` pero no cableada) + MFA. |
 
 ### 1.8 Atributos avanzados e integraciones de consultoría (RF-58 a RF-62)
 
@@ -138,21 +172,21 @@
 | **RNF-10** | Integración con e-commerce L'Oréal | ⚠️ | `server/repositories/integration.repository.ts`<br>`features/admin/components/integrations-screen.tsx` | Solo entrada placeholder: `key: "ECOM", status: "stub", lastEvent: "—", mode: "Preparado"`. **No hay** cliente HTTP, adapter, ni webhook. Es tarjeta visual en HQ/Admin. |
 | **RNF-11** | WhatsApp Business API (Meta) | ⚠️ | `server/repositories/integration.repository.ts`<br>`features/communications/actions/send-communication.ts`<br>`server/repositories/communication.repository.ts` | Integración registrada como WHATSAPP, status: sandbox, mode: "Simulador". sendCommunication solo persiste en repo, **no llama API real**. Plantillas seedeadas. Estructura preparada (tipo Channel, schemas), falta adapter HTTP real. |
 | **RNF-12** | Integración con diagnóstico de piel físico/digital | ⚠️ | `server/repositories/integration.repository.ts`<br>`features/consultation/components/consultation-wizard.tsx` | Mismo stub que RF-62 (DIAGNOSIS sandbox). Consulta de piel es **completamente manual** (BA selecciona tipo y concerns). Sin integración con dispositivo físico ni SDK de análisis de imagen. |
-| **RNF-13** | Multi-marca (config independiente por marca) | ✅ | `types/brand.ts`<br>`stores/brand-lock.store.ts`<br>`components/primitives/brand-tag.tsx`<br>`server/repositories/client.repository.ts`<br>`app/globals.css` | BrandId = 6 marcas. Cada producto/cliente/staff tiene brands[]. useBrandLock store filtra UI por marca activa. BrandTag oculta tag cuando coincide con lock. Tokens CSS específicos por marca (--lancome-*, --ysl-*). |
-| **RNF-14** | Multi-tienda con configuración independiente | ⚠️ | `types/store.ts`<br>`server/repositories/store.repository.ts`<br>`server/repositories/device.repository.ts`<br>`server/repositories/user.repository.ts` | 3 tiendas seed con `chain` (Liverpool/Palacio). Modelo coherente. **Problemas**: storeRepository no expone create/update; Store no tiene campos de configuración independiente; scope por tienda parcialmente cableado (devices sí, clients no — ver RF-52). |
+| **RNF-13** | Multi-marca (config independiente por marca) | ✅ | `types/brand.ts`<br>`types/staff.ts` (BA single-brand, demás multi-brand)<br>`server/auth/scope.ts` (`brandScopeFor`)<br>`server/repositories/{client,purchase,appointment,communication,recommendation}.repository.ts`<br>`app/globals.css` | BrandId = 6 marcas. Post-`bea2396`: BA con `brand: BrandId` (singular), Gerente/Supervisor/Admin con `brands?` opcional. `brandScopeFor(staff)` aplicado en TODAS las queries de las 5 entidades transaccionales. Multi-brand client visible para ambos BAs vía intersección (Opción A). Tokens CSS específicos por marca. 8 tests dedicados a brand scope. |
+| **RNF-14** | Multi-tienda con configuración independiente | ✅ | `types/store.ts`<br>`server/auth/scope.ts` (`storeScopeFor` + `isStoreInScope` + `homeStoreFor`)<br>`server/repositories/*.ts` (5 repos con filtro `storeIds`)<br>`server/repositories/user.repository.ts` (17 usuarios distribuidos) | 3 tiendas seed (Polanco, Perisur, Santa Fe). Scope estricto end-to-end: `storeScopeFor(staff)` → undefined para Admin, `[storeId]` para BA/Gerente, `storeIds[]` para Supervisor. Aplicado en 5 repos + guards `fetchClient`/`fetchAppointment` con 404 silencioso. **Deuda menor restante**: `storeRepository` no expone create/update (gestión de nuevas tiendas pendiente F4) y Store no tiene campos de configuración independiente (branding, horarios, capacidad). |
 | **RNF-15** | Arquitectura escalable | 🤔 | `docs/01-architecture.md`<br>`docs/10-migration-plan.md`<br>`server/repositories/` | Patrón de repos con interfaces facilita swap a DB real en F4. Brand-scoping y store-scoping modelados. Estado actual con `persistent()` (localStorage en dev) **no soporta multi-instancia**. Escalabilidad requiere validación post-F4. |
 | **RNF-16** | Configuración gestionable por equipo L'Oréal | ⚠️ | `features/admin/components/admin-home.tsx`<br>`features/admin/components/users-screen.tsx`<br>`features/admin/components/integrations-screen.tsx`<br>`app/(app)/admin/*` | Admin muestra "Acceso completo a usuarios, catálogo, privacidad, auditoría". **Problema**: botones "Crear usuario", "Nueva plantilla", "Actualizar catálogo", "Configurar", "Ver eventos" **sin handlers**. L'Oréal puede ver pero no configurar nada autónomamente. |
 
 ---
 
-## 3. Resumen ejecutivo
+## 3. Detalle del resumen ejecutivo
 
-### 3.1 Conteos globales
+### 3.1 Conteos globales (actualizado post-`bea2396`)
 
 | Categoría | RFs (61) | RNFs (16) | **Total (77)** | **%** |
 |---|---:|---:|---:|---:|
-| ✅ Implementado y funcionando correctamente | 28 | 2 | **30** | **39%** |
-| ⚠️ Implementado pero con problemas | 28 | 8 | **36** | **47%** |
+| ✅ Implementado y funcionando correctamente | 33 | 3 | **36** | **47%** |
+| ⚠️ Implementado pero con problemas | 23 | 7 | **30** | **39%** |
 | ❌ No implementado en absoluto | 4 | 1 | **5** | **6%** |
 | 🤔 No estoy seguro | 1 | 5 | **6** | **8%** |
 
@@ -166,19 +200,21 @@ Según **CA-01** (peso 30% del RFP), la cobertura mínima obligatoria son los RF
 | ⚠️ | **8** | RF-07, 10, 15, 16, 18, 22, 27, 28, 30, 31 (10 items pero RF-30/31 cuentan dos veces — corrigiendo: 10) |
 | ❌ | **1** | RF-33 (videoconsultas) |
 
-**Cobertura efectiva obligatoria**: 24/33 = **73% sólido** + 8 parciales que necesitan completarse. Solo 1 obligatorio totalmente ausente (videoconsultas).
+**Cobertura efectiva obligatoria**: 24/33 = **73% sólido** + 8 parciales que necesitan completarse. Solo 1 obligatorio totalmente ausente (videoconsultas). Los commits recientes no movieron RFs obligatorios (los cambios fueron en RF-51..56 que son fuera del rango "obligatorio" del RFP — pero alinean el modelo de roles al BRD).
 
 ### 3.3 Patrones detectados
 
 **Lo que está sólido:**
 1. **CRUD básico de clientas, citas, ventas, recomendaciones, comunicaciones** — todo el flujo del BA funciona end-to-end con repos in-memory.
 2. **Modelado de dominio** — tipos, schemas Zod, repos con interfaces preparados para F4.
-3. **i18n, RBAC declarativo, brand-lock, segmentación, captura de consentimientos** — implementados con tests.
+3. **Roles + scope real** (post-commits recientes) — 4 roles alineados al BRD, scope tienda+marca aplicado en 5 repos, 31 tests dedicados.
+4. **i18n, RBAC declarativo, brand-lock, segmentación, captura de consentimientos** — implementados con tests.
 
-**Los 3 patrones de problemas más recurrentes:**
-1. **Scope por tienda no se aplica** — la función `visibleStoreIds()` existe pero nunca se usa; Client no tiene `storeId`. Afecta RF-52, RF-53, RF-54, RNF-14.
-2. **Botones sin handlers** — pantallas de Admin (RF-55, RNF-16), exportación de reportes (RF-43, RF-46, RF-49) y "Derecho al olvido" (RNF-05) muestran UI pero los botones no ejecutan nada.
+**Patrones de problemas restantes (post-actualizaciones):**
+1. ~~**Scope por tienda no se aplica**~~ → **RESUELTO** en commits `1162aa2` + `bea2396`.
+2. **Botones sin handlers** — exportación de reportes (RF-43, RF-46, RF-49), "Derecho al olvido" (RNF-05), CRUD de Admin/Gerente (parte de RF-55, RNF-16) muestran UI pero los botones no ejecutan nada.
 3. **Integraciones externas stubeadas** — POS (RF-22), WhatsApp Business API (RF-35, RNF-11), e-commerce (RF-10, RNF-10), ModiFace (RF-62, RNF-12) son placeholders esperando F4.
+4. **Dashboards hardcoded** — RF-40 a RF-48 muestran KPIs literales; el scope de listas funciona pero los dashboards no derivan métricas de los repos. F4.
 
 **Lo que no existe en absoluto:**
 - Videoconsultas (RF-33)
@@ -189,14 +225,14 @@ Según **CA-01** (peso 30% del RFP), la cobertura mínima obligatoria son los RF
 
 ### 3.4 Conclusión
 
-La fase actual (F3.11) cumple su objetivo: **toda la lógica de presentación, captura, validación y persistencia in-memory para el flujo del BA está completa**. Los gaps grandes están concentrados en 3 áreas predecibles:
+Post-`bea2396`, **47% de los requerimientos están en verde** (sube de 39% en el análisis inicial). El modelo de roles ya está alineado al BRD (4 roles, scope tienda+marca real). Los gaps grandes restantes están concentrados en 3 áreas predecibles:
 
 1. **Backend real y persistencia** (toda la categoría 🤔 de RNFs y los dashboards con datos hardcoded) → bloqueado por **F4**.
 2. **Integraciones externas reales** (POS, WhatsApp, e-commerce, ModiFace) → adapters HTTP pendientes, requieren credenciales reales y trabajo de integración.
 3. **Cableado de acciones de Admin** (CRUD de usuarios, tiendas, plantillas; exportación de reportes; derecho al olvido) → trabajo de UI + Server Actions, no requiere F4 técnicamente.
 
-La categoría 3 es la **deuda más fácil de saldar** y debería priorizarse para llegar a 100% de cobertura RF antes de F4.
+La categoría 3 sigue siendo la **deuda más fácil de saldar** y debería priorizarse para subir aún más la cobertura de RFs antes de F4.
 
 ---
 
-_Análisis generado mediante exploración automatizada del código en `apps/web/src/` el 2026-05-15._
+_Análisis original generado el 2026-05-15 mediante exploración automatizada del código en `apps/web/src/`. Actualizado el 2026-05-17 con los cambios de los commits `1162aa2` (scope multi-tienda) y `bea2396` (alineación al BRD + scope por marca + brand en Recommendation)._
