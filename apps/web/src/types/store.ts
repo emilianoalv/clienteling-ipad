@@ -9,4 +9,9 @@ export interface Store {
   chain: StoreChain;
   city: string;
   address: string;
+  /**
+   * Monthly sales objective in MXN. Used by `getOperationalAlerts` to flag
+   * stores below threshold. Undefined → store is excluded from quota alerts.
+   */
+  monthlyTarget?: number;
 }

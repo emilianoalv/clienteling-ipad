@@ -8,6 +8,7 @@ const SEED: Store[] = [
     chain: "Liverpool",
     city: "CDMX",
     address: "Mariano Escobedo 425",
+    monthlyTarget: 1_800_000,
   },
   {
     id: "st-per" as StoreId,
@@ -15,6 +16,7 @@ const SEED: Store[] = [
     chain: "Liverpool",
     city: "CDMX",
     address: "Periférico Sur 4690",
+    monthlyTarget: 1_500_000,
   },
   {
     id: "st-stf" as StoreId,
@@ -22,6 +24,7 @@ const SEED: Store[] = [
     chain: "Palacio",
     city: "CDMX",
     address: "Vasco de Quiroga 3800",
+    monthlyTarget: 2_000_000,
   },
 ];
 

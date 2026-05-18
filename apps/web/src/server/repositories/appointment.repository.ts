@@ -13,6 +13,7 @@ const BA_POL_LCM_2 = "us-ba-pol-lcm-2" as StaffId;
 const BA_POL_YSL_1 = "us-ba-pol-ysl-1" as StaffId;
 const BA_POL_YSL_2 = "us-ba-pol-ysl-2" as StaffId;
 const BA_PER_LCM_1 = "us-ba-per-lcm-1" as StaffId;
+const BA_PER_LCM_2 = "us-ba-per-lcm-2" as StaffId;
 const BA_PER_YSL_1 = "us-ba-per-ysl-1" as StaffId;
 const BA_PER_YSL_2 = "us-ba-per-ysl-2" as StaffId;
 const BA_STF_LCM_1 = "us-ba-stf-lcm-1" as StaffId;
@@ -164,9 +165,59 @@ const SEED: Appointment[] = [
     kind: "product-followup",
     status: "completed",
   },
+  // ── ABSOLUTE appointments for deterministic dashboard tests ───────────────
+  // Concentrated in PER × LCM (Andrea) so a single baId filter exposes them
+  // in isolation, without interference from the "live demo" relativeISO ones.
+  {
+    id: "ap-13" as AppointmentId,
+    clientId: "cl-elena" as ClientId,
+    baId: BA_PER_LCM_2, // Andrea
+    brand: "Lancôme",
+    storeId: ST_PER,
+    at: "2026-04-15T10:00:00.000Z",
+    durationMin: 45,
+    kind: "diagnosis",
+    status: "scheduled",
+  },
+  {
+    id: "ap-14" as AppointmentId,
+    clientId: "cl-cristina" as ClientId,
+    baId: BA_PER_LCM_2, // Andrea
+    brand: "Lancôme",
+    storeId: ST_PER,
+    at: "2026-04-15T15:00:00.000Z",
+    durationMin: 60,
+    kind: "consultation",
+    status: "confirmed",
+  },
+  {
+    id: "ap-15" as AppointmentId,
+    clientId: "cl-elena" as ClientId,
+    baId: BA_PER_LCM_2, // Andrea
+    brand: "Lancôme",
+    storeId: ST_PER,
+    at: "2026-04-20T11:00:00.000Z",
+    durationMin: 45,
+    kind: "facial",
+    status: "rescheduled",
+    rescheduledAt: "2026-04-12T16:00:00.000Z",
+  },
+  {
+    id: "ap-16" as AppointmentId,
+    clientId: "cl-cristina" as ClientId,
+    baId: BA_PER_LCM_2, // Andrea
+    brand: "Lancôme",
+    storeId: ST_PER,
+    at: "2026-04-22T14:00:00.000Z",
+    durationMin: 30,
+    kind: "makeup",
+    status: "cancelled",
+    cancelReason: "Conflicto de agenda",
+    cancelledAt: "2026-04-18T09:00:00.000Z",
+  },
 ];
 
-const APPOINTMENTS: Appointment[] = persistent("__clienteling.appointments.v3", () => [...SEED]);
+const APPOINTMENTS: Appointment[] = persistent("__clienteling.appointments.v4", () => [...SEED]);
 
 export interface AppointmentListFilter {
   baId?: StaffId;

@@ -24,24 +24,24 @@ const YSL: BrandId = "YSL";
  */
 const SEED: User[] = [
   // ── Liverpool Polanco ─────────────────────────────────────────────────────
-  { id: "us-ba-pol-lcm-1" as UserId, name: "Valentina Ríos", role: "BA", storeId: ST_POL, brand: LCM },
-  { id: "us-ba-pol-lcm-2" as UserId, name: "Fernanda Oliveros", role: "BA", storeId: ST_POL, brand: LCM },
-  { id: "us-ba-pol-ysl-1" as UserId, name: "Daniela Castro", role: "BA", storeId: ST_POL, brand: YSL },
-  { id: "us-ba-pol-ysl-2" as UserId, name: "Sofía Marín", role: "BA", storeId: ST_POL, brand: YSL },
+  { id: "us-ba-pol-lcm-1" as UserId, name: "Valentina Ríos", role: "BA", storeId: ST_POL, brand: LCM, monthlyTarget: 500_000 },
+  { id: "us-ba-pol-lcm-2" as UserId, name: "Fernanda Oliveros", role: "BA", storeId: ST_POL, brand: LCM, monthlyTarget: 500_000 },
+  { id: "us-ba-pol-ysl-1" as UserId, name: "Daniela Castro", role: "BA", storeId: ST_POL, brand: YSL, monthlyTarget: 400_000 },
+  { id: "us-ba-pol-ysl-2" as UserId, name: "Sofía Marín", role: "BA", storeId: ST_POL, brand: YSL, monthlyTarget: 400_000 },
   { id: "us-gte-pol" as UserId, name: "Camila Santos", role: "Gerente", storeId: ST_POL },
 
   // ── Liverpool Perisur ─────────────────────────────────────────────────────
-  { id: "us-ba-per-lcm-1" as UserId, name: "Regina Mendoza", role: "BA", storeId: ST_PER, brand: LCM },
-  { id: "us-ba-per-lcm-2" as UserId, name: "Andrea Lozano", role: "BA", storeId: ST_PER, brand: LCM },
-  { id: "us-ba-per-ysl-1" as UserId, name: "Lucía Cabrera", role: "BA", storeId: ST_PER, brand: YSL },
-  { id: "us-ba-per-ysl-2" as UserId, name: "Mariana Esquivel", role: "BA", storeId: ST_PER, brand: YSL },
+  { id: "us-ba-per-lcm-1" as UserId, name: "Regina Mendoza", role: "BA", storeId: ST_PER, brand: LCM, monthlyTarget: 450_000 },
+  { id: "us-ba-per-lcm-2" as UserId, name: "Andrea Lozano", role: "BA", storeId: ST_PER, brand: LCM, monthlyTarget: 450_000 },
+  { id: "us-ba-per-ysl-1" as UserId, name: "Lucía Cabrera", role: "BA", storeId: ST_PER, brand: YSL, monthlyTarget: 400_000 },
+  { id: "us-ba-per-ysl-2" as UserId, name: "Mariana Esquivel", role: "BA", storeId: ST_PER, brand: YSL, monthlyTarget: 400_000 },
   { id: "us-gte-per" as UserId, name: "Patricia Herrera", role: "Gerente", storeId: ST_PER },
 
   // ── Palacio Santa Fe ──────────────────────────────────────────────────────
-  { id: "us-ba-stf-lcm-1" as UserId, name: "Renata Salazar", role: "BA", storeId: ST_STF, brand: LCM },
-  { id: "us-ba-stf-lcm-2" as UserId, name: "Ximena Pereda", role: "BA", storeId: ST_STF, brand: LCM },
-  { id: "us-ba-stf-ysl-1" as UserId, name: "Paulina Treviño", role: "BA", storeId: ST_STF, brand: YSL },
-  { id: "us-ba-stf-ysl-2" as UserId, name: "Carolina Andrade", role: "BA", storeId: ST_STF, brand: YSL },
+  { id: "us-ba-stf-lcm-1" as UserId, name: "Renata Salazar", role: "BA", storeId: ST_STF, brand: LCM, monthlyTarget: 600_000 },
+  { id: "us-ba-stf-lcm-2" as UserId, name: "Ximena Pereda", role: "BA", storeId: ST_STF, brand: LCM, monthlyTarget: 600_000 },
+  { id: "us-ba-stf-ysl-1" as UserId, name: "Paulina Treviño", role: "BA", storeId: ST_STF, brand: YSL, monthlyTarget: 500_000 },
+  { id: "us-ba-stf-ysl-2" as UserId, name: "Carolina Andrade", role: "BA", storeId: ST_STF, brand: YSL, monthlyTarget: 500_000 },
   { id: "us-gte-stf" as UserId, name: "Mónica Solís", role: "Gerente", storeId: ST_STF },
 
   // ── Supervisor Zona Centro (Polanco + Santa Fe — Perisur fuera de zona) ──
@@ -63,7 +63,7 @@ const SEED: User[] = [
 ];
 
 import { persistent } from "./_persist";
-const USERS = persistent("__clienteling.users.v3", () => new Map<UserId, User>(SEED.map((u) => [u.id, u])));
+const USERS = persistent("__clienteling.users.v4", () => new Map<UserId, User>(SEED.map((u) => [u.id, u])));
 
 export interface UserRepository {
   list(): Promise<User[]>;

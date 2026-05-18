@@ -81,6 +81,83 @@ const SEED: FollowupTask[] = [
     completedAt: relativeISO(-3, 12, 15),
     createdAt: relativeISO(-5, 17, 0),
   },
+  // Two completed tasks with ABSOLUTE timestamps so dashboard queries can be
+  // tested deterministically against fixed periods (e.g. April 2026). The
+  // tasks above use relativeISO so the "inbox demo" feels live.
+  {
+    id: "ft-06" as FollowupTaskId,
+    clientId: "cl-constanza" as ClientId, // Polanco · multi-brand
+    baId: BA_POL_LCM_1,
+    type: "call",
+    description: "Confirmar disponibilidad de Absolue para reposición",
+    dueAt: "2026-04-15T11:00:00.000Z",
+    status: "done",
+    result: "Confirmó compra para próxima semana.",
+    completedAt: "2026-04-15T13:30:00.000Z",
+    createdAt: "2026-04-10T09:00:00.000Z",
+  },
+  {
+    id: "ft-07" as FollowupTaskId,
+    clientId: "cl-gabriela" as ClientId, // Perisur · YSL
+    baId: BA_PER_YSL_1,
+    type: "whatsapp",
+    description: "Feedback de muestra Libre Le Parfum",
+    dueAt: "2026-04-22T15:00:00.000Z",
+    status: "done",
+    result: "Le encantó; pidió travel size.",
+    completedAt: "2026-04-22T16:45:00.000Z",
+    createdAt: "2026-04-15T10:00:00.000Z",
+  },
+  // ft-08: completed by Ximena (BA_STF_LCM_2). The matching revisita
+  // is int-20 — by RENATA, the OTHER LCM BA in Santa Fe. Exercises
+  // "any BA in the same counter counts as revisita".
+  {
+    id: "ft-08" as FollowupTaskId,
+    clientId: "cl-marina" as ClientId, // Santa Fe · Lancôme
+    baId: BA_STF_LCM_2,
+    type: "call",
+    description: "Confirmar siguiente cita facial",
+    dueAt: "2026-04-30T09:00:00.000Z",
+    status: "done",
+    result: "Reagendó para la próxima semana.",
+    completedAt: "2026-04-30T10:00:00.000Z",
+    createdAt: "2026-04-25T18:00:00.000Z",
+  },
+  // ── PENDING tasks with ABSOLUTE dueAt for deterministic tests of
+  //    getPendingFollowups (overdue vs upcoming grouping). All in PER × LCM
+  //    counter so a single BA-scope filter exposes them in isolation
+  //    (avoids interference from the four pending tasks above that use
+  //    relativeISO for the "live inbox" demo).
+  {
+    id: "ft-09" as FollowupTaskId,
+    clientId: "cl-elena" as ClientId,
+    baId: "us-ba-per-lcm-2" as StaffId, // Andrea
+    type: "call",
+    description: "Confirmar cumpleaños (re-engagement)",
+    dueAt: "2026-04-15T11:00:00.000Z", // overdue against May 1 anchor
+    status: "pending",
+    createdAt: "2026-04-10T09:00:00.000Z",
+  },
+  {
+    id: "ft-10" as FollowupTaskId,
+    clientId: "cl-elena" as ClientId,
+    baId: "us-ba-per-lcm-1" as StaffId, // Regina
+    type: "whatsapp",
+    description: "Pedir feedback de muestra Hydrating",
+    dueAt: "2026-04-22T14:00:00.000Z", // overdue, later than ft-09
+    status: "pending",
+    createdAt: "2026-04-15T10:00:00.000Z",
+  },
+  {
+    id: "ft-11" as FollowupTaskId,
+    clientId: "cl-cristina" as ClientId,
+    baId: "us-ba-per-lcm-1" as StaffId, // Regina
+    type: "call",
+    description: "Llamar para invitar a evento Absolue",
+    dueAt: "2026-05-10T16:00:00.000Z", // upcoming
+    status: "pending",
+    createdAt: "2026-04-28T12:00:00.000Z",
+  },
 ];
 
 export interface FollowupTaskListFilter {

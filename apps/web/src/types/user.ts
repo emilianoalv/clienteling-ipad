@@ -30,4 +30,9 @@ export interface User {
   zone?: string;
   /** Admin: team / department. */
   team?: string;
+  /**
+   * BA only: monthly sales objective in MXN. Used by `getOperationalAlerts`
+   * to flag underperformers. Undefined → BA is excluded from quota alerts.
+   */
+  monthlyTarget?: number;
 }

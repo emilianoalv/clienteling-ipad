@@ -526,6 +526,59 @@ export const SEED_PURCHASES: Purchase[] = [
     brand: "YSL",
     ticketRef: "PH-260125-0244",
   },
+
+  // ── Historic purchases for retention KPIs ──────────────────────────────────
+  // Older purchases (Aug–Sep 2025) anchor the default 6-month cohort window
+  // for getRepurchaseRate. Some clientas repurchase later (via existing
+  // 2026 purchases), some don't — giving the cohort signal in every bucket.
+  {
+    id: "pu-13" as Purchase["id"],
+    clientId: "cl-elena" as ClientId, // Perisur LCM (since 2020-11-04)
+    baId: BA_PER_LCM_2,
+    storeId: ST_PER,
+    at: "2025-09-15T16:00:00.000Z",
+    items: [{ sku: "LC-GEN-50" as Sku, qty: 1, unitPrice: 6_400 }],
+    total: 6_400,
+    payment: "card",
+    brand: "Lancôme",
+    ticketRef: "LV-250915-0731",
+  },
+  {
+    id: "pu-14" as Purchase["id"],
+    clientId: "cl-elena" as ClientId, // Repurchase by cl-elena
+    baId: BA_PER_LCM_2,
+    storeId: ST_PER,
+    at: "2026-02-10T14:30:00.000Z",
+    items: [{ sku: "LC-ABS-50" as Sku, qty: 1, unitPrice: 9_800 }],
+    total: 9_800,
+    payment: "card",
+    brand: "Lancôme",
+    ticketRef: "LV-260210-0294",
+  },
+  {
+    id: "pu-15" as Purchase["id"],
+    clientId: "cl-gabriela" as ClientId, // Perisur YSL (since 2023-03-20) — cohort SIN repurchase
+    baId: BA_PER_YSL_1,
+    storeId: ST_PER,
+    at: "2025-09-10T13:00:00.000Z",
+    items: [{ sku: "YS-LIB-50" as Sku, qty: 1, unitPrice: 8_900 }],
+    total: 8_900,
+    payment: "card",
+    brand: "YSL",
+    ticketRef: "LV-250910-0512",
+  },
+  {
+    id: "pu-16" as Purchase["id"],
+    clientId: "cl-constanza" as ClientId, // Polanco LCM cohort — repurchase later via pu-1
+    baId: BA_POL_LCM_1,
+    storeId: ST_POL,
+    at: "2025-08-15T16:00:00.000Z",
+    items: [{ sku: "LC-ABS-50" as Sku, qty: 1, unitPrice: 9_800 }],
+    total: 9_800,
+    payment: "card",
+    brand: "Lancôme",
+    ticketRef: "LV-250815-0177",
+  },
 ];
 
 /**
@@ -738,6 +791,32 @@ export const SEED_INTERACTIONS: Interaction[] = [
     kind: "whatsapp",
     at: "2026-05-13T10:00:00.000Z",
     notes: "Le aparta Libre Le Parfum.",
+  },
+  // ── Test fixtures for getFollowUpToRevisitRate ──────────────────────────────
+  // int-20: revisita PRESENCIAL de cl-marina por OTRA BA del mismo counter
+  // (STF × Lancôme) tras ft-08. Demuestra "otro BA del mismo counter SÍ cuenta".
+  {
+    id: "int-20" as Interaction["id"],
+    clientId: "cl-marina" as ClientId,
+    baId: BA_STF_LCM_1, // Renata, distinta de la BA del ft-08 (Ximena)
+    brand: "Lancôme",
+    storeId: ST_STF,
+    kind: "consultation",
+    at: "2026-05-04T15:00:00.000Z",
+    durationMin: 35,
+    notes: "Renueva diagnóstico (revisita post-followup).",
+  },
+  // int-21: WhatsApp posterior a ft-07 — NO debe contar como revisita
+  // porque la regla excluye comunicación remota.
+  {
+    id: "int-21" as Interaction["id"],
+    clientId: "cl-gabriela" as ClientId,
+    baId: BA_PER_YSL_1,
+    brand: "YSL",
+    storeId: ST_PER,
+    kind: "whatsapp",
+    at: "2026-04-25T11:00:00.000Z",
+    notes: "Confirma recibo de muestra (no cuenta como revisita).",
   },
 ];
 
