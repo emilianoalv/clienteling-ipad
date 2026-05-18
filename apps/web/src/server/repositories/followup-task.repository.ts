@@ -10,7 +10,12 @@ import type { StaffId } from "@/types/staff";
 import { generateId } from "@/lib/id/generate-id";
 import { persistent } from "./_persist";
 
-const BA_DEMO = "demo-ba" as StaffId;
+// BAs reales del seed post-refactor (ver user.repository.ts).
+const BA_POL_LCM_1 = "us-ba-pol-lcm-1" as StaffId; // Valentina Ríos
+const BA_POL_LCM_2 = "us-ba-pol-lcm-2" as StaffId; // Fernanda Oliveros
+const BA_PER_YSL_1 = "us-ba-per-ysl-1" as StaffId; // Lucía Cabrera
+const BA_STF_LCM_1 = "us-ba-stf-lcm-1" as StaffId; // Renata Salazar
+const BA_STF_LCM_2 = "us-ba-stf-lcm-2" as StaffId; // Ximena Pereda
 
 function relativeISO(dayDelta: number, hours = 10, minutes = 0): string {
   const d = new Date();
@@ -26,38 +31,38 @@ function relativeISO(dayDelta: number, hours = 10, minutes = 0): string {
 const SEED: FollowupTask[] = [
   {
     id: "ft-01" as FollowupTaskId,
-    clientId: "cl-andrea" as ClientId,
-    baId: BA_DEMO,
+    clientId: "cl-ofelia" as ClientId, // Polanco · Lancôme
+    baId: BA_POL_LCM_2,
     type: "call",
-    description: "Llamar por cumpleaños (saludo + ofrecer promo Or Rouge)",
+    description: "Llamar por cumpleaños (saludo + ofrecer promo Absolue)",
     dueAt: relativeISO(-1, 11, 0),
     status: "pending",
     createdAt: relativeISO(-3, 9, 0),
   },
   {
     id: "ft-02" as FollowupTaskId,
-    clientId: "cl-valentina" as ClientId,
-    baId: BA_DEMO,
+    clientId: "cl-constanza" as ClientId, // Polanco · multi-brand
+    baId: BA_POL_LCM_1,
     type: "call",
-    description: "Pedir feedback de muestra Or Rouge entregada en visita",
+    description: "Pedir feedback de muestra Génifique entregada en visita",
     dueAt: relativeISO(0, 12, 0),
     status: "pending",
     createdAt: relativeISO(-7, 14, 30),
   },
   {
     id: "ft-03" as FollowupTaskId,
-    clientId: "cl-renata" as ClientId,
-    baId: BA_DEMO,
+    clientId: "cl-gabriela" as ClientId, // Perisur · YSL
+    baId: BA_PER_YSL_1,
     type: "sample-feedback",
-    description: "Mensaje WA: ¿cómo le va con la muestra de Advanced Génifique?",
+    description: "Mensaje WA: ¿cómo le va con la muestra de Libre Eau de Parfum?",
     dueAt: relativeISO(1, 15, 0),
     status: "pending",
     createdAt: relativeISO(-4, 16, 0),
   },
   {
     id: "ft-04" as FollowupTaskId,
-    clientId: "cl-camila" as ClientId,
-    baId: BA_DEMO,
+    clientId: "cl-karla" as ClientId, // Santa Fe · multi-brand
+    baId: BA_STF_LCM_1,
     type: "whatsapp",
     description: "Mandar info de Rénergie H.C.F. y disponibilidad en tienda",
     dueAt: relativeISO(3, 10, 30),
@@ -66,8 +71,8 @@ const SEED: FollowupTask[] = [
   },
   {
     id: "ft-05" as FollowupTaskId,
-    clientId: "cl-valentina" as ClientId,
-    baId: BA_DEMO,
+    clientId: "cl-marina" as ClientId, // Santa Fe · Lancôme
+    baId: BA_STF_LCM_2,
     type: "whatsapp",
     description: "Felicitar por compra de Absolue (cierre post-venta)",
     dueAt: relativeISO(-3, 11, 0),
@@ -97,7 +102,7 @@ export interface FollowupTaskRepository {
   cancel(id: FollowupTaskId): Promise<FollowupTask | null>;
 }
 
-const TASKS: FollowupTask[] = persistent("__clienteling.followupTasks", () => [...SEED]);
+const TASKS: FollowupTask[] = persistent("__clienteling.followupTasks.v2", () => [...SEED]);
 
 function matches(t: FollowupTask, f: FollowupTaskListFilter): boolean {
   if (f.status && t.status !== f.status) return false;
