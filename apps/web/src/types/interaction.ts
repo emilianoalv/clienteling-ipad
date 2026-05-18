@@ -2,6 +2,7 @@ import type { BrandId } from "./brand";
 import type { Branded } from "./branded";
 import type { ClientId } from "./client";
 import type { StaffId } from "./staff";
+import type { StoreId } from "./store";
 import type { VisitMotive } from "./visit-motive";
 
 export type InteractionId = Branded<string, "Interaction">;
@@ -22,6 +23,7 @@ export interface Interaction {
   clientId: ClientId;
   baId: StaffId;
   brand: BrandId;
+  storeId: StoreId;
   kind: InteractionKind;
   at: string;
   notes?: string;

@@ -17,6 +17,8 @@ function sample(
     id: `sp-${id}` as SampleId,
     clientId: "cl-x" as ClientId,
     baId: "ba-x" as StaffId,
+    storeId: "st-pol" as StoreId,
+    brand: "Lancôme",
     sku: "LC-REN-5" as Sku,
     name: "Sample",
     givenAt,

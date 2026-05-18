@@ -2,6 +2,7 @@ import "server-only";
 import type { BrandId } from "@/types/brand";
 import type { ClientId } from "@/types/client";
 import type { Sample, SampleId } from "@/types/sample";
+import type { StoreId } from "@/types/store";
 import { SEED_SAMPLES } from "./seed";
 import { persistent } from "./_persist";
 import { generateId } from "@/lib/id/generate-id";
@@ -16,6 +17,11 @@ export interface SampleInventoryItem {
 
 export interface SampleListFilter {
   brands?: readonly BrandId[];
+  storeIds?: readonly StoreId[];
+  /** Inclusive lower bound on `givenAt`. */
+  from?: Date;
+  /** Exclusive upper bound on `givenAt`. */
+  to?: Date;
 }
 
 export interface SampleRepository {
@@ -25,7 +31,7 @@ export interface SampleRepository {
   create(input: Omit<Sample, "id">): Promise<Sample>;
 }
 
-const SAMPLES: Sample[] = persistent("__clienteling.samples", () => [...SEED_SAMPLES]);
+const SAMPLES: Sample[] = persistent("__clienteling.samples.v2", () => [...SEED_SAMPLES]);
 
 const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInventory", () => [
   { sku: "LC-REN-5", name: "Rénergie H.C.F. sample 5ml", have: 42, capacity: 60, brand: "Lancôme" },
@@ -37,8 +43,17 @@ const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInvento
 ]);
 
 export const sampleRepository: SampleRepository = {
-  async list() {
-    return [...SAMPLES].sort((a, b) => b.givenAt.localeCompare(a.givenAt));
+  async list(filter = {}) {
+    const brandScope = filter.brands;
+    const storeScope = filter.storeIds;
+    return SAMPLES.filter((s) => {
+      if (brandScope && brandScope.length && !brandScope.includes(s.brand)) return false;
+      if (storeScope && storeScope.length && !storeScope.includes(s.storeId)) return false;
+      const at = new Date(s.givenAt);
+      if (filter.from && at < filter.from) return false;
+      if (filter.to && at >= filter.to) return false;
+      return true;
+    }).sort((a, b) => b.givenAt.localeCompare(a.givenAt));
   },
 
   async listByClient(clientId) {

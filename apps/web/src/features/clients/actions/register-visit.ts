@@ -63,6 +63,7 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
     clientId,
     baId: staff.id,
     brand,
+    storeId,
     kind,
     at,
     motive: input.motive,
@@ -76,6 +77,8 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
     await sampleRepository.create({
       clientId,
       baId: staff.id,
+      storeId,
+      brand: product?.brand ?? brand,
       sku: sku as Sku,
       name: product?.line ?? sku,
       givenAt: at,

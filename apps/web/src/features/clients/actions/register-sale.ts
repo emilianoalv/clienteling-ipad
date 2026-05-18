@@ -60,6 +60,7 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
     clientId,
     baId: staff.id,
     brand: DEFAULT_BRAND,
+    storeId,
     kind: "purchase",
     at,
     amount: total,
