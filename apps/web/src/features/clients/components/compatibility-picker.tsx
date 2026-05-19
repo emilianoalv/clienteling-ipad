@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Client } from "@/types/client";
 import type { Product, Sku } from "@/types/product";
+import type { ProductTech } from "@/types/product-tech";
 import { Avatar, BrandTag, Icon, Input } from "@/components/primitives";
 import {
   rankProductsForClient,
@@ -12,6 +13,8 @@ import {
 export interface CompatibilityPickerProps {
   client: Client;
   products: readonly Product[];
+  /** Optional ficha técnica map. Enables age/routine/timing/active-allergy signals. */
+  techs?: ReadonlyMap<Sku, ProductTech>;
   /** SKUs currently selected. */
   selected: readonly string[];
   onChange: (next: string[]) => void;
@@ -26,6 +29,7 @@ export interface CompatibilityPickerProps {
 export function CompatibilityPicker({
   client,
   products,
+  techs,
   selected,
   onChange,
   topN = 5,
@@ -33,8 +37,8 @@ export function CompatibilityPicker({
   const [query, setQuery] = useState("");
 
   const ranked = useMemo(
-    () => rankProductsForClient(client, products),
-    [client, products],
+    () => rankProductsForClient(client, products, techs),
+    [client, products, techs],
   );
 
   const visible = useMemo(() => {

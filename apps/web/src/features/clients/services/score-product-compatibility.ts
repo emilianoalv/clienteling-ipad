@@ -1,5 +1,6 @@
 import type { Client } from "@/types/client";
-import type { Product } from "@/types/product";
+import type { Product, Sku } from "@/types/product";
+import type { ProductTech } from "@/types/product-tech";
 
 /**
  * Why a product matched (or didn't) a client's profile. Renders as chips
@@ -10,7 +11,12 @@ export type CompatibilityReasonKind =
   | "skin-mismatch"
   | "concern-match"
   | "interest-match"
-  | "allergy-conflict";
+  | "allergy-conflict"
+  | "age-match"
+  | "age-mismatch"
+  | "routine-level-mismatch"
+  | "timing-mismatch"
+  | "active-allergy-conflict";
 
 export interface CompatibilityReason {
   kind: CompatibilityReasonKind;
@@ -32,6 +38,18 @@ const WEIGHT_SKIN_MISMATCH = -2;
 const WEIGHT_CONCERN_MATCH = 2;
 const WEIGHT_INTEREST_MATCH = 1;
 const WEIGHT_ALLERGY_CONFLICT = -5;
+const WEIGHT_AGE_MATCH = 1;
+const WEIGHT_AGE_MISMATCH = -1;
+const WEIGHT_ROUTINE_MISMATCH = -1;
+const WEIGHT_TIMING_MISMATCH = -1;
+
+const ROUTINE_RANK: Record<string, number> = {
+  Ninguna: 0,
+  Básica: 1,
+  Intermedia: 2,
+  Avanzada: 3,
+  Profesional: 4,
+};
 
 /**
  * Heuristic mapping from a product's `attrs.tipo` (or `attrs.familia`) to
@@ -78,12 +96,18 @@ function productInterestCategories(product: Product): readonly string[] {
  * Score a single product against a client's profile. Returns the clamped
  * score plus the reasons that contributed to it (positive and negative).
  *
+ * The optional `tech` parameter enables 4 additional signals:
+ * age range, routine level, timing alignment, and active-ingredient
+ * allergies. Callers that don't pass tech get the original 4-signal
+ * scoring (skin / concerns / interests / allergies-by-name).
+ *
  * Pure function — testable in isolation. Used by visit form sample &
  * recommendation pickers.
  */
 export function scoreProductCompatibility(
   client: Client,
   product: Product,
+  tech?: ProductTech | null,
 ): CompatibilityScore {
   const reasons: CompatibilityReason[] = [];
   let raw = 0;
@@ -102,8 +126,6 @@ export function scoreProductCompatibility(
         : "Apto para todos los tipos de piel",
     });
   } else if (productSkin.length > 0) {
-    // Product is explicit about which skin types it serves and the
-    // client's is not among them.
     raw += WEIGHT_SKIN_MISMATCH;
     reasons.push({
       kind: "skin-mismatch",
@@ -153,8 +175,114 @@ export function scoreProductCompatibility(
     }
   }
 
+  // 5-8. Tech-derived signals (only when ficha técnica available).
+  if (tech) {
+    const extras = scoreTechExtras(client, tech);
+    raw += extras.delta;
+    reasons.push(...extras.reasons);
+  }
+
   const score = Math.max(SCORE_MIN, Math.min(SCORE_MAX, raw));
   return { score, reasons };
+}
+
+function scoreTechExtras(
+  client: Client,
+  tech: ProductTech,
+): { delta: number; reasons: CompatibilityReason[] } {
+  const reasons: CompatibilityReason[] = [];
+  let delta = 0;
+
+  // 5. Age range — only meaningful when both client.age and tech.target.age* exist
+  const { ageMin, ageMax } = tech.target;
+  if (client.age != null && (ageMin != null || ageMax != null)) {
+    const within =
+      (ageMin == null || client.age >= ageMin) &&
+      (ageMax == null || client.age <= ageMax);
+    if (within) {
+      delta += WEIGHT_AGE_MATCH;
+      reasons.push({
+        kind: "age-match",
+        positive: true,
+        label: formatAgeFitLabel(ageMin, ageMax),
+      });
+    } else {
+      delta += WEIGHT_AGE_MISMATCH;
+      reasons.push({
+        kind: "age-mismatch",
+        positive: false,
+        label: formatAgeMismatchLabel(client.age, ageMin, ageMax),
+      });
+    }
+  }
+
+  // 6. Routine level — penalize when client routine is below required
+  if (tech.target.routineLevel) {
+    const required = ROUTINE_RANK[tech.target.routineLevel] ?? 0;
+    const has = ROUTINE_RANK[client.routine] ?? 0;
+    if (has < required) {
+      delta += WEIGHT_ROUTINE_MISMATCH;
+      reasons.push({
+        kind: "routine-level-mismatch",
+        positive: false,
+        label: `Requiere rutina ${tech.target.routineLevel.toLowerCase()}`,
+      });
+    }
+  }
+
+  // 7. Timing — penalize when product timing doesn't overlap with client's
+  if (tech.usage.timing.length > 0 && client.routineTiming && client.routineTiming.length > 0) {
+    const productAMPM = new Set(tech.usage.timing);
+    const clientAMPM = new Set<"AM" | "PM">();
+    for (const t of client.routineTiming) {
+      if (t === "morning") clientAMPM.add("AM");
+      if (t === "evening") clientAMPM.add("PM");
+    }
+    if (clientAMPM.size > 0) {
+      const hasOverlap = [...productAMPM].some((t) => clientAMPM.has(t));
+      if (!hasOverlap) {
+        delta += WEIGHT_TIMING_MISMATCH;
+        const only = productAMPM.has("AM") ? "mañana" : "noche";
+        reasons.push({
+          kind: "timing-mismatch",
+          positive: false,
+          label: `Solo se aplica de ${only}`,
+        });
+      }
+    }
+  }
+
+  // 8. Active-ingredient allergy — more precise than name-based haystack
+  for (const allergy of client.allergies) {
+    const needle = allergy.trim().toLowerCase();
+    if (!needle) continue;
+    for (const active of tech.keyActives) {
+      if (active.ingredient.toLowerCase().includes(needle)) {
+        delta += WEIGHT_ALLERGY_CONFLICT;
+        reasons.push({
+          kind: "active-allergy-conflict",
+          positive: false,
+          label: `Contiene ${active.ingredient} (alergia registrada)`,
+        });
+        break; // one match per allergy is enough
+      }
+    }
+  }
+
+  return { delta, reasons };
+}
+
+function formatAgeFitLabel(ageMin?: number, ageMax?: number): string {
+  if (ageMin != null && ageMax != null) return `Edad ideal ${ageMin}-${ageMax}`;
+  if (ageMin != null) return `Edad ideal ${ageMin}+`;
+  if (ageMax != null) return `Edad ideal hasta ${ageMax}`;
+  return "Edad ideal";
+}
+
+function formatAgeMismatchLabel(age: number, ageMin?: number, ageMax?: number): string {
+  if (ageMin != null && age < ageMin) return `Pensado para ${ageMin}+ años`;
+  if (ageMax != null && age > ageMax) return `Pensado para hasta ${ageMax} años`;
+  return "Fuera de rango de edad";
 }
 
 export interface RankedProduct {
@@ -167,12 +295,19 @@ export interface RankedProduct {
  * score 0 are still included so the picker can show them with their (likely
  * negative) reasons — the BA can still override if she has context the
  * profile doesn't capture.
+ *
+ * Pass `techs` to enable the ficha-técnica-derived signals (age range,
+ * routine level, timing, active allergies) per product.
  */
 export function rankProductsForClient(
   client: Client,
   products: readonly Product[],
+  techs?: ReadonlyMap<Sku, ProductTech>,
 ): readonly RankedProduct[] {
   return products
-    .map((p) => ({ product: p, score: scoreProductCompatibility(client, p) }))
+    .map((p) => ({
+      product: p,
+      score: scoreProductCompatibility(client, p, techs?.get(p.sku) ?? null),
+    }))
     .sort((a, b) => b.score.score - a.score.score);
 }

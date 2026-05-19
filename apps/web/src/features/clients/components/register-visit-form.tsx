@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { Avatar, Button, Icon, Input } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import type { Client } from "@/types/client";
-import type { Product } from "@/types/product";
+import type { Product, Sku } from "@/types/product";
+import type { ProductTech } from "@/types/product-tech";
 import { VISIT_MOTIVES, type VisitMotive } from "@/types/visit-motive";
 import { FOLLOWUP_TYPES, type FollowupType } from "@/types/followup-task";
 import { registerVisit } from "../actions/register-visit";
@@ -35,10 +36,12 @@ function initials(name: string): string {
 export interface RegisterVisitFormProps {
   client: Client;
   products: readonly Product[];
+  /** Optional ficha técnica map — enables age/routine/timing/active-allergy signals in the picker. */
+  techs?: ReadonlyMap<Sku, ProductTech>;
   baName: string;
 }
 
-export function RegisterVisitForm({ client, products, baName }: RegisterVisitFormProps) {
+export function RegisterVisitForm({ client, products, techs, baName }: RegisterVisitFormProps) {
   const [motive, setMotive] = useState<VisitMotive>("browse");
   const [notes, setNotes] = useState("");
 
@@ -172,6 +175,7 @@ export function RegisterVisitForm({ client, products, baName }: RegisterVisitFor
               <CompatibilityPicker
                 client={client}
                 products={products}
+                techs={techs}
                 selected={sampleSkus}
                 onChange={setSampleSkus}
               />
@@ -189,6 +193,7 @@ export function RegisterVisitForm({ client, products, baName }: RegisterVisitFor
               <CompatibilityPicker
                 client={client}
                 products={products}
+                techs={techs}
                 selected={recSkus}
                 onChange={setRecSkus}
               />

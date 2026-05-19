@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Client, ClientId } from "@/types/client";
 import type { Product, Sku } from "@/types/product";
+import type { ProductTech } from "@/types/product-tech";
 import type { StoreId } from "@/types/store";
 import {
   rankProductsForClient,
@@ -45,6 +46,24 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     howTo: "Apply daily.",
     selling: ["A", "B"],
     lifecycleDays: 100,
+    ...overrides,
+  };
+}
+
+function makeTech(overrides: Partial<ProductTech> = {}): ProductTech {
+  return {
+    keyActives: [{ ingredient: "Test Active", benefit: "Tests stuff" }],
+    clinicalResults: [],
+    usage: {
+      timing: ["AM", "PM"],
+      frequency: "Diario",
+      slot: "treatment-serum",
+      position: 2,
+    },
+    target: {},
+    sensorial: { texture: "test", feel: "test" },
+    saleTip: "test tip",
+    source: "https://example.com",
     ...overrides,
   };
 }
@@ -108,6 +127,142 @@ describe("scoreProductCompatibility", () => {
 
     expect(result.score).toBe(0);
     expect(result.reasons).toHaveLength(0);
+  });
+
+  it("ignores tech-derived signals when tech is undefined (backward compat)", () => {
+    const client = makeClient({
+      age: 22,
+      routine: "Básica",
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({ attrs: { tipo: "Sérum", piel: ["Todas"] } });
+    const result = scoreProductCompatibility(client, product);
+    // skin +3, no concerns, no interests, no allergies = 3
+    expect(result.score).toBe(3);
+    expect(result.reasons.map((r) => r.kind)).toEqual(["skin-match"]);
+  });
+
+  it("adds age-match bonus when client age within tech range", () => {
+    const client = makeClient({
+      age: 30,
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({ attrs: { tipo: "Sérum", piel: ["Todas"] } });
+    const tech = makeTech({ target: { ageMin: 25, ageMax: 45 } });
+    const result = scoreProductCompatibility(client, product, tech);
+    // skin +3, age in range +1 = 4
+    expect(result.score).toBe(4);
+    const ageReason = result.reasons.find((r) => r.kind === "age-match");
+    expect(ageReason?.positive).toBe(true);
+    expect(ageReason?.label).toBe("Edad ideal 25-45");
+  });
+
+  it("penalizes when client age below tech ageMin", () => {
+    const client = makeClient({
+      age: 22,
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({ attrs: { tipo: "Sérum", piel: ["Todas"] } });
+    const tech = makeTech({ target: { ageMin: 35 } });
+    const result = scoreProductCompatibility(client, product, tech);
+    // skin +3, age below -1 = 2
+    expect(result.score).toBe(2);
+    const reason = result.reasons.find((r) => r.kind === "age-mismatch");
+    expect(reason?.positive).toBe(false);
+    expect(reason?.label).toBe("Pensado para 35+ años");
+  });
+
+  it("penalizes when client routine is below required routine level", () => {
+    const client = makeClient({
+      routine: "Básica",
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({ attrs: { tipo: "Sérum", piel: ["Todas"] } });
+    const tech = makeTech({ target: { routineLevel: "Avanzada" } });
+    const result = scoreProductCompatibility(client, product, tech);
+    // skin +3, routine mismatch -1 = 2
+    expect(result.score).toBe(2);
+    const reason = result.reasons.find((r) => r.kind === "routine-level-mismatch");
+    expect(reason?.label).toBe("Requiere rutina avanzada");
+  });
+
+  it("penalizes when product timing doesn't overlap with client routineTiming", () => {
+    const client = makeClient({
+      routineTiming: ["morning"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({ attrs: { tipo: "Sérum", piel: ["Todas"] } });
+    const tech = makeTech({
+      usage: {
+        timing: ["PM"],
+        frequency: "Diario",
+        slot: "treatment-serum",
+        position: 2,
+      },
+    });
+    const result = scoreProductCompatibility(client, product, tech);
+    // skin +3, timing mismatch -1 = 2
+    expect(result.score).toBe(2);
+    const reason = result.reasons.find((r) => r.kind === "timing-mismatch");
+    expect(reason?.label).toBe("Solo se aplica de noche");
+  });
+
+  it("flags active-ingredient allergy from tech.keyActives", () => {
+    const client = makeClient({
+      allergies: ["niacinamida"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({
+      name: "Triple Serum",
+      attrs: { tipo: "Sérum", piel: ["Todas"] },
+      howTo: "Aplicar diario.",
+    });
+    const tech = makeTech({
+      keyActives: [
+        { ingredient: "Vitamina C", benefit: "Antioxidante" },
+        { ingredient: "Niacinamida", benefit: "Refuerza barrera" },
+      ],
+    });
+    const result = scoreProductCompatibility(client, product, tech);
+    // skin +3, active allergy -5 → clamped to 0
+    expect(result.score).toBe(0);
+    const reason = result.reasons.find((r) => r.kind === "active-allergy-conflict");
+    expect(reason?.label).toBe("Contiene Niacinamida (alergia registrada)");
+  });
+
+  it("rankProductsForClient applies tech signals when techs map is provided", () => {
+    const client = makeClient({
+      age: 26,
+      routine: "Básica",
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const youthful = makeProduct({
+      sku: "YOUTH" as Sku,
+      attrs: { tipo: "Sérum", piel: ["Todas"] },
+    });
+    const mature = makeProduct({
+      sku: "MATURE" as Sku,
+      attrs: { tipo: "Sérum", piel: ["Todas"] },
+    });
+
+    const techs = new Map<Sku, ProductTech>([
+      ["YOUTH" as Sku, makeTech({ target: { ageMin: 18, ageMax: 35 } })],
+      ["MATURE" as Sku, makeTech({ target: { ageMin: 45 } })],
+    ]);
+
+    const ranked = rankProductsForClient(client, [mature, youthful], techs);
+    // YOUTH: skin +3, age in range +1 = 4
+    // MATURE: skin +3, age below -1 = 2
+    expect(ranked[0]!.product.sku).toBe("YOUTH");
+    expect(ranked[0]!.score.score).toBe(4);
+    expect(ranked[1]!.score.score).toBe(2);
   });
 
   it("ranks products by score descending", () => {
