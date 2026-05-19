@@ -25,3 +25,14 @@ export const VISIT_MOTIVES: ReadonlyArray<VisitMotiveOption> = [
   { id: "promo", label: "Promoción" },
   { id: "browse", label: "Conocer productos" },
 ];
+
+/**
+ * Motivos válidos en Registrar visita (sin venta). Los motivos relacionados
+ * con compra (new-purchase, repurchase, gift) viven exclusivamente en
+ * Registrar venta porque ahí es donde se captura la transacción.
+ */
+export const VISIT_ONLY_MOTIVES: ReadonlyArray<VisitMotiveOption> = [
+  { id: "concern", label: "Preocupación" },
+  { id: "promo", label: "Promoción" },
+  { id: "browse", label: "Conocer productos" },
+];

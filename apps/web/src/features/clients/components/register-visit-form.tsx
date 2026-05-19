@@ -6,7 +6,7 @@ import { Card } from "@/components/patterns";
 import type { Client } from "@/types/client";
 import type { Product, Sku } from "@/types/product";
 import type { ProductTech } from "@/types/product-tech";
-import { VISIT_MOTIVES, type VisitMotive } from "@/types/visit-motive";
+import { VISIT_ONLY_MOTIVES, type VisitMotive } from "@/types/visit-motive";
 import { FOLLOWUP_TYPES, type FollowupType } from "@/types/followup-task";
 import { registerVisit } from "../actions/register-visit";
 import type { RegisterVisitInput } from "../schemas/register-visit.schema";
@@ -83,7 +83,7 @@ export function RegisterVisitForm({ client, products, techs, baName }: RegisterV
   }
 
   return (
-    <Card variant="luxe" className="flex flex-col gap-5 max-w-[960px]">
+    <Card variant="luxe" className="flex flex-col gap-5">
       {/* Header */}
       <header>
         <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
@@ -116,7 +116,7 @@ export function RegisterVisitForm({ client, products, techs, baName }: RegisterV
           Motivo de la visita *
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {VISIT_MOTIVES.map((m) => {
+          {VISIT_ONLY_MOTIVES.map((m) => {
             const active = motive === m.id;
             return (
               <button
