@@ -1,0 +1,271 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import type { Product } from "@/types/product";
+import type { Sample } from "@/types/sample";
+import { Avatar, BrandTag, Chip } from "@/components/primitives";
+import { formatDate } from "@/lib/format/format-date";
+
+export type RangeFilter = "3m" | "6m" | "12m" | "all";
+export type StatusFilter = "all" | "converted" | "pending";
+
+const RANGES: ReadonlyArray<{ id: RangeFilter; label: string; months: number | null }> = [
+  { id: "3m", label: "3 meses", months: 3 },
+  { id: "6m", label: "6 meses", months: 6 },
+  { id: "12m", label: "12 meses", months: 12 },
+  { id: "all", label: "Todo", months: null },
+];
+
+const STATUSES: ReadonlyArray<{ id: StatusFilter; label: string }> = [
+  { id: "all", label: "Todas" },
+  { id: "pending", label: "Pendientes de feedback" },
+  { id: "converted", label: "Convertidas" },
+];
+
+const TONE_BY_BRAND = {
+  Lancôme: "lancome",
+  YSL: "ysl",
+} as const;
+
+function avatarTone(brand: string | undefined): "default" | "lancome" | "ysl" {
+  if (!brand) return "default";
+  return (TONE_BY_BRAND as Record<string, "lancome" | "ysl">)[brand] ?? "default";
+}
+
+function daysBetween(fromIso: string, toIso?: string): number {
+  const from = new Date(fromIso).getTime();
+  const to = toIso ? new Date(toIso).getTime() : Date.now();
+  return Math.round((to - from) / 86_400_000);
+}
+
+export interface SampleHistoryProps {
+  clientId: string;
+  clientName: string;
+  samples: readonly Sample[];
+  /** Map from sample SKU to its full product, when the sample maps to a catalog item. */
+  productBySampleSku: Record<string, Product>;
+}
+
+export function SampleHistory({
+  clientId,
+  clientName,
+  samples,
+  productBySampleSku,
+}: SampleHistoryProps) {
+  const [range, setRange] = useState<RangeFilter>("12m");
+  const [status, setStatus] = useState<StatusFilter>("all");
+
+  const filtered = useMemo(() => {
+    const cfg = RANGES.find((r) => r.id === range)!;
+    const cutoff =
+      cfg.months == null
+        ? null
+        : (() => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - cfg.months);
+            return d.getTime();
+          })();
+    return samples.filter((s) => {
+      if (status === "converted" && !s.converted) return false;
+      if (status === "pending" && s.converted) return false;
+      if (cutoff != null && new Date(s.givenAt).getTime() < cutoff) return false;
+      return true;
+    });
+  }, [samples, range, status]);
+
+  const total = filtered.length;
+  const converted = filtered.filter((s) => s.converted).length;
+  const conversionRate = total === 0 ? 0 : Math.round((converted / total) * 100);
+
+  // Avg days to convert (only for samples that converted).
+  // We don't have the purchase date here, so use givenAt → now as proxy for pending
+  // and best-effort heuristic. For accuracy this would need purchase joining.
+  const avgDaysPending = (() => {
+    const pending = filtered.filter((s) => !s.converted);
+    if (pending.length === 0) return null;
+    const total = pending.reduce((acc, s) => acc + daysBetween(s.givenAt), 0);
+    return Math.round(total / pending.length);
+  })();
+
+  return (
+    <div className="flex flex-col gap-5">
+      <header className="flex items-baseline justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+            {clientName}
+          </div>
+          <h2 className="m-0 mt-1 font-display text-[32px] leading-tight tracking-[-0.01em]">
+            Historial de muestras
+          </h2>
+          <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug">
+            Productos sampleados a la clienta. Una muestra pasa a &quot;Convertida&quot; cuando un
+            ticket posterior contiene el producto completo.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center h-8 px-3 rounded-full border border-line text-[14px] font-medium text-ink/70">
+            {total} {total === 1 ? "muestra" : "muestras"}
+          </span>
+        </div>
+      </header>
+
+      <div className="flex flex-col gap-2.5">
+        <FilterRow
+          label="Periodo"
+          options={RANGES}
+          value={range}
+          onChange={(v) => setRange(v as RangeFilter)}
+        />
+        <FilterRow
+          label="Estado"
+          options={STATUSES}
+          value={status}
+          onChange={(v) => setStatus(v as StatusFilter)}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <KpiCard label="Total" value={String(total)} />
+        <KpiCard
+          label="Tasa de conversión"
+          value={`${conversionRate}%`}
+          subtitle={`${converted} convertidas`}
+        />
+        <KpiCard
+          label="Días promedio pendientes"
+          value={avgDaysPending == null ? "—" : `${avgDaysPending}d`}
+          subtitle="entre entrega y hoy"
+        />
+      </div>
+
+      {filtered.length === 0 ? (
+        <article className="bg-white border border-line rounded-xl p-10 text-center">
+          <p className="m-0 text-[15px] text-ink/60">No hay muestras en este filtro.</p>
+        </article>
+      ) : (
+        <article className="bg-white border border-line rounded-xl divide-y divide-line">
+          {filtered.map((s) => (
+            <SampleRow
+              key={s.id}
+              sample={s}
+              clientId={clientId}
+              productBySampleSku={productBySampleSku}
+            />
+          ))}
+        </article>
+      )}
+    </div>
+  );
+}
+
+function FilterRow({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: ReadonlyArray<{ id: string; label: string }>;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      <span className="text-[13px] font-semibold tracking-[0.08em] uppercase text-ink/55 min-w-[60px]">
+        {label}
+      </span>
+      <div className="flex items-center gap-2 flex-wrap">
+        {options.map((o) => {
+          const active = o.id === value;
+          return (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => onChange(o.id)}
+              aria-pressed={active}
+              className={`inline-flex items-center h-9 px-4 rounded-full border text-[14px] font-semibold cursor-pointer transition-colors ${
+                active
+                  ? "bg-ink text-paper border-ink"
+                  : "bg-white text-ink border-line hover:bg-bone"
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function KpiCard({
+  label,
+  value,
+  subtitle,
+}: {
+  label: string;
+  value: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="bg-white border border-line rounded-xl px-5 py-4">
+      <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+        {label}
+      </div>
+      <div className="font-display text-[32px] mt-1.5 leading-none tabular">{value}</div>
+      {subtitle ? (
+        <p className="m-0 mt-1 text-[13.5px] text-ink/55 leading-snug">{subtitle}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function SampleRow({
+  sample,
+  clientId,
+  productBySampleSku,
+}: {
+  sample: Sample;
+  clientId: string;
+  productBySampleSku: Record<string, Product>;
+}) {
+  const fullProduct = productBySampleSku[sample.sku as unknown as string];
+  const days = daysBetween(sample.givenAt);
+  const initial = (sample.name ?? sample.sku)[0]?.toUpperCase() ?? "•";
+
+  return (
+    <Link
+      href={`/ba/clients/${clientId}/samples/${sample.id}`}
+      className="block p-5 text-ink no-underline transition-colors hover:bg-bone/40"
+    >
+      <div className="grid grid-cols-[44px_minmax(0,1fr)_auto] gap-3.5 items-center">
+        <Avatar initials={initial} size={40} tone={avatarTone(sample.brand)} />
+        <div className="min-w-0 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span className="font-display text-[20px] leading-none">{sample.name}</span>
+          <BrandTag brand={sample.brand} alwaysShow />
+          <span className="text-[13.5px] text-ink/60">SKU {sample.sku}</span>
+          {fullProduct ? (
+            <span className="text-[13.5px] text-ink/60">
+              · representa <strong className="text-ink/70">{fullProduct.line}</strong>{" "}
+              {fullProduct.size}
+            </span>
+          ) : null}
+          <span className="w-full text-[14px] text-ink/60 mt-0.5">
+            Entregada {formatDate(sample.givenAt)} · hace {days} {days === 1 ? "día" : "días"}
+            {sample.followUpAt ? ` · seguimiento ${formatDate(sample.followUpAt)}` : ""}
+          </span>
+        </div>
+        {sample.converted ? (
+          <Chip variant="ok" size="sm">
+            Convertida en venta
+          </Chip>
+        ) : (
+          <Chip variant="warn" size="sm">
+            Pendiente de feedback
+          </Chip>
+        )}
+      </div>
+    </Link>
+  );
+}

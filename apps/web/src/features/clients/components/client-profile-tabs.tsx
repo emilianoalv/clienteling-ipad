@@ -94,8 +94,12 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
         {tab === "purchases" && (
           <PurchasesPreview purchases={props.purchases} clientId={props.clientId} />
         )}
-        {tab === "recs" && <RecsPreview recommendations={props.recommendations} />}
-        {tab === "samples" && <SamplesPreview samples={props.samples} />}
+        {tab === "recs" && (
+          <RecsPreview recommendations={props.recommendations} clientId={props.clientId} />
+        )}
+        {tab === "samples" && (
+          <SamplesPreview samples={props.samples} clientId={props.clientId} />
+        )}
         {tab === "followup" && (
           <FollowupTab clientId={props.clientId as ClientId} tasks={props.followupTasks} />
         )}

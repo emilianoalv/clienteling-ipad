@@ -27,6 +27,7 @@ export interface SampleListFilter {
 export interface SampleRepository {
   list(filter?: SampleListFilter): Promise<Sample[]>;
   listByClient(clientId: ClientId): Promise<Sample[]>;
+  findById(id: SampleId): Promise<Sample | null>;
   listInventory(filter?: { brands?: readonly BrandId[] }): Promise<SampleInventoryItem[]>;
   create(input: Omit<Sample, "id">): Promise<Sample>;
 }
@@ -69,6 +70,10 @@ export const sampleRepository: SampleRepository = {
     return SAMPLES.filter((s) => s.clientId === clientId).sort((a, b) =>
       b.givenAt.localeCompare(a.givenAt),
     );
+  },
+
+  async findById(id) {
+    return SAMPLES.find((s) => s.id === id) ?? null;
   },
 
   async listInventory(filter = {}) {
