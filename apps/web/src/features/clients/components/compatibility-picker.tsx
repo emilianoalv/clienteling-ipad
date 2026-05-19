@@ -5,7 +5,7 @@ import type { Client } from "@/types/client";
 import type { Product, Sku } from "@/types/product";
 import type { ProductTech } from "@/types/product-tech";
 import { Avatar, BrandTag, Icon, Input } from "@/components/primitives";
-import { FichaTecnicaModal } from "@/features/catalog";
+import { FichaTecnicaModal } from "@/features/catalog/components/ficha-tecnica-modal";
 import {
   rankProductsForClient,
   type CompatibilityReason,
