@@ -7,4 +7,5 @@ export { ProductDetail } from "./components/product-detail";
 export { ProductThumb } from "./components/product-thumb";
 
 export { listProducts, type ListProductsArgs } from "./server/list-products";
+export { listProductTechs } from "./server/list-product-techs";
 export { listStores } from "./server/list-stores";

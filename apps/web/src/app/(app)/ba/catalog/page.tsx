@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { SectionHeader } from "@/components/patterns";
-import { CatalogBrowser, listProducts, listStores } from "@/features/catalog";
+import { CatalogBrowser, listProducts, listProductTechs, listStores } from "@/features/catalog";
 import { requireSession } from "@/server/auth/session";
 import { brandScopeFor, homeStoreFor } from "@/server/auth/scope";
 import type { StoreId } from "@/types/store";
@@ -8,9 +8,10 @@ import type { StoreId } from "@/types/store";
 export default async function CatalogPage() {
   const t = await getTranslations();
   const { staff } = await requireSession();
-  const [products, stores] = await Promise.all([
+  const [products, stores, techs] = await Promise.all([
     listProducts({ brands: brandScopeFor(staff) }),
     listStores(),
+    listProductTechs(),
   ]);
 
   const sessionStoreId = homeStoreFor(staff);
@@ -25,6 +26,7 @@ export default async function CatalogPage() {
       <CatalogBrowser
         products={products}
         stores={stores}
+        techs={techs}
         primaryStoreId={primaryStoreId}
       />
     </section>

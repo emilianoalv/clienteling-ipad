@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import type { Product } from "@/types/product";
+import type { Product, Sku } from "@/types/product";
+import type { ProductTech } from "@/types/product-tech";
 import type { BrandId } from "@/types/brand";
 import type { Store, StoreId } from "@/types/store";
 import { Icon, Input } from "@/components/primitives";
@@ -27,10 +28,17 @@ const CATEGORY_TABS: ReadonlyArray<CategoryTab> = [
 export interface CatalogBrowserProps {
   products: readonly Product[];
   stores: readonly Store[];
+  /** Map of SKU → ficha técnica. Products without an entry render the modal in empty state. */
+  techs: ReadonlyMap<Sku, ProductTech>;
   primaryStoreId: StoreId;
 }
 
-export function CatalogBrowser({ products, stores, primaryStoreId }: CatalogBrowserProps) {
+export function CatalogBrowser({
+  products,
+  stores,
+  techs,
+  primaryStoreId,
+}: CatalogBrowserProps) {
   const t = useTranslations();
   const [query, setQuery] = useState("");
   const [brand, setBrand] = useState<BrandTab>("all");
@@ -105,7 +113,14 @@ export function CatalogBrowser({ products, stores, primaryStoreId }: CatalogBrow
         )}
       </div>
 
-      {selected ? <ProductDetail product={selected} stores={stores} /> : null}
+      {selected ? (
+        <ProductDetail
+          product={selected}
+          stores={stores}
+          tech={techs.get(selected.sku) ?? null}
+          allProducts={products}
+        />
+      ) : null}
     </div>
   );
 }

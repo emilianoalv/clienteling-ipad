@@ -1,23 +1,35 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Product } from "@/types/product";
+import type { ProductTech } from "@/types/product-tech";
 import type { Store } from "@/types/store";
 import { BrandTag, Button, Icon } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import { formatCurrency } from "@/lib/format/format-currency";
 import { ProductThumb } from "./product-thumb";
+import { FichaTecnicaModal } from "./ficha-tecnica-modal";
 
 const LOW_STOCK_THRESHOLD = 5;
 
 export interface ProductDetailProps {
   product: Product;
   stores: readonly Store[];
+  /** Ficha técnica for the selected product (null if not yet authored). */
+  tech: ProductTech | null;
+  /** All products visible in the catalog scope — resolves `layerWith` SKUs. */
+  allProducts: readonly Product[];
 }
 
-export function ProductDetail({ product, stores }: ProductDetailProps) {
+export function ProductDetail({ product, stores, tech, allProducts }: ProductDetailProps) {
   const t = useTranslations();
+  const [showTech, setShowTech] = useState(false);
   const storeLookup = new Map(stores.map((s) => [s.id, s.name]));
+  const productLookup = useMemo(
+    () => new Map<string, Product>(allProducts.map((p) => [p.sku as unknown as string, p])),
+    [allProducts],
+  );
 
   const availability = Object.entries(product.stock)
     .map(([id, qty]) => ({
@@ -89,13 +101,26 @@ export function ProductDetail({ product, stores }: ProductDetailProps) {
       </div>
 
       <div className="flex gap-2 mt-2">
-        <Button variant="ghost" leading={<Icon name="pdf" />} className="flex-1">
+        <Button
+          variant="ghost"
+          leading={<Icon name="pdf" />}
+          className="flex-1"
+          onClick={() => setShowTech(true)}
+        >
           {t("catalog.detail.fact_sheet")}
         </Button>
         <Button variant="primary" leading={<Icon name="plus" />} className="flex-1">
           {t("catalog.detail.add_to_recs")}
         </Button>
       </div>
+
+      <FichaTecnicaModal
+        open={showTech}
+        product={product}
+        tech={tech}
+        productLookup={productLookup}
+        onClose={() => setShowTech(false)}
+      />
     </Card>
   );
 }

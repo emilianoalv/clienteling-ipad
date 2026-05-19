@@ -6,6 +6,7 @@ export * from "./store";
 export * from "./staff";
 export * from "./client";
 export * from "./product";
+export * from "./product-tech";
 export * from "./purchase";
 export * from "./appointment";
 export * from "./communication";
