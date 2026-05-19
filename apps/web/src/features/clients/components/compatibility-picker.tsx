@@ -5,6 +5,7 @@ import type { Client } from "@/types/client";
 import type { Product, Sku } from "@/types/product";
 import type { ProductTech } from "@/types/product-tech";
 import { Avatar, BrandTag, Icon, Input } from "@/components/primitives";
+import { FichaTecnicaModal } from "@/features/catalog";
 import {
   rankProductsForClient,
   type CompatibilityReason,
@@ -35,11 +36,21 @@ export function CompatibilityPicker({
   topN = 5,
 }: CompatibilityPickerProps) {
   const [query, setQuery] = useState("");
+  const [techSku, setTechSku] = useState<Sku | null>(null);
 
   const ranked = useMemo(
     () => rankProductsForClient(client, products, techs),
     [client, products, techs],
   );
+
+  const productLookup = useMemo(
+    () => new Map<string, Product>(products.map((p) => [p.sku as unknown as string, p])),
+    [products],
+  );
+  const techProduct = techSku
+    ? productLookup.get(techSku as unknown as string) ?? null
+    : null;
+  const techData = techSku && techs ? techs.get(techSku) ?? null : null;
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -88,13 +99,21 @@ export function CompatibilityPicker({
         <ul className="list-none m-0 p-0 flex flex-col gap-1.5">
           {visible.map(({ product, score }) => {
             const isSelected = selected.includes(product.sku);
+            const hasTech = techs ? techs.has(product.sku) : false;
             return (
               <li key={product.sku}>
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => toggle(product.sku)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggle(product.sku);
+                    }
+                  }}
                   aria-pressed={isSelected}
-                  className={`w-full grid grid-cols-[44px_minmax(0,1fr)_auto] gap-3 items-center text-left p-2.5 rounded-md border transition-colors cursor-pointer ${
+                  className={`w-full grid grid-cols-[44px_minmax(0,1fr)_auto] gap-3 items-center text-left p-2.5 rounded-md border transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ink/30 ${
                     isSelected
                       ? "bg-ink/[0.04] border-ink"
                       : "bg-white border-line hover:bg-bone"
@@ -126,18 +145,40 @@ export function CompatibilityPicker({
                   </div>
                   <div className="flex flex-col items-end gap-1.5">
                     <CompatScoreBadge score={score.score} />
+                    {hasTech ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTechSku(product.sku);
+                        }}
+                        className="text-[12px] font-medium text-ink/60 hover:text-ink underline underline-offset-2 cursor-pointer bg-transparent border-0 p-0"
+                      >
+                        Ver ficha
+                      </button>
+                    ) : null}
                     {isSelected ? (
                       <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-ink text-paper">
                         <Icon name="check" size={12} />
                       </span>
                     ) : null}
                   </div>
-                </button>
+                </div>
               </li>
             );
           })}
         </ul>
       )}
+
+      {techProduct ? (
+        <FichaTecnicaModal
+          open={techSku != null}
+          product={techProduct}
+          tech={techData}
+          productLookup={productLookup}
+          onClose={() => setTechSku(null)}
+        />
+      ) : null}
     </div>
   );
 }

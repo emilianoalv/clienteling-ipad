@@ -25,4 +25,10 @@ export interface Product {
   /** Selling points / arguments (3 short bullets). */
   selling: readonly string[];
   lifecycleDays: number;
+  /**
+   * SKU of the corresponding sample / mini in the sample inventory. Only
+   * populated for products that have a real deluxe-mini available — bases,
+   * correctores y labiales típicamente no tienen sample formal.
+   */
+  sampleSku?: Sku;
 }

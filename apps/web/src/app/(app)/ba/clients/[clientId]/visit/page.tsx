@@ -3,6 +3,7 @@ import { Icon } from "@/components/primitives";
 import { fetchClient, RegisterVisitForm } from "@/features/clients";
 import { productRepository } from "@/server/repositories/product.repository";
 import { productTechRepository } from "@/server/repositories/product-tech.repository";
+import { sampleRepository } from "@/server/repositories/sample.repository";
 import { requireSession } from "@/server/auth/session";
 import { brandScopeFor } from "@/server/auth/scope";
 
@@ -13,10 +14,12 @@ export default async function RegisterVisitPage({
 }) {
   const { clientId } = await params;
   const { staff } = await requireSession();
-  const [client, products, techs] = await Promise.all([
+  const brands = brandScopeFor(staff);
+  const [client, products, techs, sampleInventory] = await Promise.all([
     fetchClient(clientId, staff),
-    productRepository.list({ brands: brandScopeFor(staff) }),
+    productRepository.list({ brands }),
     productTechRepository.list(),
+    sampleRepository.listInventory({ brands }),
   ]);
 
   return (
@@ -40,6 +43,7 @@ export default async function RegisterVisitPage({
         client={client}
         products={products}
         techs={techs}
+        sampleInventory={sampleInventory}
         baName={staff.name}
       />
     </section>

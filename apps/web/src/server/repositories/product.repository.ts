@@ -37,6 +37,7 @@ const SEED: Product[] = [
       "Piel más luminosa en 7 días",
     ],
     lifecycleDays: 90,
+    sampleSku: "LC-GEN-7" as Sku,
   },
   {
     sku: "LC-REN-50" as Sku,
@@ -59,6 +60,7 @@ const SEED: Product[] = [
       "Piel más joven en 2 semanas",
     ],
     lifecycleDays: 90,
+    sampleSku: "LC-REN-5" as Sku,
   },
 
   // ── Lancôme · Skincare · Cremas ──────────────────────────────────────────
@@ -83,6 +85,7 @@ const SEED: Product[] = [
       "24 h de hidratación luminosa",
     ],
     lifecycleDays: 100,
+    sampleSku: "LC-ABS-5" as Sku,
   },
   {
     sku: "LC-AEC-20" as Sku,
@@ -105,6 +108,7 @@ const SEED: Product[] = [
       "Textura sedosa de rápida absorción",
     ],
     lifecycleDays: 90,
+    sampleSku: "LC-AEC-3" as Sku,
   },
   {
     sku: "LC-HZN-50" as Sku,
@@ -127,6 +131,7 @@ const SEED: Product[] = [
       "Calma la piel en 1 segundo",
     ],
     lifecycleDays: 75,
+    sampleSku: "LC-HZN-7" as Sku,
   },
 
   // ── Lancôme · Maquillaje · Bases & Corrector ─────────────────────────────
@@ -233,6 +238,7 @@ const SEED: Product[] = [
       "Botella ultradelgada recargable",
     ],
     lifecycleDays: 180,
+    sampleSku: "LC-IDP-1" as Sku,
   },
   {
     sku: "LC-LVE-100" as Sku,
@@ -250,6 +256,7 @@ const SEED: Product[] = [
       "La fragancia más vendida de Lancôme",
     ],
     lifecycleDays: 180,
+    sampleSku: "LC-LVE-1" as Sku,
   },
   {
     sku: "LC-LIA-100" as Sku,
@@ -284,6 +291,7 @@ const SEED: Product[] = [
       "Base de ámbar y sándalo",
     ],
     lifecycleDays: 200,
+    sampleSku: "LC-TRE-1" as Sku,
   },
   {
     sku: "LC-MIR-100" as Sku,
@@ -301,6 +309,7 @@ const SEED: Product[] = [
       "Almizcle y ámbar en fondo",
     ],
     lifecycleDays: 200,
+    sampleSku: "LC-MIR-1" as Sku,
   },
 
   // ── YSL (datos heredados — pendiente verificación oficial) ───────────────

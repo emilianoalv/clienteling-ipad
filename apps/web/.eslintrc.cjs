@@ -68,6 +68,10 @@ module.exports = {
               // F3.10: home composes the BA "Hoy" landing and reuses
               // `listUpcomingEvents` from the clients feature.
               ["features", { feature: "clients" }],
+              // W5 (visit wizard): clients picker abre FichaTecnicaModal
+              // del catálogo para que la BA pueda justificar recomendaciones
+              // con claims clínicos reales en piso.
+              ["features", { feature: "catalog" }],
             ],
           },
           {
