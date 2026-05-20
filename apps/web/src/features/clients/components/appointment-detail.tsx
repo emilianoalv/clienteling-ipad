@@ -6,11 +6,9 @@ import type { Appointment, AppointmentStatus } from "@/types/appointment";
 import type { Client } from "@/types/client";
 import { Avatar, BrandTag, Button, Chip, Icon, Input } from "@/components/primitives";
 import { Card } from "@/components/patterns";
-import {
-  cancelAppointment,
-  rescheduleAppointment,
-  transitionAppointment,
-} from "@/features/appointments";
+import { cancelAppointment } from "@/features/appointments/actions/cancel-appointment";
+import { rescheduleAppointment } from "@/features/appointments/actions/reschedule-appointment";
+import { transitionAppointment } from "@/features/appointments/actions/update-appointment-status";
 import { formatDate, formatTime } from "@/lib/format/format-date";
 
 type Mode = "view" | "reschedule" | "cancel";
