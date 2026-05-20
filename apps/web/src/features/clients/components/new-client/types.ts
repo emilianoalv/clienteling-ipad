@@ -4,6 +4,7 @@ import type {
   Routine,
   RoutineTiming,
   SkinType,
+  Subtone,
 } from "@/types/client";
 
 export type FieldErrors = Record<string, string[]>;
@@ -23,7 +24,7 @@ export interface Draft {
   gender: Gender;
   ageRange: AgeRange | "";
   brands: string[];
-  skin: { type: SkinType; concerns: string[]; tone: string };
+  skin: { type: SkinType; concerns: string[]; tone: string; subtone?: Subtone };
   routine: Routine;
   routineTiming: RoutineTiming[];
   interests: string[];

@@ -92,7 +92,7 @@ export const CHANNELS = ["WhatsApp", "Email", "SMS"] as const;
 const skinSchema = z.object({
   type: z.enum(SKIN_TYPES),
   concerns: z.array(z.string()).max(3, "Selecciona como máximo 3 preocupaciones").default([]),
-  tone: z.string().default("—"),
+  tone: z.string().min(1, "Selecciona el tono de piel"),
   /** Subtone is optional at intake — BA can complete it later in Perfil de Belleza. */
   subtone: z.enum(SUBTONES).optional(),
 });

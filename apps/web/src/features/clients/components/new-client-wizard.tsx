@@ -46,7 +46,8 @@ const INITIAL_DRAFT: Draft = {
   gender: "Femenino",
   ageRange: "",
   brands: ["Lancôme"],
-  skin: { type: "Normal", concerns: [], tone: "—" },
+  // tone "" obliga a la BA a elegir un swatch antes de continuar (UI validation).
+  skin: { type: "Normal", concerns: [], tone: "" },
   routine: "Básica",
   routineTiming: ["morning"],
   interests: ["Skincare"],
