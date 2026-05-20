@@ -1,5 +1,6 @@
 import type { BrandId } from "./brand";
 import type { Branded } from "./branded";
+import type { Subtone } from "./client";
 import type { StoreId } from "./store";
 
 export type Sku = Branded<string, "Sku">;
@@ -19,6 +20,12 @@ export interface Product {
     vegano?: boolean;
     /** Olfactive family — fragrances only. */
     familia?: string;
+    /**
+     * Undertone target for color cosmetics (foundations, concealers, lipsticks).
+     * Drives the subtone-match signal in the compatibility scorer. Leave
+     * undefined for skincare and fragrances (subtone doesn't apply).
+     */
+    subtone?: Subtone;
   };
   /** Application / usage instructions. */
   howTo: string;

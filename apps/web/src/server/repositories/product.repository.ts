@@ -148,6 +148,7 @@ const SEED: Product[] = [
       piel: ["Todas"],
       concerns: ["Cobertura", "Imperfecciones", "Tono desigual"],
       vegano: false,
+      subtone: "neutro",
     },
     howTo: "Aplicar con esponja o brocha desde el centro hacia afuera; cobertura construible.",
     selling: [
@@ -170,6 +171,7 @@ const SEED: Product[] = [
       piel: ["Seca", "Todas"],
       concerns: ["Hidratación", "Luminosidad", "Tono desigual"],
       vegano: false,
+      subtone: "cálido",
     },
     howTo: "Aplicar 2-3 gotas con dedos o brocha sobre rostro hidratado; agitar antes de usar.",
     selling: [
@@ -192,6 +194,7 @@ const SEED: Product[] = [
       piel: ["Todas"],
       concerns: ["Ojeras", "Imperfecciones", "Tono desigual"],
       vegano: false,
+      subtone: "neutro",
     },
     howTo: "Aplicar bajo el ojo y sobre imperfecciones; difuminar con esponja o dedos.",
     selling: [

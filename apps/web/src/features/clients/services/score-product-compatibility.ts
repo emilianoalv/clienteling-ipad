@@ -1,6 +1,6 @@
-import type { Client } from "@/types/client";
+import type { Client, RoutineStep } from "@/types/client";
 import type { Product, Sku } from "@/types/product";
-import type { ProductTech } from "@/types/product-tech";
+import type { ProductTech, RoutineSlot } from "@/types/product-tech";
 
 /**
  * Why a product matched (or didn't) a client's profile. Renders as chips
@@ -12,10 +12,14 @@ export type CompatibilityReasonKind =
   | "concern-match"
   | "interest-match"
   | "allergy-conflict"
+  | "subtone-match"
   | "age-match"
   | "age-mismatch"
   | "routine-level-mismatch"
   | "timing-mismatch"
+  | "routine-gap-fill"
+  | "preferred-ingredient"
+  | "avoided-ingredient"
   | "active-allergy-conflict";
 
 export interface CompatibilityReason {
@@ -38,10 +42,14 @@ const WEIGHT_SKIN_MISMATCH = -2;
 const WEIGHT_CONCERN_MATCH = 2;
 const WEIGHT_INTEREST_MATCH = 1;
 const WEIGHT_ALLERGY_CONFLICT = -5;
+const WEIGHT_SUBTONE_MATCH = 1;
 const WEIGHT_AGE_MATCH = 1;
 const WEIGHT_AGE_MISMATCH = -1;
 const WEIGHT_ROUTINE_MISMATCH = -1;
 const WEIGHT_TIMING_MISMATCH = -1;
+const WEIGHT_ROUTINE_GAP_FILL = 1;
+const WEIGHT_PREFERRED_INGREDIENT = 1;
+const WEIGHT_AVOIDED_INGREDIENT = -3;
 
 const ROUTINE_RANK: Record<string, number> = {
   Ninguna: 0,
@@ -49,6 +57,21 @@ const ROUTINE_RANK: Record<string, number> = {
   Intermedia: 2,
   Avanzada: 3,
   Profesional: 4,
+};
+
+/**
+ * Maps a product's tech slot to the broader RoutineStep the client may
+ * declare. Color cosmetics (foundation/concealer/lip) and fragrances are
+ * intentionally absent — they don't live in the skincare routine and
+ * shouldn't trigger gap-fill bonuses.
+ */
+const SLOT_TO_ROUTINE_STEP: Partial<Record<RoutineSlot, RoutineStep>> = {
+  cleanser: "cleanser",
+  "treatment-serum": "serum",
+  "treatment-cream": "moisturizer",
+  "eye-cream": "eye-cream",
+  mask: "mask",
+  spf: "spf",
 };
 
 /**
@@ -96,13 +119,21 @@ function productInterestCategories(product: Product): readonly string[] {
  * Score a single product against a client's profile. Returns the clamped
  * score plus the reasons that contributed to it (positive and negative).
  *
- * The optional `tech` parameter enables 4 additional signals:
- * age range, routine level, timing alignment, and active-ingredient
- * allergies. Callers that don't pass tech get the original 4-signal
- * scoring (skin / concerns / interests / allergies-by-name).
+ * Signals (in evaluation order):
+ *   1. Skin type match / mismatch
+ *   2. Concerns intersection
+ *   3. Interest category match
+ *   4. Allergy haystack (name + howTo)
+ *   5. Subtone match (product.attrs.subtone vs client.skin.subtone)
+ *   6-11. Tech-derived signals when ficha técnica is provided:
+ *      6. Age range fit
+ *      7. Routine level required
+ *      8. Timing alignment (AM/PM)
+ *      9. Routine gap fill (slot empty in client.routineSteps)
+ *     10. Preferred / avoided ingredients against keyActives
+ *     11. Active-ingredient allergy
  *
- * Pure function — testable in isolation. Used by visit form sample &
- * recommendation pickers.
+ * Pure function — testable in isolation.
  */
 export function scoreProductCompatibility(
   client: Client,
@@ -175,7 +206,19 @@ export function scoreProductCompatibility(
     }
   }
 
-  // 5-8. Tech-derived signals (only when ficha técnica available).
+  // 5. Subtone match — relevant mainly for color cosmetics.
+  if (product.attrs.subtone && client.skin.subtone) {
+    if (product.attrs.subtone === client.skin.subtone) {
+      raw += WEIGHT_SUBTONE_MATCH;
+      reasons.push({
+        kind: "subtone-match",
+        positive: true,
+        label: `Subtono ${product.attrs.subtone}`,
+      });
+    }
+  }
+
+  // 6-11. Tech-derived signals (only when ficha técnica available).
   if (tech) {
     const extras = scoreTechExtras(client, tech);
     raw += extras.delta;
@@ -193,7 +236,7 @@ function scoreTechExtras(
   const reasons: CompatibilityReason[] = [];
   let delta = 0;
 
-  // 5. Age range — only meaningful when both client.age and tech.target.age* exist
+  // Age range — only meaningful when both client.age and tech.target.age* exist
   const { ageMin, ageMax } = tech.target;
   if (client.age != null && (ageMin != null || ageMax != null)) {
     const within =
@@ -216,7 +259,7 @@ function scoreTechExtras(
     }
   }
 
-  // 6. Routine level — penalize when client routine is below required
+  // Routine level — penalize when client routine is below required
   if (tech.target.routineLevel) {
     const required = ROUTINE_RANK[tech.target.routineLevel] ?? 0;
     const has = ROUTINE_RANK[client.routine] ?? 0;
@@ -230,7 +273,7 @@ function scoreTechExtras(
     }
   }
 
-  // 7. Timing — penalize when product timing doesn't overlap with client's
+  // Timing — penalize when product timing doesn't overlap with client's
   if (tech.usage.timing.length > 0 && client.routineTiming && client.routineTiming.length > 0) {
     const productAMPM = new Set(tech.usage.timing);
     const clientAMPM = new Set<"AM" | "PM">();
@@ -252,7 +295,59 @@ function scoreTechExtras(
     }
   }
 
-  // 8. Active-ingredient allergy — more precise than name-based haystack
+  // Routine gap fill — boost when the product fills an empty slot in the
+  // client's declared routine. Only applies to skincare slots (color/fragance
+  // products are deliberately absent from SLOT_TO_ROUTINE_STEP).
+  if (client.routineSteps && client.routineSteps.length > 0) {
+    const slot = tech.usage.slot;
+    const routineStep = SLOT_TO_ROUTINE_STEP[slot];
+    if (routineStep && !client.routineSteps.includes(routineStep)) {
+      delta += WEIGHT_ROUTINE_GAP_FILL;
+      reasons.push({
+        kind: "routine-gap-fill",
+        positive: true,
+        label: `Llena un hueco: ${routineStepLabel(routineStep)}`,
+      });
+    }
+  }
+
+  // Preferred ingredients — soft positive. Each keyActive matching adds +1.
+  const preferred = client.preferredIngredients ?? [];
+  for (const wanted of preferred) {
+    const needle = wanted.trim().toLowerCase();
+    if (!needle) continue;
+    for (const active of tech.keyActives) {
+      if (active.ingredient.toLowerCase().includes(needle)) {
+        delta += WEIGHT_PREFERRED_INGREDIENT;
+        reasons.push({
+          kind: "preferred-ingredient",
+          positive: true,
+          label: `Te gusta: ${active.ingredient}`,
+        });
+        break; // one boost per preferred ingredient match
+      }
+    }
+  }
+
+  // Avoided ingredients — soft negative (-3, lighter than -5 allergy hammer).
+  const avoided = client.avoidedIngredients ?? [];
+  for (const skip of avoided) {
+    const needle = skip.trim().toLowerCase();
+    if (!needle) continue;
+    for (const active of tech.keyActives) {
+      if (active.ingredient.toLowerCase().includes(needle)) {
+        delta += WEIGHT_AVOIDED_INGREDIENT;
+        reasons.push({
+          kind: "avoided-ingredient",
+          positive: false,
+          label: `Contiene ${active.ingredient} (prefieres evitar)`,
+        });
+        break;
+      }
+    }
+  }
+
+  // Active-ingredient allergy — more precise than name-based haystack
   for (const allergy of client.allergies) {
     const needle = allergy.trim().toLowerCase();
     if (!needle) continue;
@@ -270,6 +365,21 @@ function scoreTechExtras(
   }
 
   return { delta, reasons };
+}
+
+const ROUTINE_STEP_LABEL: Record<RoutineStep, string> = {
+  cleanser: "limpiador",
+  toner: "tónico",
+  serum: "sérum",
+  moisturizer: "hidratante",
+  "eye-cream": "contorno",
+  spf: "SPF",
+  "night-treatment": "tratamiento noche",
+  mask: "mascarilla",
+};
+
+function routineStepLabel(step: RoutineStep): string {
+  return ROUTINE_STEP_LABEL[step];
 }
 
 function formatAgeFitLabel(ageMin?: number, ageMax?: number): string {
@@ -296,8 +406,7 @@ export interface RankedProduct {
  * negative) reasons — the BA can still override if she has context the
  * profile doesn't capture.
  *
- * Pass `techs` to enable the ficha-técnica-derived signals (age range,
- * routine level, timing, active allergies) per product.
+ * Pass `techs` to enable the ficha-técnica-derived signals.
  */
 export function rankProductsForClient(
   client: Client,

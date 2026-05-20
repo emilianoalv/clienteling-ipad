@@ -265,6 +265,118 @@ describe("scoreProductCompatibility", () => {
     expect(ranked[1]!.score.score).toBe(2);
   });
 
+  it("adds subtone-match bonus when product.attrs.subtone equals client.skin.subtone", () => {
+    const client = makeClient({
+      skin: { type: "Mixta", concerns: [], tone: "Medio", subtone: "cálido" },
+      interests: [],
+    });
+    const product = makeProduct({
+      attrs: { tipo: "Base", piel: ["Todas"], subtone: "cálido" },
+    });
+    const result = scoreProductCompatibility(client, product);
+    // skin +3, subtone match +1 = 4
+    expect(result.score).toBe(4);
+    const reason = result.reasons.find((r) => r.kind === "subtone-match");
+    expect(reason?.positive).toBe(true);
+    expect(reason?.label).toBe("Subtono cálido");
+  });
+
+  it("does not add subtone bonus when subtones differ or client has none", () => {
+    const productCold = makeProduct({
+      attrs: { tipo: "Base", piel: ["Todas"], subtone: "frío" },
+    });
+
+    // Client without subtone — no boost
+    const clientNoSubtone = makeClient({
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    expect(scoreProductCompatibility(clientNoSubtone, productCold).score).toBe(3);
+
+    // Client with different subtone — no boost
+    const clientWarm = makeClient({
+      skin: { type: "Mixta", concerns: [], tone: "Medio", subtone: "cálido" },
+      interests: [],
+    });
+    expect(scoreProductCompatibility(clientWarm, productCold).score).toBe(3);
+  });
+
+  it("boosts products that fill an empty slot in client.routineSteps", () => {
+    const client = makeClient({
+      routineSteps: ["cleanser", "moisturizer", "spf"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({ attrs: { tipo: "Sérum", piel: ["Todas"] } });
+    // Serum slot is missing from client routine → +1 gap-fill
+    const tech = makeTech({
+      usage: { timing: ["AM", "PM"], frequency: "Diario", slot: "treatment-serum", position: 2 },
+    });
+    const result = scoreProductCompatibility(client, product, tech);
+    // skin +3, routine gap fill +1 = 4
+    expect(result.score).toBe(4);
+    const reason = result.reasons.find((r) => r.kind === "routine-gap-fill");
+    expect(reason?.positive).toBe(true);
+    expect(reason?.label).toBe("Llena un hueco: sérum");
+  });
+
+  it("does not boost gap-fill when slot is already in client routineSteps", () => {
+    const client = makeClient({
+      routineSteps: ["cleanser", "serum", "moisturizer"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({ attrs: { tipo: "Sérum", piel: ["Todas"] } });
+    const tech = makeTech({
+      usage: { timing: ["AM", "PM"], frequency: "Diario", slot: "treatment-serum", position: 2 },
+    });
+    const result = scoreProductCompatibility(client, product, tech);
+    // skin +3, no gap fill = 3
+    expect(result.score).toBe(3);
+    expect(result.reasons.some((r) => r.kind === "routine-gap-fill")).toBe(false);
+  });
+
+  it("adds preferred-ingredient bonus when keyActive matches client.preferredIngredients", () => {
+    const client = makeClient({
+      preferredIngredients: ["Vitamina C"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({ attrs: { tipo: "Sérum", piel: ["Todas"] } });
+    const tech = makeTech({
+      keyActives: [
+        { ingredient: "Vitamina C", benefit: "Antioxidante" },
+        { ingredient: "Ácido Ferúlico", benefit: "Cofactor" },
+      ],
+    });
+    const result = scoreProductCompatibility(client, product, tech);
+    // skin +3, preferred ingredient +1 = 4
+    expect(result.score).toBe(4);
+    const reason = result.reasons.find((r) => r.kind === "preferred-ingredient");
+    expect(reason?.label).toBe("Te gusta: Vitamina C");
+  });
+
+  it("penalizes products with avoided ingredient (-3, softer than allergy)", () => {
+    const client = makeClient({
+      avoidedIngredients: ["Fragancia"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({ attrs: { tipo: "Sérum", piel: ["Todas"] } });
+    const tech = makeTech({
+      keyActives: [
+        { ingredient: "Vitamina C", benefit: "Antioxidante" },
+        { ingredient: "Fragancia floral", benefit: "Aroma" },
+      ],
+    });
+    const result = scoreProductCompatibility(client, product, tech);
+    // skin +3, avoided -3 = 0
+    expect(result.score).toBe(0);
+    const reason = result.reasons.find((r) => r.kind === "avoided-ingredient");
+    expect(reason?.positive).toBe(false);
+    expect(reason?.label).toBe("Contiene Fragancia floral (prefieres evitar)");
+  });
+
   it("ranks products by score descending", () => {
     const client = makeClient({
       skin: { type: "Madura", concerns: ["Firmeza"], tone: "Medio" },
