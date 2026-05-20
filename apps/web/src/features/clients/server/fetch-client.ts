@@ -11,6 +11,7 @@ import { consentRepository } from "@/server/repositories/consent.repository";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import { communicationRepository } from "@/server/repositories/communication.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
+import { userRepository } from "@/server/repositories/user.repository";
 import { isStoreInScope } from "@/server/auth/scope";
 
 /**
@@ -47,6 +48,7 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     appointments,
     communications,
     followupTasks,
+    users,
   ] = await Promise.all([
     clientRepository.findById(clientId),
     interactionRepository.listByClient(clientId),
@@ -57,8 +59,16 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     appointmentRepository.listByClient(clientId),
     communicationRepository.listByClient(clientId),
     followupTaskRepository.listByClient(clientId),
+    userRepository.list(),
   ]);
   if (!client) notFound();
+
+  // baLookup: map StaffId → display name. Used by the Citas tab to render the
+  // BA who attended each appointment. Includes all staff so it also works for
+  // historical appointments attended by someone outside the current scope.
+  const baLookup: Record<string, string> = {};
+  for (const u of users) baLookup[u.id as unknown as string] = u.name;
+
   return {
     client,
     interactions,
@@ -69,5 +79,6 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     appointments,
     communications,
     followupTasks,
+    baLookup,
   };
 }

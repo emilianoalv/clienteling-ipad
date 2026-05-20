@@ -34,6 +34,8 @@ export interface ClientProfileProps {
   appointments: readonly Appointment[];
   communications: readonly Communication[];
   followupTasks: readonly FollowupTask[];
+  /** StaffId → display name. Used by the Citas tab to render the BA per appointment. */
+  baLookup: Record<string, string>;
 }
 
 export async function ClientProfile({
@@ -46,6 +48,7 @@ export async function ClientProfile({
   appointments,
   communications,
   followupTasks,
+  baLookup,
 }: ClientProfileProps) {
   const t = await getTranslations();
   const segment = segmentClient(client);
@@ -133,9 +136,10 @@ export async function ClientProfile({
           purchases={purchases}
           samples={samples}
           recommendations={recommendations}
-          consents={consents}
+          appointments={appointments}
           communications={communications}
           followupTasks={followupTasks}
+          baLookup={baLookup}
           clientName={client.name}
           clientId={client.id}
         />

@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import type { Appointment } from "@/types/appointment";
 import type { ClientId } from "@/types/client";
 import type { Interaction } from "@/types/interaction";
 import type { Purchase } from "@/types/purchase";
 import type { Sample } from "@/types/sample";
 import type { Recommendation } from "@/types/recommendation";
-import type { Consent } from "@/types/consent";
 import type { Communication } from "@/types/communication";
 import type { FollowupTask } from "@/types/followup-task";
 import { Card } from "@/components/patterns";
@@ -16,19 +16,19 @@ import { cn } from "@/lib/cn";
 import { PurchasesPreview } from "./tabs/purchases-preview";
 import { SamplesPreview } from "./tabs/samples-preview";
 import { RecsPreview } from "./tabs/recs-preview";
-import { ConsentPreview } from "./tabs/consent-preview";
+import { AppointmentsPreview } from "./tabs/appointments-preview";
 import { FollowupTab } from "./tabs/followup-tab";
 import { CommLog } from "@/features/communications";
 
-type TabId = "purchases" | "recs" | "samples" | "msgs" | "followup" | "consent";
+type TabId = "purchases" | "recs" | "samples" | "appointments" | "msgs" | "followup";
 
 const TAB_PARAM_VALUES: ReadonlySet<TabId> = new Set([
   "purchases",
   "recs",
   "samples",
+  "appointments",
   "msgs",
   "followup",
-  "consent",
 ]);
 
 export interface ClientProfileTabsProps {
@@ -36,9 +36,11 @@ export interface ClientProfileTabsProps {
   purchases: readonly Purchase[];
   samples: readonly Sample[];
   recommendations: readonly Recommendation[];
-  consents: readonly Consent[];
+  appointments: readonly Appointment[];
   communications: readonly Communication[];
   followupTasks: readonly FollowupTask[];
+  /** BA name lookup by staffId — used to label appointments by BA. */
+  baLookup: Record<string, string>;
   clientName: string;
   clientId: string;
 }
@@ -60,9 +62,9 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
     { id: "purchases", label: t("profile.tab.purchases") },
     { id: "recs", label: t("profile.tab.recs") },
     { id: "samples", label: t("profile.tab.samples") },
+    { id: "appointments", label: "Citas" },
     { id: "followup", label: "Seguimientos" },
     { id: "msgs", label: t("profile.tab.msgs") },
-    { id: "consent", label: t("profile.tab.consent") },
   ];
 
   return (
@@ -100,6 +102,13 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
         {tab === "samples" && (
           <SamplesPreview samples={props.samples} clientId={props.clientId} />
         )}
+        {tab === "appointments" && (
+          <AppointmentsPreview
+            appointments={props.appointments}
+            clientId={props.clientId}
+            baLookup={props.baLookup}
+          />
+        )}
         {tab === "followup" && (
           <FollowupTab clientId={props.clientId as ClientId} tasks={props.followupTasks} />
         )}
@@ -110,7 +119,6 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
             compact
           />
         )}
-        {tab === "consent" && <ConsentPreview consents={props.consents} />}
       </Card>
     </div>
   );
