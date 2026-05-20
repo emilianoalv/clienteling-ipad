@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { Appointment } from "@/types/appointment";
-import type { ClientId } from "@/types/client";
+import type { Client, ClientId } from "@/types/client";
 import type { Interaction } from "@/types/interaction";
 import type { Purchase } from "@/types/purchase";
 import type { Sample } from "@/types/sample";
@@ -18,20 +18,30 @@ import { SamplesPreview } from "./tabs/samples-preview";
 import { RecsPreview } from "./tabs/recs-preview";
 import { AppointmentsPreview } from "./tabs/appointments-preview";
 import { FollowupTab } from "./tabs/followup-tab";
+import { BeautyProfileTab } from "./beauty-profile-tab";
 import { CommLog } from "@/features/communications";
 
-type TabId = "purchases" | "recs" | "samples" | "appointments" | "msgs" | "followup";
+type TabId =
+  | "purchases"
+  | "recs"
+  | "samples"
+  | "appointments"
+  | "beauty"
+  | "msgs"
+  | "followup";
 
 const TAB_PARAM_VALUES: ReadonlySet<TabId> = new Set([
   "purchases",
   "recs",
   "samples",
   "appointments",
+  "beauty",
   "msgs",
   "followup",
 ]);
 
 export interface ClientProfileTabsProps {
+  client: Client;
   interactions: readonly Interaction[];
   purchases: readonly Purchase[];
   samples: readonly Sample[];
@@ -63,6 +73,7 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
     { id: "recs", label: t("profile.tab.recs") },
     { id: "samples", label: t("profile.tab.samples") },
     { id: "appointments", label: "Citas" },
+    { id: "beauty", label: "Perfil de belleza" },
     { id: "followup", label: "Seguimientos" },
     { id: "msgs", label: t("profile.tab.msgs") },
   ];
@@ -109,6 +120,7 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
             baLookup={props.baLookup}
           />
         )}
+        {tab === "beauty" && <BeautyProfileTab client={props.client} />}
         {tab === "followup" && (
           <FollowupTab clientId={props.clientId as ClientId} tasks={props.followupTasks} />
         )}

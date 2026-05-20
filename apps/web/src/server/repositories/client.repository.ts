@@ -23,11 +23,32 @@ export interface ClientListFilter {
   storeIds?: readonly StoreId[];
 }
 
+/**
+ * Subset of Client editable from the beauty-profile tab. The repo merges
+ * this shallow patch over the existing record. `routineSteps`,
+ * `preferredIngredients` and `avoidedIngredients` accepting `undefined`
+ * lets the editor clear them when the user removes all chips.
+ */
+export type ClientProfilePatch = Partial<
+  Pick<
+    Client,
+    | "skin"
+    | "allergies"
+    | "routine"
+    | "routineTiming"
+    | "routineSteps"
+    | "interests"
+    | "preferredIngredients"
+    | "avoidedIngredients"
+  >
+>;
+
 export interface ClientRepository {
   findById(id: ClientId): Promise<Client | null>;
   list(filter?: ClientListFilter): Promise<Client[]>;
   create(input: Omit<Client, "id">): Promise<Client>;
   patchStats(id: ClientId, stats: ClientStats): Promise<void>;
+  patchProfile(id: ClientId, patch: ClientProfilePatch): Promise<Client | null>;
 }
 
 const CLIENTS = persistent(
@@ -66,5 +87,24 @@ export const clientRepository: ClientRepository = {
     const current = CLIENTS.get(id);
     if (!current) return;
     CLIENTS.set(id, { ...current, stats });
+  },
+
+  async patchProfile(id, patch) {
+    const current = CLIENTS.get(id);
+    if (!current) return null;
+    // Build merged client; explicitly drop keys set to undefined so the
+    // editor can clear optional fields (routineSteps, ingredient lists).
+    const next: Client = { ...current, ...patch };
+    if ("routineSteps" in patch && patch.routineSteps === undefined) {
+      delete (next as Partial<Client>).routineSteps;
+    }
+    if ("preferredIngredients" in patch && patch.preferredIngredients === undefined) {
+      delete (next as Partial<Client>).preferredIngredients;
+    }
+    if ("avoidedIngredients" in patch && patch.avoidedIngredients === undefined) {
+      delete (next as Partial<Client>).avoidedIngredients;
+    }
+    CLIENTS.set(id, next);
+    return next;
   },
 };

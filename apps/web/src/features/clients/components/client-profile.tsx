@@ -132,6 +132,7 @@ export async function ClientProfile({
         </Card>
 
         <ClientProfileTabs
+          client={client}
           interactions={interactions}
           purchases={purchases}
           samples={samples}
