@@ -47,7 +47,12 @@ export async function createClient(raw: NewClientInput): Promise<ActionError | v
     tier: "Atelier",
     brands: input.brands,
     storeId,
-    skin: { type: input.skin.type, concerns: input.skin.concerns, tone: input.skin.tone },
+    skin: {
+      type: input.skin.type,
+      concerns: input.skin.concerns,
+      tone: input.skin.tone,
+      ...(input.skin.subtone ? { subtone: input.skin.subtone } : {}),
+    },
     allergies: input.allergies,
     loyalty: { name: "Luxe Circle", tier: "Atelier", points: 0, toNext: 10_000 },
     stats: { ltv: 0, visits: 0, avgTicket: 0, lastPurchase: null },
@@ -55,6 +60,15 @@ export async function createClient(raw: NewClientInput): Promise<ActionError | v
     interests: input.interests,
     routine: input.routine,
     routineTiming: input.routineTiming,
+    ...(input.routineSteps && input.routineSteps.length > 0
+      ? { routineSteps: input.routineSteps }
+      : {}),
+    ...(input.preferredIngredients && input.preferredIngredients.length > 0
+      ? { preferredIngredients: input.preferredIngredients }
+      : {}),
+    ...(input.avoidedIngredients && input.avoidedIngredients.length > 0
+      ? { avoidedIngredients: input.avoidedIngredients }
+      : {}),
     gender: input.gender,
     ageRange: input.ageRange,
   });

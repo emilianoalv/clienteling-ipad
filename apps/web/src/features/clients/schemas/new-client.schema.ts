@@ -6,6 +6,68 @@ export const AGE_RANGES = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"] a
 export const SKIN_TYPES = ["Normal", "Seca", "Mixta", "Grasa", "Sensible", "Madura"] as const;
 export const ROUTINE_LEVELS = ["Ninguna", "Básica", "Intermedia", "Avanzada", "Profesional"] as const;
 export const ROUTINE_TIMINGS = ["morning", "evening", "event"] as const;
+export const SUBTONES = ["frío", "cálido", "neutro"] as const;
+export const TONE_SWATCHES = [
+  "Muy claro",
+  "Claro",
+  "Medio",
+  "Medio cálido",
+  "Oscuro",
+  "Muy oscuro",
+] as const;
+/**
+ * Steps a client may already do in her current routine. The BA captures
+ * what the client uses today (any brand) — gap-filler analysis surfaces
+ * which slots are empty so the scorer can boost products that fill them.
+ */
+export const ROUTINE_STEPS = [
+  "cleanser",
+  "toner",
+  "serum",
+  "moisturizer",
+  "eye-cream",
+  "spf",
+  "night-treatment",
+  "mask",
+] as const;
+/**
+ * Common skincare concerns. Captured at registration (optional, up to 3)
+ * to drive the concerns-intersection signal in the scorer.
+ */
+export const COMMON_CONCERNS = [
+  "Luminosidad",
+  "Líneas finas",
+  "Arrugas profundas",
+  "Firmeza",
+  "Manchas",
+  "Poros",
+  "Textura",
+  "Hidratación",
+  "Ojeras",
+  "Rojeces",
+  "Sensibilidad",
+  "Acné adulto",
+] as const;
+/**
+ * Common ingredient tags clients recognize. Used for the preferred / avoided
+ * lists in the Beauty Profile (soft signals in the scorer).
+ */
+export const INGREDIENT_TAGS = [
+  "Ácido hialurónico",
+  "Vitamina C",
+  "Niacinamida",
+  "Retinol",
+  "Bífidus",
+  "Pro-Xylane",
+  "Rosa de Grasse",
+  "Pachulí",
+  "Vainilla",
+  "Fragancia",
+  "Alcohol",
+  "Parabenos",
+  "Sulfatos",
+  "Aceites esenciales",
+] as const;
 export const INTEREST_GROUPS = {
   Skincare: ["Hidratación", "Antiedad", "Luminosidad", "Manchas", "Acné", "Poros"],
   Maquillaje: ["Labial", "Base", "Ojos", "Cejas", "Rubor", "Iluminador"],
@@ -29,8 +91,10 @@ export const CHANNELS = ["WhatsApp", "Email", "SMS"] as const;
 
 const skinSchema = z.object({
   type: z.enum(SKIN_TYPES),
-  concerns: z.array(z.string()).default([]),
+  concerns: z.array(z.string()).max(3, "Selecciona como máximo 3 preocupaciones").default([]),
   tone: z.string().default("—"),
+  /** Subtone is optional at intake — BA can complete it later in Perfil de Belleza. */
+  subtone: z.enum(SUBTONES).optional(),
 });
 
 export const newClientSchema = z.object({
@@ -50,6 +114,12 @@ export const newClientSchema = z.object({
   routineTiming: z.array(z.enum(ROUTINE_TIMINGS)).min(1, "Selecciona al menos un momento"),
   interests: z.array(z.string()).min(1, "Selecciona al menos un interés"),
   allergies: z.array(z.string()).default([]),
+  /** Optional at intake — completed in Perfil de Belleza. */
+  routineSteps: z.array(z.enum(ROUTINE_STEPS)).optional(),
+  /** Soft-positive ingredient tags the client likes. */
+  preferredIngredients: z.array(z.string()).optional(),
+  /** Soft-negative ingredient tags (not full allergens). */
+  avoidedIngredients: z.array(z.string()).optional(),
   consents: z.array(
     z.object({
       channel: z.enum(CHANNELS),
