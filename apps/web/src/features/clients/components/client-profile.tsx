@@ -93,13 +93,9 @@ export async function ClientProfile({
           </div>
         </Card>
 
-        {/* Action strip */}
-        <div className="grid grid-cols-4 gap-2.5">
-          <Link href={`/ba/clients/${client.id}/consult`}>
-            <Button leading={<Icon name="sparkle" />} className="h-14 w-full">
-              {t("profile.actions.recommend")}
-            </Button>
-          </Link>
+        {/* Action strip — Recomendar lives ahora dentro del wizard de visita
+            y la captura de perfil de belleza está en la tab dedicada. */}
+        <div className="grid grid-cols-3 gap-2.5">
           <Link href={`/ba/clients/${client.id}/visit`}>
             <Button leading={<Icon name="calendar" />} className="h-14 w-full">
               {t("profile.actions.register_visit")}
