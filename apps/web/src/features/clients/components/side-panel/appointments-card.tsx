@@ -38,7 +38,11 @@ export async function AppointmentsCard({
           {t("profile.card.appointments")}
         </span>
         <Link href="/ba/appointments/new">
-          <Button variant="ghost" leading={<Icon name="plus" size={11} />} className="h-7 px-2.5 text-[15.5px]">
+          <Button
+            variant="ghost"
+            leading={<Icon name="plus" size={11} />}
+            className="h-7 px-2.5 text-[15.5px]"
+          >
             {t("profile.appointments.new")}
           </Button>
         </Link>
@@ -51,31 +55,33 @@ export async function AppointmentsCard({
       ) : (
         <ul className="list-none m-0 p-0 flex flex-col gap-2.5">
           {upcoming.slice(0, 3).map((a) => (
-            <li
-              key={a.id}
-              className="flex items-center gap-2.5 px-2.5 py-2 rounded-md bg-bone"
-            >
-              <div className="min-w-[56px]">
-                <div className="text-[16px] font-semibold leading-none tabular">
-                  {formatTime(a.at)}
-                </div>
-                <div className="text-[14px] font-medium leading-tight text-ink/60">
-                  {formatDate(a.at)}
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[16.5px] font-semibold leading-tight truncate">
-                  {t(`appointment.kind.${a.kind}`)}
-                </div>
-                <div className="text-[14.5px] font-medium leading-tight text-ink/60">
-                  {a.durationMin} min · {a.brand}
-                </div>
-              </div>
-              <span
-                className={`text-[13.5px] font-semibold uppercase tracking-[0.04em] ${STATUS_COLOR[a.status]}`}
+            <li key={a.id}>
+              <Link
+                href={`/ba/clients/${a.clientId}/appointments/${a.id}`}
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-md bg-bone hover:bg-bone/70 text-ink no-underline transition-colors"
               >
-                {t(`appointment.status.${a.status}`)}
-              </span>
+                <div className="min-w-[56px]">
+                  <div className="text-[16px] font-semibold leading-none tabular">
+                    {formatTime(a.at)}
+                  </div>
+                  <div className="text-[14px] font-medium leading-tight text-ink/60">
+                    {formatDate(a.at)}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[16.5px] font-semibold leading-tight truncate">
+                    {t(`appointment.kind.${a.kind}`)}
+                  </div>
+                  <div className="text-[14.5px] font-medium leading-tight text-ink/60">
+                    {a.durationMin} min · {a.brand}
+                  </div>
+                </div>
+                <span
+                  className={`text-[13.5px] font-semibold uppercase tracking-[0.04em] ${STATUS_COLOR[a.status]}`}
+                >
+                  {t(`appointment.status.${a.status}`)}
+                </span>
+              </Link>
             </li>
           ))}
           {upcoming.length > 3 ? (
@@ -94,10 +100,15 @@ export async function AppointmentsCard({
           </div>
           <ul className="list-none m-0 p-0">
             {past.map((a) => (
-              <li key={a.id} className="flex items-center gap-2 py-1 text-[15.5px]">
-                <Icon name="check" size={11} />
-                <span className="flex-1 truncate">{t(`appointment.kind.${a.kind}`)}</span>
-                <span className="text-[14.5px] text-ink/60">{formatDate(a.at)}</span>
+              <li key={a.id}>
+                <Link
+                  href={`/ba/clients/${a.clientId}/appointments/${a.id}`}
+                  className="flex items-center gap-2 py-1 text-[15.5px] text-ink no-underline hover:text-ink/70 transition-colors"
+                >
+                  <Icon name="check" size={11} />
+                  <span className="flex-1 truncate">{t(`appointment.kind.${a.kind}`)}</span>
+                  <span className="text-[14.5px] text-ink/60">{formatDate(a.at)}</span>
+                </Link>
               </li>
             ))}
           </ul>

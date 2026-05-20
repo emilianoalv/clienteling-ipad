@@ -72,6 +72,10 @@ module.exports = {
               // del catálogo para que la BA pueda justificar recomendaciones
               // con claims clínicos reales en piso.
               ["features", { feature: "catalog" }],
+              // AD1: AppointmentDetail dentro del perfil del cliente reutiliza
+              // las server actions transition/reschedule/cancel del feature
+              // appointments para evitar duplicar la lógica de transiciones.
+              ["features", { feature: "appointments" }],
             ],
           },
           {
