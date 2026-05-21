@@ -8,15 +8,27 @@ import { requireSession } from "@/server/auth/session";
 import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 import type { StaffId } from "@/types/staff";
 
-export default async function NewAppointmentPage() {
+export default async function NewAppointmentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ clientId?: string }>;
+}) {
   const t = await getTranslations();
   const { staff } = await requireSession();
   const storeIds = storeScopeFor(staff);
   const brands = brandScopeFor(staff);
-  const [clients, appointments] = await Promise.all([
+  const [clients, appointments, params] = await Promise.all([
     listClients({ brands, storeIds }),
     listAppointments({ brands, storeIds }),
+    searchParams,
   ]);
+
+  // Only pre-select when the clientId from the URL is in the BA's
+  // accessible list — silently ignore otherwise to avoid leaking access.
+  const defaultClientId =
+    params.clientId && clients.some((c) => c.id === params.clientId)
+      ? params.clientId
+      : undefined;
 
   const baOptions: ReadonlyArray<{ id: StaffId; label: string }> = [
     { id: staff.id, label: staff.name },
@@ -41,6 +53,7 @@ export default async function NewAppointmentPage() {
         defaultBaId={staff.id}
         baOptions={baOptions}
         existingAppointments={appointments}
+        {...(defaultClientId ? { defaultClientId } : {})}
       />
     </section>
   );

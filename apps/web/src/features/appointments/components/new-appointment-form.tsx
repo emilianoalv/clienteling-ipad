@@ -19,6 +19,12 @@ export interface NewAppointmentFormProps {
   defaultBaId: StaffId;
   baOptions: ReadonlyArray<{ id: StaffId; label: string }>;
   existingAppointments: readonly Appointment[];
+  /**
+   * Optional pre-selected client (e.g. cuando la BA llega aquí desde el
+   * panel "Citas" del perfil de un cliente). El botón "Cambiar" sigue
+   * disponible para corregir si fue accidental.
+   */
+  defaultClientId?: string;
 }
 
 export function NewAppointmentForm({
@@ -26,12 +32,16 @@ export function NewAppointmentForm({
   defaultBaId,
   baOptions,
   existingAppointments,
+  defaultClientId,
 }: NewAppointmentFormProps) {
   const t = useTranslations();
+  const initialClient = defaultClientId
+    ? clients.find((c) => c.id === defaultClientId) ?? null
+    : null;
   const [query, setQuery] = useState("");
-  const [clientId, setClientId] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(initialClient?.id ?? null);
   const [kind, setKind] = useState<NewAppointmentInput["kind"]>("consultation");
-  const [brand, setBrand] = useState<BrandId>("Lancôme");
+  const [brand, setBrand] = useState<BrandId>(initialClient?.brands[0] ?? "Lancôme");
   const [baId, setBaId] = useState<StaffId>(defaultBaId);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");

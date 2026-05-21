@@ -147,7 +147,7 @@ export async function ClientProfile({
         <UpcomingFollowupsCard clientId={client.id} tasks={followupTasks} />
         <SkinProfileCard client={client} />
         <InterestsCard client={client} />
-        <AppointmentsCard appointments={appointments} />
+        <AppointmentsCard appointments={appointments} clientId={client.id} />
         <UpcomingEventsCard client={client} />
         <AffinitiesCard client={client} />
         <ConsentSummaryCard consents={consents} />

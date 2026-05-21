@@ -17,8 +17,11 @@ const STATUS_COLOR: Record<AppointmentStatus, string> = {
 
 export async function AppointmentsCard({
   appointments,
+  clientId,
 }: {
   appointments: readonly Appointment[];
+  /** Pre-selects the client when the BA taps "+ Nueva" from this card. */
+  clientId: string;
 }) {
   const t = await getTranslations();
   const cutoff = Date.now() - 86_400_000;
@@ -37,7 +40,7 @@ export async function AppointmentsCard({
         <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
           {t("profile.card.appointments")}
         </span>
-        <Link href="/ba/appointments/new">
+        <Link href={`/ba/appointments/new?clientId=${encodeURIComponent(clientId)}`}>
           <Button
             variant="ghost"
             leading={<Icon name="plus" size={11} />}
