@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Avatar, type AvatarTone, Button, Chip, Input } from "@/components/primitives";
 import { Card, SectionHeader } from "@/components/patterns";
-import { BRAND_IDS, type BrandId } from "@/types/brand";
+import type { BrandId } from "@/types/brand";
 import type { Client } from "@/types/client";
 import type { Appointment } from "@/types/appointment";
 import type { StaffId } from "@/types/staff";
@@ -20,6 +20,12 @@ export interface NewAppointmentFormProps {
   baOptions: ReadonlyArray<{ id: StaffId; label: string }>;
   existingAppointments: readonly Appointment[];
   /**
+   * Brands the staff can attend. BA single-brand → length 1 (selector
+   * oculto, brand fijo). Gerente / Supervisor / Admin con varias →
+   * selector con esas opciones. Si viene vacío fallback a Lancôme.
+   */
+  brandScope: readonly BrandId[];
+  /**
    * Optional pre-selected client (e.g. cuando la BA llega aquí desde el
    * panel "Citas" del perfil de un cliente). El botón "Cambiar" sigue
    * disponible para corregir si fue accidental.
@@ -32,16 +38,21 @@ export function NewAppointmentForm({
   defaultBaId,
   baOptions,
   existingAppointments,
+  brandScope,
   defaultClientId,
 }: NewAppointmentFormProps) {
   const t = useTranslations();
+  const allowedBrands = brandScope.length > 0 ? brandScope : (["Lancôme"] as const);
   const initialClient = defaultClientId
     ? clients.find((c) => c.id === defaultClientId) ?? null
     : null;
+  const initialBrand: BrandId =
+    initialClient?.brands.find((b) => allowedBrands.includes(b)) ?? allowedBrands[0]!;
   const [query, setQuery] = useState("");
   const [clientId, setClientId] = useState<string | null>(initialClient?.id ?? null);
   const [kind, setKind] = useState<NewAppointmentInput["kind"]>("consultation");
-  const [brand, setBrand] = useState<BrandId>(initialClient?.brands[0] ?? "Lancôme");
+  const [brand, setBrand] = useState<BrandId>(initialBrand);
+  const showBrandPicker = allowedBrands.length > 1;
   const [baId, setBaId] = useState<StaffId>(defaultBaId);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -113,7 +124,8 @@ export function NewAppointmentForm({
                       type="button"
                       onClick={() => {
                         setClientId(c.id);
-                        if (c.brands[0]) setBrand(c.brands[0]);
+                        const next = c.brands.find((b) => allowedBrands.includes(b));
+                        if (next) setBrand(next);
                       }}
                       className="grid grid-cols-[32px_1fr] gap-3 items-center p-2 bg-bone border border-line rounded-md cursor-pointer text-left text-inherit w-full hover:bg-bone-2"
                     >
@@ -142,14 +154,18 @@ export function NewAppointmentForm({
             ))}
           </div>
 
-          <SectionHeader title={t("appointment.field.brand")} />
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {BRAND_IDS.filter((b) => b === "Lancôme" || b === "YSL").map((b) => (
-              <ChipBtn key={b} active={brand === b} onClick={() => setBrand(b)}>
-                {b}
-              </ChipBtn>
-            ))}
-          </div>
+          {showBrandPicker ? (
+            <>
+              <SectionHeader title={t("appointment.field.brand")} />
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {allowedBrands.map((b) => (
+                  <ChipBtn key={b} active={brand === b} onClick={() => setBrand(b)}>
+                    {b}
+                  </ChipBtn>
+                ))}
+              </div>
+            </>
+          ) : null}
 
           <SectionHeader title={t("appointment.field.ba")} />
           <div className="flex flex-wrap gap-1.5">

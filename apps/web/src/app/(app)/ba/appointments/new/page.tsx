@@ -53,6 +53,7 @@ export default async function NewAppointmentPage({
         defaultBaId={staff.id}
         baOptions={baOptions}
         existingAppointments={appointments}
+        brandScope={brands ?? []}
         {...(defaultClientId ? { defaultClientId } : {})}
       />
     </section>
