@@ -14,7 +14,6 @@ import { ProductDetail } from "./product-detail";
 type BrandTab = "all" | BrandId;
 type CategoryTab = "all" | "Sérum" | "Crema" | "Base" | "Fragancia" | "Labial" | "Corrector";
 
-const BRAND_TABS: ReadonlyArray<BrandTab> = ["all", "Lancôme", "YSL"];
 const CATEGORY_TABS: ReadonlyArray<CategoryTab> = [
   "all",
   "Sérum",
@@ -44,6 +43,22 @@ export function CatalogBrowser({
   const [brand, setBrand] = useState<BrandTab>("all");
   const [category, setCategory] = useState<CategoryTab>("all");
   const [selectedSku, setSelectedSku] = useState<string | null>(null);
+
+  // Derive brand tabs from the products the server actually delivered.
+  // For a single-brand BA (e.g. Valentina · Lancôme) the page only loads
+  // Lancôme products, so we hide the brand picker entirely — there's
+  // nothing to filter against. Multi-brand staff (Gerente / Supervisor /
+  // Admin) see "Todas" + one chip per brand in scope.
+  const brandTabs = useMemo<ReadonlyArray<BrandTab>>(() => {
+    const present = new Set<BrandId>();
+    for (const p of products) present.add(p.brand);
+    const ordered: BrandId[] = [];
+    for (const b of ["Lancôme", "YSL"] as const) {
+      if (present.has(b)) ordered.push(b);
+    }
+    return ["all", ...ordered];
+  }, [products]);
+  const showBrandPicker = brandTabs.length > 2;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -78,12 +93,14 @@ export function CatalogBrowser({
               <Icon name="search" size={16} />
             </span>
           </div>
-          <Pills
-            value={brand}
-            options={BRAND_TABS}
-            onChange={(v) => setBrand(v)}
-            labelFor={brandLabel(t)}
-          />
+          {showBrandPicker ? (
+            <Pills
+              value={brand}
+              options={brandTabs}
+              onChange={(v) => setBrand(v)}
+              labelFor={brandLabel(t)}
+            />
+          ) : null}
           <Pills
             value={category}
             options={CATEGORY_TABS}
