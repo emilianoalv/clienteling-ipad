@@ -43,18 +43,8 @@ export function FichaTecnicaModal({
       size="lg"
     >
       <div className="flex flex-col gap-5">
-        <div className="flex items-center justify-between">
+        <div>
           <BrandTag brand={product.brand} alwaysShow />
-          {tech?.source ? (
-            <a
-              href={tech.source}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[14px] text-ink/50 hover:text-ink underline-offset-2 hover:underline inline-flex items-center gap-1"
-            >
-              Fuente oficial <Icon name="arrow-right" size={12} />
-            </a>
-          ) : null}
         </div>
 
         {!tech ? (
