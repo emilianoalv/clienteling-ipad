@@ -79,6 +79,7 @@ export function RegisterVisitForm({
   const [followupType, setFollowupType] = useState<FollowupType>("call");
   const [followupDescription, setFollowupDescription] = useState("");
   const [followupDueAt, setFollowupDueAt] = useState<string>(addDaysISO(7));
+  const [followupPrefilled, setFollowupPrefilled] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [isPending, startTransition] = useTransition();
@@ -113,6 +114,26 @@ export function RegisterVisitForm({
         setSampleSkus(recsWithSample);
       }
       setSamplesPrefilled(true);
+    }
+    // Al entrar al paso de Seguimiento por primera vez: si hay muestras dadas
+    // pre-rellena la sección con plantilla auto-armada (WhatsApp + 14d +
+    // descripción "Pedir feedback de X a {firstName}"). El cierre del ciclo
+    // de muestra siempre debe nacer del sistema, no de la memoria del BA.
+    if (step === STEP_INDEX.SAMPLES && !followupPrefilled && sampleSkus.length > 0) {
+      const sampleLines = sampleSkus.map((sku) => {
+        const product = products.find((p) => (p.sku as unknown as string) === sku);
+        return product?.line ?? sku;
+      });
+      const productList =
+        sampleLines.length === 1
+          ? sampleLines[0]
+          : `${sampleLines.slice(0, -1).join(", ")} y ${sampleLines[sampleLines.length - 1]}`;
+      const firstName = client.name.split(/\s+/)[0] ?? client.name;
+      setShowFollowup(true);
+      setFollowupType("whatsapp");
+      setFollowupDescription(`Pedir feedback de ${productList} a ${firstName}`);
+      setFollowupDueAt(addDaysISO(14));
+      setFollowupPrefilled(true);
     }
     setStep((s) => Math.min(s + 1, LAST_STEP));
   }

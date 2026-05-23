@@ -102,7 +102,11 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
     });
   }
 
-  // Optional follow-up task — fired only if the BA filled the section.
+  // Follow-up task:
+  // 1. Si la BA llenó la sección manualmente, respetar exactamente lo que puso.
+  // 2. Si NO programó nada PERO entregó muestras, auto-generar una task de
+  //    feedback a 14 días — el ciclo de muestra siempre debe cerrarse en
+  //    seguimiento, no podemos confiar en la memoria de la BA.
   if (input.followup) {
     await followupTaskRepository.create({
       clientId,
@@ -112,10 +116,38 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
       dueAt: new Date(`${input.followup.dueAt}T12:00:00`).toISOString(),
       sourceInteractionId: interaction.id,
     });
+  } else if (input.samples.length > 0) {
+    const firstName = client.name.split(" ")[0] ?? client.name;
+    // Resolver nombres reales de productos (con fallback a SKU) para que la
+    // descripción se sienta natural en el inbox del BA.
+    const sampleNames = await Promise.all(
+      input.samples.map(async (sku) => {
+        const product = await productRepository.findBySku(sku as Sku);
+        return product?.line ?? sku;
+      }),
+    );
+    const productList =
+      sampleNames.length === 1
+        ? sampleNames[0]
+        : `${sampleNames.slice(0, -1).join(", ")} y ${sampleNames[sampleNames.length - 1]}`;
+    await followupTaskRepository.create({
+      clientId,
+      baId: staff.id,
+      type: "whatsapp",
+      description: `Pedir feedback de ${productList} a ${firstName}`,
+      dueAt: addDaysISO(14),
+      sourceInteractionId: interaction.id,
+    });
   }
 
   await clientRepository.patchStats(clientId, applyVisitToStats(client.stats));
 
   revalidatePath(`/ba/clients/${clientId}`);
   redirect(`/ba/clients/${clientId}`);
+}
+
+function addDaysISO(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString();
 }
