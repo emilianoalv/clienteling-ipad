@@ -21,12 +21,20 @@ export interface CompatibilityPickerProps {
   onChange: (next: string[]) => void;
   /** Show only the top N ranked products plus any selected ones. */
   topN?: number;
+  /**
+   * Optional override for the product description line. The sample step uses
+   * this to display the MINI size (e.g. "Gel Cream · 7 ml") instead of the
+   * full-size product info that products carry by default.
+   */
+  describeProduct?: (product: Product) => string;
 }
 
 /**
  * Multi-select picker for visit outcomes (samples + recommendations).
  * Ranks products by compatibility score and shows reason chips.
  */
+type CategoryTab = "all" | string;
+
 export function CompatibilityPicker({
   client,
   products,
@@ -34,9 +42,22 @@ export function CompatibilityPicker({
   selected,
   onChange,
   topN = 5,
+  describeProduct,
 }: CompatibilityPickerProps) {
   const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<CategoryTab>("all");
   const [techSku, setTechSku] = useState<Sku | null>(null);
+
+  // Derive available categories from the products we received — el sample
+  // step solo pasa productos con sample, así que solo veremos las categorías
+  // que en efecto tienen muestra disponible.
+  const categories = useMemo<readonly CategoryTab[]>(() => {
+    const present = new Set<string>();
+    for (const p of products) {
+      if (p.attrs.tipo) present.add(p.attrs.tipo);
+    }
+    return ["all", ...Array.from(present)];
+  }, [products]);
 
   const ranked = useMemo(
     () => rankProductsForClient(client, products, techs),
@@ -57,18 +78,26 @@ export function CompatibilityPicker({
     const matchesQuery = (p: Product) =>
       !q ||
       `${p.sku} ${p.line} ${p.name} ${p.brand}`.toLowerCase().includes(q);
+    const matchesCategory = (p: Product) =>
+      category === "all" || p.attrs.tipo === category;
 
-    if (q) {
-      return ranked.filter((r) => matchesQuery(r.product));
+    const scoped = ranked.filter(
+      (r) => matchesCategory(r.product) && matchesQuery(r.product),
+    );
+
+    if (q || category !== "all") {
+      // Cuando hay filtro activo mostramos todos los matches — la BA está
+      // buscando algo específico, no queremos cortar la lista a topN.
+      return scoped;
     }
     // Default: top N + anything already selected (so selected items always stay visible).
-    const top = ranked.slice(0, topN);
+    const top = scoped.slice(0, topN);
     const topSkus = new Set(top.map((r) => r.product.sku));
-    const extraSelected = ranked.filter(
+    const extraSelected = scoped.filter(
       (r) => selected.includes(r.product.sku) && !topSkus.has(r.product.sku),
     );
     return [...top, ...extraSelected];
-  }, [ranked, query, selected, topN]);
+  }, [ranked, query, category, selected, topN]);
 
   function toggle(sku: Sku) {
     if (selected.includes(sku)) {
@@ -92,6 +121,30 @@ export function CompatibilityPicker({
           <Icon name="search" size={16} />
         </span>
       </div>
+
+      {categories.length > 2 ? (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {categories.map((cat) => {
+            const active = category === cat;
+            const label = cat === "all" ? "Todas" : cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCategory(cat)}
+                aria-pressed={active}
+                className={`inline-flex items-center h-7 px-3 rounded-full border text-[12.5px] font-semibold cursor-pointer transition-colors ${
+                  active
+                    ? "bg-ink text-paper border-ink"
+                    : "bg-white text-ink/70 border-line hover:bg-bone hover:text-ink"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       {visible.length === 0 ? (
         <p className="m-0 text-[14.5px] text-ink/60 py-3">No hay productos que coincidan.</p>
@@ -133,7 +186,9 @@ export function CompatibilityPicker({
                       <span className="text-[12.5px] text-ink/60 tabular">{product.sku}</span>
                     </div>
                     <div className="text-[13.5px] text-ink/60 leading-tight truncate">
-                      {product.name} · {product.size}
+                      {describeProduct
+                        ? describeProduct(product)
+                        : `${product.name} · ${product.size}`}
                     </div>
                     {score.reasons.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5 mt-1">
