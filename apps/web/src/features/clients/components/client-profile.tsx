@@ -9,6 +9,7 @@ import type { Consent } from "@/types/consent";
 import type { Appointment } from "@/types/appointment";
 import type { Communication } from "@/types/communication";
 import type { FollowupTask } from "@/types/followup-task";
+import type { Product } from "@/types/product";
 import { Avatar, type AvatarTone, BrandTag, Button, Chip, Icon } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import { ClientProfileTabs } from "./client-profile-tabs";
@@ -36,6 +37,8 @@ export interface ClientProfileProps {
   followupTasks: readonly FollowupTask[];
   /** StaffId → display name. Used by the Citas tab to render the BA per appointment. */
   baLookup: Record<string, string>;
+  /** SKU → Product. Used by recs/samples previews to render real names. */
+  productBySku: Record<string, Product>;
 }
 
 export async function ClientProfile({
@@ -49,6 +52,7 @@ export async function ClientProfile({
   communications,
   followupTasks,
   baLookup,
+  productBySku,
 }: ClientProfileProps) {
   const t = await getTranslations();
   const segment = segmentClient(client);
@@ -137,6 +141,7 @@ export async function ClientProfile({
           communications={communications}
           followupTasks={followupTasks}
           baLookup={baLookup}
+          productBySku={productBySku}
           clientName={client.name}
           clientId={client.id}
         />

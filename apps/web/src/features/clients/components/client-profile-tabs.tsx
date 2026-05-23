@@ -8,6 +8,7 @@ import type { Client, ClientId } from "@/types/client";
 import type { Interaction } from "@/types/interaction";
 import type { Purchase } from "@/types/purchase";
 import type { Sample } from "@/types/sample";
+import type { Product } from "@/types/product";
 import type { Recommendation } from "@/types/recommendation";
 import type { Communication } from "@/types/communication";
 import type { FollowupTask } from "@/types/followup-task";
@@ -51,6 +52,8 @@ export interface ClientProfileTabsProps {
   followupTasks: readonly FollowupTask[];
   /** BA name lookup by staffId — used to label appointments by BA. */
   baLookup: Record<string, string>;
+  /** SKU → Product. Used by recs/samples previews to render real names. */
+  productBySku: Record<string, Product>;
   clientName: string;
   clientId: string;
 }
@@ -108,7 +111,11 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
           <PurchasesPreview purchases={props.purchases} clientId={props.clientId} />
         )}
         {tab === "recs" && (
-          <RecsPreview recommendations={props.recommendations} clientId={props.clientId} />
+          <RecsPreview
+            recommendations={props.recommendations}
+            clientId={props.clientId}
+            productBySku={props.productBySku}
+          />
         )}
         {tab === "samples" && (
           <SamplesPreview samples={props.samples} clientId={props.clientId} />

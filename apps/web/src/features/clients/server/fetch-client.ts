@@ -11,8 +11,10 @@ import { consentRepository } from "@/server/repositories/consent.repository";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import { communicationRepository } from "@/server/repositories/communication.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
+import { productRepository } from "@/server/repositories/product.repository";
 import { userRepository } from "@/server/repositories/user.repository";
-import { isStoreInScope } from "@/server/auth/scope";
+import { brandScopeFor, isStoreInScope } from "@/server/auth/scope";
+import type { Product, Sku } from "@/types/product";
 
 /**
  * Loads a single client by id, enforcing the caller's store scope. Returns
@@ -49,6 +51,7 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     communications,
     followupTasks,
     users,
+    products,
   ] = await Promise.all([
     clientRepository.findById(clientId),
     interactionRepository.listByClient(clientId),
@@ -60,6 +63,7 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     communicationRepository.listByClient(clientId),
     followupTaskRepository.listByClient(clientId),
     userRepository.list(),
+    productRepository.list({ brands: brandScopeFor(staff) }),
   ]);
   if (!client) notFound();
 
@@ -68,6 +72,11 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
   // historical appointments attended by someone outside the current scope.
   const baLookup: Record<string, string> = {};
   for (const u of users) baLookup[u.id as unknown as string] = u.name;
+
+  // productBySku: SKU → Product. Used by RecsPreview / SamplesPreview to render
+  // real product names instead of raw SKUs in the inline lists.
+  const productBySku: Record<string, Product> = {};
+  for (const p of products) productBySku[p.sku as Sku] = p;
 
   return {
     client,
@@ -80,5 +89,6 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     communications,
     followupTasks,
     baLookup,
+    productBySku,
   };
 }

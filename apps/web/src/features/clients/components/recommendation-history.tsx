@@ -245,6 +245,13 @@ function RecRow({
   productBySku: Record<string, Product>;
 }) {
   const daysSince = daysBetween(rec.at);
+  // Título prominente: nombre del primer producto. Si hay más, "+ N más".
+  const firstSku = rec.items[0];
+  const firstProduct = firstSku ? productBySku[firstSku as unknown as string] : null;
+  const headlineLine = firstProduct?.line ?? firstSku ?? "Recomendación";
+  const headlineName = firstProduct?.name;
+  const extraCount = rec.items.length - 1;
+
   return (
     <Link
       href={`/ba/clients/${clientId}/recommendations/${rec.id}`}
@@ -258,11 +265,13 @@ function RecRow({
           <Icon name="sparkle" size={18} />
         </span>
         <div className="min-w-0 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="font-display text-[20px] leading-none">
-            {rec.items.length} {rec.items.length === 1 ? "producto sugerido" : "productos sugeridos"}
-          </span>
+          <span className="font-display text-[22px] leading-tight">{headlineLine}</span>
+          {extraCount > 0 ? (
+            <span className="text-[13px] font-semibold text-ink/55">+ {extraCount} más</span>
+          ) : null}
           <BrandTag brand={rec.brand} alwaysShow />
           <span className="w-full text-[14px] text-ink/60 mt-0.5">
+            {headlineName ? <span>{headlineName} · </span> : null}
             {formatDate(rec.at)}
             {rec.status === "pending" && daysSince > 0
               ? ` · hace ${daysSince} ${daysSince === 1 ? "día" : "días"} sin cerrar`
