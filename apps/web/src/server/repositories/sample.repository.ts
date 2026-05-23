@@ -1,6 +1,7 @@
 import "server-only";
 import type { BrandId } from "@/types/brand";
 import type { ClientId } from "@/types/client";
+import type { PurchaseId } from "@/types/purchase";
 import type { Sample, SampleId } from "@/types/sample";
 import type { StoreId } from "@/types/store";
 import { SEED_SAMPLES } from "./seed";
@@ -30,6 +31,7 @@ export interface SampleRepository {
   findById(id: SampleId): Promise<Sample | null>;
   listInventory(filter?: { brands?: readonly BrandId[] }): Promise<SampleInventoryItem[]>;
   create(input: Omit<Sample, "id">): Promise<Sample>;
+  markConverted(id: SampleId, purchaseId: PurchaseId): Promise<Sample | null>;
 }
 
 const SAMPLES: Sample[] = persistent("__clienteling.samples.v2", () => [...SEED_SAMPLES]);
@@ -87,5 +89,14 @@ export const sampleRepository: SampleRepository = {
     const sample: Sample = { ...input, id };
     SAMPLES.unshift(sample);
     return sample;
+  },
+
+  async markConverted(id, purchaseId) {
+    const idx = SAMPLES.findIndex((s) => s.id === id);
+    if (idx < 0) return null;
+    const current = SAMPLES[idx]!;
+    const next: Sample = { ...current, converted: true, purchaseId };
+    SAMPLES[idx] = next;
+    return next;
   },
 };

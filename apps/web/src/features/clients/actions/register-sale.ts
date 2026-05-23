@@ -9,6 +9,8 @@ import { clientRepository } from "@/server/repositories/client.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
 import { interactionRepository } from "@/server/repositories/interaction.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
+import { sampleRepository } from "@/server/repositories/sample.repository";
+import { productRepository } from "@/server/repositories/product.repository";
 import { applyPurchaseToStats } from "../services/update-client-stats";
 import { registerSaleSchema, type RegisterSaleInput } from "../schemas/register-sale.schema";
 import type { ClientId } from "@/types/client";
@@ -77,6 +79,33 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
       dueAt: new Date(`${input.followup.dueAt}T12:00:00`).toISOString(),
       sourceInteractionId: interaction.id,
     });
+  }
+
+  // Auto-conversión sample → venta:
+  // Por cada item del ticket buscamos su sampleSku (la mini que representa
+  // a ese full-size, ej. LC-HZN-50 → LC-HZN-7). Si la clienta tiene una
+  // muestra pendiente con ese sampleSku, la marcamos converted con la
+  // purchaseId. Para evitar inflar tasas, solo cerramos la muestra MÁS
+  // RECIENTE no convertida por SKU — el resto se mantienen pendientes.
+  const clientSamples = await sampleRepository.listByClient(clientId);
+  const pendingBySampleSku = new Map<string, typeof clientSamples[number]>();
+  for (const s of clientSamples) {
+    if (s.converted) continue;
+    const key = s.sku as unknown as string;
+    // listByClient devuelve sorted desc por givenAt — el primero que veamos
+    // es el más reciente, lo guardamos y no lo sobreescribimos.
+    if (!pendingBySampleSku.has(key)) pendingBySampleSku.set(key, s);
+  }
+  for (const item of input.items) {
+    const product = await productRepository.findBySku(item.sku as Sku);
+    if (!product?.sampleSku) continue;
+    const sampleKey = product.sampleSku as unknown as string;
+    const sample = pendingBySampleSku.get(sampleKey);
+    if (!sample) continue;
+    await sampleRepository.markConverted(sample.id, purchase.id);
+    // No volvamos a cerrar la misma sample si el ticket tiene dos líneas
+    // del mismo producto.
+    pendingBySampleSku.delete(sampleKey);
   }
 
   await clientRepository.patchStats(clientId, applyPurchaseToStats(client.stats, total, new Date(at)));
