@@ -9,8 +9,10 @@ import type { Template } from "@/types/template";
 import { Avatar, type AvatarTone, Button, Chip, Icon } from "@/components/primitives";
 import type { IconName } from "@/types/icon";
 import { Card } from "@/components/patterns";
+import { Modal } from "@/components/feedback";
 import { renderTemplate } from "@/features/communications";
 import { sendCommunication } from "@/features/communications";
+import { buildMessageUrl } from "@/lib/messaging/build-message-url";
 import { TemplateList } from "./template-list";
 import { WhatsappPreview } from "./whatsapp-preview";
 
@@ -20,6 +22,12 @@ const CHANNEL_ICON: Record<Channel, IconName> = {
   WhatsApp: "whatsapp",
   Email: "email",
   SMS: "sms",
+};
+
+const CHANNEL_LABEL: Record<Channel, string> = {
+  WhatsApp: "WhatsApp",
+  Email: "Mail",
+  SMS: "Mensajes",
 };
 
 const PRODUCT_PLACEHOLDER = "Libre Le Parfum Intense";
@@ -32,17 +40,20 @@ export interface ComposerProps {
 }
 
 type BrandTab = "all" | BrandId;
+type SendPhase = "idle" | "pending-confirm" | "logging" | "sent";
 
 export function Composer({ client, templates, staffName, storeName }: ComposerProps) {
   const t = useT();
   const [brandFilter, setBrandFilter] = useState<BrandTab>("all");
   const [template, setTemplate] = useState<Template | null>(templates[0] ?? null);
   const [channel, setChannel] = useState<Channel>(templates[0]?.channel ?? "WhatsApp");
+  const [bodyDraft, setBodyDraft] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [phase, setPhase] = useState<SendPhase>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const body = useMemo(() => {
+  const renderedBody = useMemo(() => {
     if (!template) return "";
     return renderTemplate(template, {
       nombre: client.name.split(" ")[0] ?? client.name,
@@ -52,17 +63,41 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
     });
   }, [template, client, storeName, staffName]);
 
+  const body = bodyDraft ?? renderedBody;
   const tone: AvatarTone = brandToTone(client.brands[0]);
 
   function onSelectTemplate(tpl: Template) {
     setTemplate(tpl);
     setChannel(tpl.channel);
-    setSent(false);
+    setBodyDraft(null);
+    setIsEditing(false);
+    setPhase("idle");
+    setError(null);
   }
 
-  function onSend() {
+  function onOpenExternal() {
     if (!template) return;
     setError(null);
+    const url = buildMessageUrl({
+      channel,
+      phone: client.phone,
+      email: client.email,
+      body,
+      subject: `${template.category} · ${template.brand}`,
+    });
+    // Marcamos el composer en "pending-confirm" ANTES de abrir la app
+    // externa. Cuando la BA vuelva a la app de clienteling, verá el
+    // modal "¿Enviaste el mensaje?".
+    setPhase("pending-confirm");
+    // window.open con _blank en iPad sale al esquema nativo
+    // (whatsapp://, mailto:, sms:) sin perder esta tab.
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  function onConfirmSent() {
+    if (!template) return;
+    setError(null);
+    setPhase("logging");
     startTransition(async () => {
       const result = await sendCommunication({
         clientId: client.id,
@@ -73,10 +108,21 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
       });
       if (!result.ok) {
         setError(result.message ?? t("followup.error.send"));
+        setPhase("pending-confirm");
         return;
       }
-      setSent(true);
+      setPhase("sent");
     });
+  }
+
+  function onConfirmCancelled() {
+    setPhase("idle");
+  }
+
+  function onComposeAgain() {
+    setPhase("idle");
+    setBodyDraft(null);
+    setIsEditing(false);
   }
 
   return (
@@ -106,7 +152,7 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
           <div className="flex-1 min-w-0">
             <div className="text-[16px] font-semibold leading-tight truncate">{client.name}</div>
             <div className="text-[15px] font-medium leading-snug text-ink/60 truncate">
-              {client.phone} · {t("followup.consent_hint")}
+              {client.phone} · {client.email}
             </div>
           </div>
         </Card>
@@ -127,6 +173,7 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
                   leading={<Icon name={CHANNEL_ICON[ch]} size={12} />}
                   onClick={() => setChannel(ch)}
                   aria-pressed={active}
+                  disabled={phase !== "idle"}
                 >
                   {ch}
                 </Button>
@@ -136,15 +183,27 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
         </div>
 
         <div>
-          <span className="block text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2">
-            {t("followup.body")}
-          </span>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+              {t("followup.body")}
+            </span>
+            {phase === "idle" && template ? (
+              <button
+                type="button"
+                onClick={() => setIsEditing((v) => !v)}
+                className="text-[14px] font-medium text-ink/60 hover:text-ink underline-offset-2 hover:underline bg-transparent border-0 p-0 cursor-pointer"
+              >
+                {isEditing ? "Volver a plantilla" : "Editar mensaje"}
+              </button>
+            ) : null}
+          </div>
           <textarea
             value={body}
-            readOnly
-            className="w-full h-[140px] p-3.5 text-[17px] leading-snug rounded-[10px] border border-line bg-white resize-none"
+            readOnly={!isEditing || phase !== "idle"}
+            onChange={(e) => setBodyDraft(e.target.value)}
+            className="w-full h-[140px] p-3.5 text-[17px] leading-snug rounded-[10px] border border-line bg-white resize-none focus-visible:border-ink outline-none"
           />
-          {template ? (
+          {template && !isEditing ? (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {template.tokens.map((tok) => (
                 <Chip key={tok} size="sm">
@@ -155,37 +214,49 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
           ) : null}
         </div>
 
-        <Card variant="flat" className="bg-ok/5 border-ok/20">
-          <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ok">
-            {t("followup.sandbox.title")}
+        <Card variant="flat" className="bg-bone border-line">
+          <span className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+            ¿Cómo funciona?
           </span>
-          <p className="m-0 mt-1 text-[16px] font-medium leading-snug">
-            {t("followup.sandbox.hint")}
+          <p className="m-0 mt-1 text-[15px] leading-snug text-ink/70">
+            Al darle <strong className="text-ink">Abrir en {CHANNEL_LABEL[channel]}</strong> tu
+            iPad cambia a la app correspondiente con el mensaje pre-cargado. Tú lo revisas y le
+            das Enviar. Al volver, te preguntaremos si lo enviaste para registrarlo en el
+            historial.
           </p>
         </Card>
 
         {error ? (
           <p className="m-0 text-[16px] font-medium leading-snug text-err">{error}</p>
         ) : null}
-        {sent ? (
-          <p className="m-0 text-[16px] font-medium leading-snug text-ok">
-            ✓ {t("followup.sent")}
-          </p>
+
+        {phase === "sent" ? (
+          <div className="inline-flex items-center gap-2 px-4 py-3 bg-ok/[0.1] text-ok rounded-md text-[16px] font-semibold leading-none border border-ok/25 self-start">
+            <Icon name="check" /> Mensaje registrado en el historial de {client.name.split(" ")[0]}.
+          </div>
         ) : null}
 
-        <footer className="flex justify-between gap-3">
-          <Button variant="ghost" disabled aria-disabled="true">
-            {t("followup.save_draft")}
-          </Button>
-          <Button
-            variant="primary"
-            onClick={onSend}
-            loading={isPending}
-            disabled={!template || sent}
-            trailing={<Icon name="arrow-right" />}
-          >
-            {t("followup.send_now")}
-          </Button>
+        <footer className="flex justify-between gap-3 items-center">
+          {phase === "sent" ? (
+            <Button variant="ghost" onClick={onComposeAgain}>
+              Componer otro mensaje
+            </Button>
+          ) : (
+            <Button variant="ghost" disabled aria-disabled="true">
+              {t("followup.save_draft")}
+            </Button>
+          )}
+          {phase !== "sent" ? (
+            <Button
+              variant="primary"
+              onClick={onOpenExternal}
+              disabled={!template || phase !== "idle"}
+              leading={<Icon name={CHANNEL_ICON[channel]} size={14} />}
+              trailing={<Icon name="arrow-right" />}
+            >
+              Abrir en {CHANNEL_LABEL[channel]}
+            </Button>
+          ) : null}
         </footer>
       </Card>
 
@@ -194,6 +265,34 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
         contactName={`${staffName.split(" ")[0] ?? staffName} · ${template?.brand ?? "Lancôme"}`}
         contactInitials={(staffName[0] ?? "B").toUpperCase()}
       />
+
+      <Modal
+        open={phase === "pending-confirm" || phase === "logging"}
+        onClose={onConfirmCancelled}
+        title={`¿Enviaste el mensaje a ${client.name.split(" ")[0] ?? client.name}?`}
+        description={`Si confirmas, lo registramos en el historial de comunicaciones por ${CHANNEL_LABEL[channel]}.`}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={onConfirmCancelled} disabled={isPending}>
+              No, cancelé
+            </Button>
+            <Button
+              variant="primary"
+              onClick={onConfirmSent}
+              loading={isPending}
+              leading={<Icon name="check" />}
+            >
+              Sí, enviado
+            </Button>
+          </>
+        }
+      >
+        <p className="m-0 text-[15.5px] leading-snug text-ink/70">
+          Tu iPad abrió {CHANNEL_LABEL[channel]} con el mensaje. Una vez que le diste Enviar
+          desde ahí, confirma aquí para que quede registrado.
+        </p>
+      </Modal>
     </div>
   );
 }
