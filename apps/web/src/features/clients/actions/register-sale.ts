@@ -11,6 +11,7 @@ import { interactionRepository } from "@/server/repositories/interaction.reposit
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { sampleRepository } from "@/server/repositories/sample.repository";
 import { productRepository } from "@/server/repositories/product.repository";
+import { recommendationRepository } from "@/server/repositories/recommendation.repository";
 import { applyPurchaseToStats } from "../services/update-client-stats";
 import { registerSaleSchema, type RegisterSaleInput } from "../schemas/register-sale.schema";
 import type { ClientId } from "@/types/client";
@@ -106,6 +107,27 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
     // No volvamos a cerrar la misma sample si el ticket tiene dos líneas
     // del mismo producto.
     pendingBySampleSku.delete(sampleKey);
+  }
+
+  // Auto-conversión recommendation → venta:
+  // Si la BA recomendó productos previamente y la clienta compra alguno de
+  // ellos, marcamos esa Recommendation como "converted" enlazándola al
+  // purchase. Soporta el caso de bundles: una sola recomendación con N
+  // SKUs se cierra al comprar AL MENOS UNO de los recomendados. Solo
+  // procesamos las pending (no las dismissed por la BA).
+  const purchasedSkus = new Set(input.items.map((i) => i.sku as unknown as string));
+  const clientRecs = await recommendationRepository.listByClient(clientId);
+  const closedRecs = new Set<string>();
+  for (const rec of clientRecs) {
+    if (rec.status !== "pending") continue;
+    if (closedRecs.has(rec.id)) continue;
+    const matches = rec.items.some((sku) => purchasedSkus.has(sku as unknown as string));
+    if (!matches) continue;
+    await recommendationRepository.patch(rec.id, {
+      status: "converted",
+      purchaseId: purchase.id,
+    });
+    closedRecs.add(rec.id);
   }
 
   await clientRepository.patchStats(clientId, applyPurchaseToStats(client.stats, total, new Date(at)));
