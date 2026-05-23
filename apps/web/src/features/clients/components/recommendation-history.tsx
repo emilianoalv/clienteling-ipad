@@ -7,6 +7,12 @@ import type { Recommendation, RecommendationStatus } from "@/types/recommendatio
 import { Avatar, BrandTag, Chip, Icon } from "@/components/primitives";
 import { formatDate } from "@/lib/format/format-date";
 
+function daysBetween(fromIso: string, toIso?: string): number {
+  const from = new Date(fromIso).getTime();
+  const to = toIso ? new Date(toIso).getTime() : Date.now();
+  return Math.round((to - from) / 86_400_000);
+}
+
 export type RangeFilter = "3m" | "6m" | "12m" | "all";
 export type StatusFilter = "all" | RecommendationStatus;
 
@@ -67,7 +73,9 @@ export function RecommendationHistory({
 
   const total = filtered.length;
   const converted = filtered.filter((r) => r.status === "converted").length;
-  const conversionRate = total === 0 ? 0 : Math.round((converted / total) * 100);
+  // Closing rate verbal: % de recomendaciones que terminaron en venta vs todas
+  // las hechas. Esta es la métrica de persuasión en piso.
+  const closingRate = total === 0 ? 0 : Math.round((converted / total) * 100);
   const avgItems =
     total === 0
       ? 0
@@ -75,18 +83,27 @@ export function RecommendationHistory({
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex items-baseline justify-between gap-4 flex-wrap">
-        <div>
-          <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-            {clientName}
+      <header className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex items-start gap-4">
+          <span
+            aria-hidden
+            className="inline-flex w-12 h-12 items-center justify-center rounded-full bg-bone text-ink shrink-0 mt-1"
+          >
+            <Icon name="sparkle" size={22} />
+          </span>
+          <div>
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+              {clientName} · venta verbal
+            </div>
+            <h2 className="m-0 mt-1 font-display text-[32px] leading-tight tracking-[-0.01em]">
+              Recomendaciones
+            </h2>
+            <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug max-w-[640px]">
+              Productos que sugeriste verbalmente. Una recomendación pasa a{" "}
+              <strong className="text-ink">Comprada</strong> cuando aparece un ticket con uno de los
+              SKUs sugeridos.
+            </p>
           </div>
-          <h2 className="m-0 mt-1 font-display text-[32px] leading-tight tracking-[-0.01em]">
-            Historial de recomendaciones
-          </h2>
-          <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug">
-            Productos sugeridos a la clienta con su tasa de conversión. Una recomendación pasa a
-            &quot;Comprada&quot; cuando aparece un ticket con uno de los SKUs sugeridos.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center h-8 px-3 rounded-full border border-line text-[14px] font-medium text-ink/70">
@@ -111,17 +128,32 @@ export function RecommendationHistory({
         />
       </div>
 
-      {/* KPI cards */}
+      {/* KPI cards — venta verbal */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KpiCard label="Total" value={String(total)} />
-        <KpiCard label="Tasa de conversión" value={`${conversionRate}%`} subtitle={`${converted} compradas`} />
-        <KpiCard label="Productos promedio" value={avgItems.toString()} subtitle="por recomendación" />
+        <KpiCard label="Total" value={String(total)} accent="sparkle" />
+        <KpiCard
+          label="Tasa de cierre verbal"
+          value={`${closingRate}%`}
+          subtitle={`${converted} de ${total} terminaron en venta`}
+          accent="sparkle"
+        />
+        <KpiCard label="Productos promedio" value={avgItems.toString()} subtitle="sugeridos por sesión" />
       </div>
 
       {/* List */}
       {filtered.length === 0 ? (
-        <article className="bg-white border border-line rounded-xl p-10 text-center">
-          <p className="m-0 text-[15px] text-ink/60">No hay recomendaciones en este filtro.</p>
+        <article className="bg-white border border-line rounded-xl p-10 text-center flex flex-col items-center gap-2">
+          <span
+            aria-hidden
+            className="inline-flex w-12 h-12 items-center justify-center rounded-full bg-bone text-ink/55"
+          >
+            <Icon name="sparkle" size={22} />
+          </span>
+          <p className="m-0 text-[15.5px] font-semibold">Aún no hay recomendaciones</p>
+          <p className="m-0 text-[14px] text-ink/55 max-w-[420px]">
+            Sugiere productos a la clienta desde el wizard de Registrar visita para construir tu
+            historial de cierre verbal.
+          </p>
         </article>
       ) : (
         <article className="bg-white border border-line rounded-xl divide-y divide-line">
@@ -178,15 +210,22 @@ function KpiCard({
   label,
   value,
   subtitle,
+  accent,
 }: {
   label: string;
   value: string;
   subtitle?: string;
+  accent?: "sparkle";
 }) {
   return (
     <div className="bg-white border border-line rounded-xl px-5 py-4">
-      <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-        {label}
+      <div className="flex items-center gap-2">
+        <span className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+          {label}
+        </span>
+        {accent === "sparkle" ? (
+          <Icon name="sparkle" size={12} />
+        ) : null}
       </div>
       <div className="font-display text-[32px] mt-1.5 leading-none tabular">{value}</div>
       {subtitle ? (
@@ -205,6 +244,7 @@ function RecRow({
   clientId: string;
   productBySku: Record<string, Product>;
 }) {
+  const daysSince = daysBetween(rec.at);
   return (
     <Link
       href={`/ba/clients/${clientId}/recommendations/${rec.id}`}
@@ -219,11 +259,14 @@ function RecRow({
         </span>
         <div className="min-w-0 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span className="font-display text-[20px] leading-none">
-            {rec.items.length} {rec.items.length === 1 ? "producto" : "productos"}
+            {rec.items.length} {rec.items.length === 1 ? "producto sugerido" : "productos sugeridos"}
           </span>
           <BrandTag brand={rec.brand} alwaysShow />
           <span className="w-full text-[14px] text-ink/60 mt-0.5">
             {formatDate(rec.at)}
+            {rec.status === "pending" && daysSince > 0
+              ? ` · hace ${daysSince} ${daysSince === 1 ? "día" : "días"} sin cerrar`
+              : null}
           </span>
         </div>
         <RecStatusChip status={rec.status} />

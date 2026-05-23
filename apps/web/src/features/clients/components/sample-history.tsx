@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Product } from "@/types/product";
 import type { Sample } from "@/types/sample";
-import { Avatar, BrandTag, Chip } from "@/components/primitives";
+import { Avatar, BrandTag, Chip, Icon } from "@/components/primitives";
 import { formatDate } from "@/lib/format/format-date";
 
 export type RangeFilter = "3m" | "6m" | "12m" | "all";
@@ -90,18 +90,27 @@ export function SampleHistory({
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex items-baseline justify-between gap-4 flex-wrap">
-        <div>
-          <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-            {clientName}
+      <header className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex items-start gap-4">
+          <span
+            aria-hidden
+            className="inline-flex w-12 h-12 items-center justify-center rounded-full bg-bone text-ink shrink-0 mt-1"
+          >
+            <Icon name="gift" size={22} />
+          </span>
+          <div>
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+              {clientName} · prueba en casa
+            </div>
+            <h2 className="m-0 mt-1 font-display text-[32px] leading-tight tracking-[-0.01em]">
+              Muestras entregadas
+            </h2>
+            <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug max-w-[640px]">
+              Minis físicas que la clienta se llevó. Pasan a{" "}
+              <strong className="text-ink">Convertida</strong> cuando el frasco completo aparece en
+              un ticket posterior.
+            </p>
           </div>
-          <h2 className="m-0 mt-1 font-display text-[32px] leading-tight tracking-[-0.01em]">
-            Historial de muestras
-          </h2>
-          <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug">
-            Productos sampleados a la clienta. Una muestra pasa a &quot;Convertida&quot; cuando un
-            ticket posterior contiene el producto completo.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center h-8 px-3 rounded-full border border-line text-[14px] font-medium text-ink/70">
@@ -126,22 +135,33 @@ export function SampleHistory({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KpiCard label="Total" value={String(total)} />
+        <KpiCard label="Total" value={String(total)} accent="gift" />
         <KpiCard
-          label="Tasa de conversión"
+          label="Conversión post-prueba"
           value={`${conversionRate}%`}
-          subtitle={`${converted} convertidas`}
+          subtitle={`${converted} terminaron en venta del frasco completo`}
+          accent="gift"
         />
         <KpiCard
-          label="Días promedio pendientes"
+          label="Días promedio sin feedback"
           value={avgDaysPending == null ? "—" : `${avgDaysPending}d`}
-          subtitle="entre entrega y hoy"
+          subtitle="entre entrega y hoy en pendientes"
         />
       </div>
 
       {filtered.length === 0 ? (
-        <article className="bg-white border border-line rounded-xl p-10 text-center">
-          <p className="m-0 text-[15px] text-ink/60">No hay muestras en este filtro.</p>
+        <article className="bg-white border border-line rounded-xl p-10 text-center flex flex-col items-center gap-2">
+          <span
+            aria-hidden
+            className="inline-flex w-12 h-12 items-center justify-center rounded-full bg-bone text-ink/55"
+          >
+            <Icon name="gift" size={22} />
+          </span>
+          <p className="m-0 text-[15.5px] font-semibold">Sin muestras entregadas</p>
+          <p className="m-0 text-[14px] text-ink/55 max-w-[420px]">
+            Empieza a samplear desde el wizard de Registrar visita para impulsar la conversión post-
+            prueba — es la palanca más fuerte en skincare premium.
+          </p>
         </article>
       ) : (
         <article className="bg-white border border-line rounded-xl divide-y divide-line">
@@ -203,21 +223,57 @@ function KpiCard({
   label,
   value,
   subtitle,
+  accent,
 }: {
   label: string;
   value: string;
   subtitle?: string;
+  accent?: "gift";
 }) {
   return (
     <div className="bg-white border border-line rounded-xl px-5 py-4">
-      <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-        {label}
+      <div className="flex items-center gap-2">
+        <span className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+          {label}
+        </span>
+        {accent === "gift" ? <Icon name="gift" size={12} /> : null}
       </div>
       <div className="font-display text-[32px] mt-1.5 leading-none tabular">{value}</div>
       {subtitle ? (
         <p className="m-0 mt-1 text-[13.5px] text-ink/55 leading-snug">{subtitle}</p>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Cuenta regresiva visual al feedback ideal (14 días desde entrega).
+ * - 0-7 días: discreta (info gris)
+ * - 7-14 días: amarilla (acercándose)
+ * - 14+ días: roja (vencido, hay que actuar)
+ */
+function FeedbackCountdown({ days, converted }: { days: number; converted: boolean }) {
+  if (converted) return null;
+  const TARGET = 14;
+  const left = TARGET - days;
+  if (left > 7) {
+    return (
+      <span className="text-[12.5px] text-ink/50">
+        Feedback ideal en {left} {left === 1 ? "día" : "días"}
+      </span>
+    );
+  }
+  if (left > 0) {
+    return (
+      <span className="text-[12.5px] font-semibold text-warn">
+        Feedback en {left} {left === 1 ? "día" : "días"}
+      </span>
+    );
+  }
+  return (
+    <span className="text-[12.5px] font-semibold text-err">
+      Feedback vencido hace {Math.abs(left)} {Math.abs(left) === 1 ? "día" : "días"}
+    </span>
   );
 }
 
@@ -244,20 +300,22 @@ function SampleRow({
         <div className="min-w-0 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span className="font-display text-[20px] leading-none">{sample.name}</span>
           <BrandTag brand={sample.brand} alwaysShow />
-          <span className="text-[13.5px] text-ink/60">SKU {sample.sku}</span>
           {fullProduct ? (
             <span className="text-[13.5px] text-ink/60">
               · representa <strong className="text-ink/70">{fullProduct.line}</strong>{" "}
               {fullProduct.size}
             </span>
           ) : null}
-          <span className="w-full text-[14px] text-ink/60 mt-0.5">
-            Entregada {formatDate(sample.givenAt)} · hace {days} {days === 1 ? "día" : "días"}
-            {sample.followUpAt ? ` · seguimiento ${formatDate(sample.followUpAt)}` : ""}
+          <span className="w-full text-[14px] text-ink/60 mt-0.5 flex items-center gap-2 flex-wrap">
+            <span>
+              Entregada {formatDate(sample.givenAt)} · hace {days} {days === 1 ? "día" : "días"}
+            </span>
+            <span aria-hidden className="text-ink/30">·</span>
+            <FeedbackCountdown days={days} converted={sample.converted} />
           </span>
         </div>
         {sample.converted ? (
-          <Chip variant="ok" size="sm">
+          <Chip variant="ok" size="sm" leading={<Icon name="bag" size={11} />}>
             Convertida en venta
           </Chip>
         ) : (
