@@ -36,7 +36,7 @@ export interface SampleRepository {
 
 const SAMPLES: Sample[] = persistent("__clienteling.samples.v2", () => [...SEED_SAMPLES]);
 
-const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInventory.v2", () => [
+const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInventory.v3", () => [
   // ── Lancôme · skincare ────────────────────────────────────────────────────
   { sku: "LC-GEN-7", name: "Advanced Génifique 7ml", have: 31, capacity: 50, brand: "Lancôme" },
   { sku: "LC-REN-5", name: "Rénergie H.C.F. sample 5ml", have: 42, capacity: 60, brand: "Lancôme" },
@@ -46,6 +46,7 @@ const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInvento
   // ── Lancôme · fragancias (vials 1.5ml) ───────────────────────────────────
   { sku: "LC-IDP-1", name: "Idôle EDP 1.5ml vial", have: 14, capacity: 30, brand: "Lancôme" },
   { sku: "LC-LVE-1", name: "La Vie Est Belle EDP 1.5ml vial", have: 19, capacity: 40, brand: "Lancôme" },
+  { sku: "LC-LIA-1", name: "La Vie Est Belle Iris Absolu 1.5ml vial", have: 6, capacity: 20, brand: "Lancôme" },
   { sku: "LC-TRE-1", name: "Trésor EDP 1.5ml vial", have: 8, capacity: 25, brand: "Lancôme" },
   { sku: "LC-MIR-1", name: "Miracle EDP 1.5ml vial", have: 11, capacity: 25, brand: "Lancôme" },
   // ── YSL ──────────────────────────────────────────────────────────────────

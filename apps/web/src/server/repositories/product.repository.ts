@@ -277,6 +277,7 @@ const SEED: Product[] = [
       "Lanzamiento premium 2023",
     ],
     lifecycleDays: 200,
+    sampleSku: "LC-LIA-1" as Sku,
   },
   {
     sku: "LC-TRE-100" as Sku,

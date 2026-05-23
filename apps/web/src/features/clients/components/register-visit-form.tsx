@@ -41,6 +41,19 @@ function addDaysISO(days: number): string {
   d.setDate(d.getDate() + days);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+
+/**
+ * Extrae el tamaño del nombre del inventory item de sample. Ejemplos:
+ *   "Hydra Zen Gel Cream 7ml" → "7 ml"
+ *   "Idôle EDP 1.5ml vial"    → "1.5 ml"
+ *   "Trésor EDP 1.5ml vial"   → "1.5 ml"
+ * Si no encuentra patrón devuelve null y el caller usa fallback.
+ */
+function extractSize(name: string): string | null {
+  const match = name.match(/(\d+(?:\.\d+)?)\s*ml/i);
+  if (!match) return null;
+  return `${match[1]} ml`;
+}
 function initials(name: string): string {
   return name
     .split(/\s+/)
@@ -73,7 +86,6 @@ export function RegisterVisitForm({
   const [notes, setNotes] = useState("");
   const [recSkus, setRecSkus] = useState<string[]>([]);
   const [sampleSkus, setSampleSkus] = useState<string[]>([]);
-  const [samplesPrefilled, setSamplesPrefilled] = useState(false);
 
   const [showFollowup, setShowFollowup] = useState(false);
   const [followupType, setFollowupType] = useState<FollowupType>("call");
@@ -101,19 +113,23 @@ export function RegisterVisitForm({
   );
 
   function goNext() {
-    // Cuando entras al paso de muestras la primera vez, precarga los productos
-    // recomendados que sí tengan sample disponible — la BA puede quitar/agregar.
-    if (step === STEP_INDEX.RECS && !samplesPrefilled) {
+    // Prefill aditivo: cada vez que la BA pasa de Recomendar a Muestras,
+    // agrega automáticamente los productos recomendados que tengan sample
+    // disponible y aún no estén en la lista. Decisión clave: NO eliminamos
+    // las muestras que ya estaban (la BA puede haber agregado manualmente
+    // otras, o haber quitado alguna y no queremos sobrescribirla). Es solo
+    // un "agrega lo que falta".
+    if (step === STEP_INDEX.RECS) {
       const recsWithSample = recSkus.filter((sku) => {
         const product = products.find((p) => (p.sku as unknown as string) === sku);
         if (!product?.sampleSku) return false;
         const item = inventoryBySku.get(product.sampleSku as unknown as string);
         return item != null && item.have > 0;
       });
-      if (recsWithSample.length > 0) {
-        setSampleSkus(recsWithSample);
+      const missing = recsWithSample.filter((sku) => !sampleSkus.includes(sku));
+      if (missing.length > 0) {
+        setSampleSkus([...sampleSkus, ...missing]);
       }
-      setSamplesPrefilled(true);
     }
     // Al entrar al paso de Seguimiento por primera vez: si hay muestras dadas
     // pre-rellena la sección con plantilla auto-armada (WhatsApp + 14d +
@@ -433,6 +449,16 @@ function StepSamples({
         selected={selected}
         onChange={onChange}
         topN={samplableProducts.length}
+        describeProduct={(p) => {
+          // Para el step de muestras mostramos el tamaño REAL de la mini
+          // (ej. "Gel Cream · 7 ml"), no el del frasco completo. Esto evita
+          // confundir a la BA pensando que entrega el producto completo.
+          const inv = p.sampleSku
+            ? inventoryBySku.get(p.sampleSku as unknown as string)
+            : null;
+          const sampleSize = inv?.name ? extractSize(inv.name) : null;
+          return sampleSize ? `${p.name} · ${sampleSize}` : `${p.name} · ${p.size}`;
+        }}
       />
       <SampleStockHint products={samplableProducts} inventoryBySku={inventoryBySku} selected={selected} />
     </section>
