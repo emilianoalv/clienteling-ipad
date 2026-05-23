@@ -71,19 +71,30 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
     ...(input.durationMin !== undefined && { durationMin: input.durationMin }),
   });
 
-  // Persist sample records (one per SKU).
-  for (const sku of input.samples) {
-    const product = await productRepository.findBySku(sku as Sku);
-    await sampleRepository.create({
-      clientId,
-      baId: staff.id,
-      storeId,
-      brand: product?.brand ?? brand,
-      sku: sku as Sku,
-      name: product?.line ?? sku,
-      givenAt: at,
-      converted: false,
-    });
+  // Persist sample records (one per SKU). El wizard ofrece productos
+  // COMPLETOS samplables (LC-HZN-50), pero la Sample debe guardarse con el
+  // SKU de la mini correspondiente (LC-HZN-7) — de otro modo el matching
+  // sample→venta nunca cierra el ciclo. También resolvemos el nombre real
+  // del sample desde el inventario para que el log de muestras muestre
+  // "Hydra Zen Gel Cream 7ml" en vez del nombre del frasco completo.
+  if (input.samples.length > 0) {
+    const inventory = await sampleRepository.listInventory();
+    const invBySku = new Map(inventory.map((i) => [i.sku, i]));
+    for (const sku of input.samples) {
+      const product = await productRepository.findBySku(sku as Sku);
+      const sampleSku = (product?.sampleSku ?? (sku as Sku)) as Sku;
+      const inv = invBySku.get(sampleSku as unknown as string);
+      await sampleRepository.create({
+        clientId,
+        baId: staff.id,
+        storeId,
+        brand: product?.brand ?? brand,
+        sku: sampleSku,
+        name: inv?.name ?? product?.line ?? sku,
+        givenAt: at,
+        converted: false,
+      });
+    }
   }
 
   // Persist a single recommendation record bundling all SKUs.
