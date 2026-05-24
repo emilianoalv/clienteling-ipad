@@ -161,24 +161,27 @@ export function TaskInbox({
   return (
     <div className="flex flex-col gap-5">
       {mode === "global" ? (
-        <header>
-          <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-            Inbox de tareas
+        <header className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="min-w-0">
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+              Inbox de tareas
+            </div>
+            <h2 className="m-0 mt-1 font-display text-[28px] leading-tight tracking-[-0.01em]">
+              Tus seguimientos
+            </h2>
+            <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug">
+              Lista cross-cliente de tareas pendientes y completadas. Las creas desde el form de visita,
+              venta o aquí mismo con el botón &ldquo;Nueva tarea&rdquo;.
+            </p>
           </div>
-          <h2 className="m-0 mt-1 font-display text-[28px] leading-tight tracking-[-0.01em]">
-            Tus seguimientos
-          </h2>
-          <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug">
-            Lista cross-cliente de tareas pendientes y completadas. Las creas desde el form de visita,
-            venta o desde el perfil de cada cliente.
-          </p>
         </header>
       ) : null}
 
-      {/* Create row (solo en modo client-scoped) */}
+      {/* Create rows — variante según el modo */}
       {mode === "client-scoped" && clientId ? (
         <CreateTaskRow clientId={clientId} />
       ) : null}
+      {mode === "global" ? <CreateTaskGlobalRow clientLookup={clientLookup} /> : null}
 
       {/* Filter chips */}
       <div className="flex items-center gap-2 flex-wrap">
@@ -367,6 +370,195 @@ function TaskRow({
         </div>
       ) : null}
     </li>
+  );
+}
+
+// ── Create form (global) ──────────────────────────────────────────────────
+//
+// Variante cross-cliente del create row. Mismo flow que CreateTaskRow pero
+// agrega un picker de cliente con búsqueda (combobox nativo via <datalist>).
+// Justifica su propio componente porque la lógica del picker y el reset son
+// distintos a la variante client-scoped (cliente fijo).
+
+function CreateTaskGlobalRow({
+  clientLookup,
+}: {
+  clientLookup: Readonly<Record<string, string>>;
+}) {
+  const [creating, setCreating] = useState(false);
+  const [clientQuery, setClientQuery] = useState("");
+  const [type, setType] = useState<FollowupType>("call");
+  const [category, setCategory] = useState<FollowupCategory>("general");
+  const [description, setDescription] = useState("");
+  const [dueAt, setDueAt] = useState(addDaysISO(7));
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const [isPending, startTransition] = useTransition();
+
+  // Map de name → id para resolver el query del datalist a un ClientId.
+  // Una BA puede tener clientes con nombres idénticos en distintas tiendas;
+  // priorizamos match exacto y dejamos que el backend valide el scope.
+  const nameToId = useMemo(() => {
+    const m = new Map<string, ClientId>();
+    for (const [id, name] of Object.entries(clientLookup)) {
+      m.set(name.toLowerCase(), id as ClientId);
+    }
+    return m;
+  }, [clientLookup]);
+
+  const resolvedClientId = nameToId.get(clientQuery.trim().toLowerCase()) ?? null;
+
+  function reset() {
+    setClientQuery("");
+    setType("call");
+    setCategory("general");
+    setDescription("");
+    setDueAt(addDaysISO(7));
+    setErrors({});
+  }
+
+  function onCreate() {
+    if (!resolvedClientId) {
+      setErrors({ clientId: ["Selecciona un cliente de la lista"] });
+      return;
+    }
+    startTransition(async () => {
+      const result = await createFollowupTask({
+        clientId: resolvedClientId,
+        type,
+        category,
+        description,
+        dueAt,
+      });
+      if (result && !result.ok) setErrors(result.fieldErrors ?? {});
+      else {
+        setCreating(false);
+        reset();
+      }
+    });
+  }
+
+  if (!creating) {
+    return (
+      <div className="flex items-center justify-end">
+        <Button
+          variant="primary"
+          size="sm"
+          leading={<Icon name="plus" size={12} />}
+          onClick={() => setCreating(true)}
+        >
+          Nueva tarea
+        </Button>
+      </div>
+    );
+  }
+
+  const clientNames = Object.values(clientLookup);
+
+  return (
+    <article className="bg-bone border border-line rounded-lg p-4 flex flex-col gap-3">
+      <div>
+        <div className="text-[12.5px] font-semibold text-ink/70 mb-1.5">
+          Cliente *
+          <span className="font-normal text-ink/50"> · busca o selecciona</span>
+        </div>
+        <Input
+          list="task-inbox-client-list"
+          placeholder="Empieza a escribir el nombre del cliente"
+          value={clientQuery}
+          onChange={(e) => setClientQuery(e.target.value)}
+          {...(errors.clientId?.[0] ? { error: errors.clientId[0] } : {})}
+        />
+        <datalist id="task-inbox-client-list">
+          {clientNames.map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
+      </div>
+      <div>
+        <div className="text-[12.5px] font-semibold text-ink/70 mb-1.5">
+          Categoría *
+          <span className="font-normal text-ink/50"> · por qué se hace</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {FOLLOWUP_CATEGORIES.map((fc) => {
+            const active = category === fc.id;
+            return (
+              <button
+                key={fc.id}
+                type="button"
+                onClick={() => setCategory(fc.id)}
+                aria-pressed={active}
+                title={fc.hint}
+                className={`inline-flex items-center h-8 px-3 rounded-full border text-[12.5px] font-semibold cursor-pointer transition-colors ${
+                  active
+                    ? "bg-ink text-paper border-ink"
+                    : "bg-white text-ink border-line hover:bg-bone"
+                }`}
+              >
+                {fc.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div>
+        <div className="text-[12.5px] font-semibold text-ink/70 mb-1.5">
+          Canal *
+          <span className="font-normal text-ink/50"> · cómo lo vas a hacer</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {FOLLOWUP_TYPES.map((ft) => {
+            const active = type === ft.id;
+            return (
+              <button
+                key={ft.id}
+                type="button"
+                onClick={() => setType(ft.id)}
+                aria-pressed={active}
+                className={`inline-flex items-center h-8 px-3 rounded-full border text-[12.5px] font-semibold cursor-pointer transition-colors ${
+                  active
+                    ? "bg-ink text-paper border-ink"
+                    : "bg-white text-ink border-line hover:bg-bone"
+                }`}
+              >
+                {ft.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-3 items-start">
+        <Input
+          label="Descripción *"
+          placeholder='ej. "Llamar para feedback de muestra Or Rouge"'
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          {...(errors.description?.[0] ? { error: errors.description[0] } : {})}
+        />
+        <Input
+          label="Vence *"
+          type="date"
+          value={dueAt}
+          min={todayISO()}
+          onChange={(e) => setDueAt(e.target.value)}
+          {...(errors.dueAt?.[0] ? { error: errors.dueAt[0] } : {})}
+        />
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setCreating(false);
+            reset();
+          }}
+        >
+          Cancelar
+        </Button>
+        <Button variant="primary" onClick={onCreate} loading={isPending}>
+          Crear tarea
+        </Button>
+      </div>
+    </article>
   );
 }
 
