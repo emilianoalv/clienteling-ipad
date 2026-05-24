@@ -10,3 +10,5 @@ export {
 } from "./scatter-plot";
 export { StatusLight, type StatusLightProps, type StatusLightLevel } from "./status-light";
 export { RankCard, type RankCardProps, type RankItem } from "./rank-card";
+export { ConversionBar, type ConversionBarProps } from "./conversion-bar";
+export { Donut, type DonutProps, type DonutSegment } from "./donut";
