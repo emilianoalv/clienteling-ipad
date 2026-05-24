@@ -72,10 +72,14 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
   });
 
   if (input.followup) {
+    // Followup manual desde el form de venta: por default es post-venta
+    // (cierre cordial). Si la BA quiere otra categoría podrá elegirla
+    // explícitamente en Commit 2 cuando exponga el picker.
     await followupTaskRepository.create({
       clientId,
       baId: staff.id,
       type: input.followup.type,
+      category: "post-purchase",
       description: input.followup.description,
       dueAt: new Date(`${input.followup.dueAt}T12:00:00`).toISOString(),
       sourceInteractionId: interaction.id,

@@ -10,6 +10,16 @@ import type { ClientId } from "@/types/client";
 const inputSchema = z.object({
   clientId: z.string().min(1),
   type: z.enum(["call", "whatsapp", "email", "sample-feedback", "appointment", "other"]),
+  category: z.enum([
+    "3-month-check",
+    "6-month-check",
+    "birthday",
+    "replenishment",
+    "special-event",
+    "sample-feedback",
+    "post-purchase",
+    "general",
+  ]),
   description: z.string().trim().min(1, "Describe la tarea").max(500),
   dueAt: z
     .string()
@@ -44,6 +54,7 @@ export async function createFollowupTask(
     clientId,
     baId: staff.id,
     type: input.type,
+    category: input.category,
     description: input.description,
     dueAt: new Date(`${input.dueAt}T12:00:00`).toISOString(),
   });

@@ -119,10 +119,17 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
   //    feedback a 14 días — el ciclo de muestra siempre debe cerrarse en
   //    seguimiento, no podemos confiar en la memoria de la BA.
   if (input.followup) {
+    // Si la BA dio muestras + programó followup manual, asumimos que el
+    // motivo es feedback de muestra. En caso contrario lo dejamos como
+    // general para no inventar categoría sin pedirla en el form (el
+    // Commit 2 expone el picker).
+    const manualCategory =
+      input.samples.length > 0 ? ("sample-feedback" as const) : ("general" as const);
     await followupTaskRepository.create({
       clientId,
       baId: staff.id,
       type: input.followup.type,
+      category: manualCategory,
       description: input.followup.description,
       dueAt: new Date(`${input.followup.dueAt}T12:00:00`).toISOString(),
       sourceInteractionId: interaction.id,
@@ -145,6 +152,7 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
       clientId,
       baId: staff.id,
       type: "whatsapp",
+      category: "sample-feedback",
       description: `Pedir feedback de ${productList} a ${firstName}`,
       dueAt: addDaysISO(14),
       sourceInteractionId: interaction.id,

@@ -34,6 +34,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-ofelia" as ClientId, // Polanco · Lancôme
     baId: BA_POL_LCM_2,
     type: "call",
+    category: "birthday",
     description: "Llamar por cumpleaños (saludo + ofrecer promo Absolue)",
     dueAt: relativeISO(-1, 11, 0),
     status: "pending",
@@ -44,6 +45,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-constanza" as ClientId, // Polanco · multi-brand
     baId: BA_POL_LCM_1,
     type: "call",
+    category: "sample-feedback",
     description: "Pedir feedback de muestra Génifique entregada en visita",
     dueAt: relativeISO(0, 12, 0),
     status: "pending",
@@ -54,6 +56,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-gabriela" as ClientId, // Perisur · YSL
     baId: BA_PER_YSL_1,
     type: "sample-feedback",
+    category: "sample-feedback",
     description: "Mensaje WA: ¿cómo le va con la muestra de Libre Eau de Parfum?",
     dueAt: relativeISO(1, 15, 0),
     status: "pending",
@@ -64,6 +67,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-karla" as ClientId, // Santa Fe · multi-brand
     baId: BA_STF_LCM_1,
     type: "whatsapp",
+    category: "special-event",
     description: "Mandar info de Rénergie H.C.F. y disponibilidad en tienda",
     dueAt: relativeISO(3, 10, 30),
     status: "pending",
@@ -74,6 +78,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-marina" as ClientId, // Santa Fe · Lancôme
     baId: BA_STF_LCM_2,
     type: "whatsapp",
+    category: "post-purchase",
     description: "Felicitar por compra de Absolue (cierre post-venta)",
     dueAt: relativeISO(-3, 11, 0),
     status: "done",
@@ -89,6 +94,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-constanza" as ClientId, // Polanco · multi-brand
     baId: BA_POL_LCM_1,
     type: "call",
+    category: "replenishment",
     description: "Confirmar disponibilidad de Absolue para reposición",
     dueAt: "2026-04-15T11:00:00.000Z",
     status: "done",
@@ -101,6 +107,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-gabriela" as ClientId, // Perisur · YSL
     baId: BA_PER_YSL_1,
     type: "whatsapp",
+    category: "sample-feedback",
     description: "Feedback de muestra Libre Le Parfum",
     dueAt: "2026-04-22T15:00:00.000Z",
     status: "done",
@@ -116,6 +123,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-marina" as ClientId, // Santa Fe · Lancôme
     baId: BA_STF_LCM_2,
     type: "call",
+    category: "special-event",
     description: "Confirmar siguiente cita facial",
     dueAt: "2026-04-30T09:00:00.000Z",
     status: "done",
@@ -133,6 +141,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-elena" as ClientId,
     baId: "us-ba-per-lcm-2" as StaffId, // Andrea
     type: "call",
+    category: "birthday",
     description: "Confirmar cumpleaños (re-engagement)",
     dueAt: "2026-04-15T11:00:00.000Z", // overdue against May 1 anchor
     status: "pending",
@@ -143,6 +152,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-elena" as ClientId,
     baId: "us-ba-per-lcm-1" as StaffId, // Regina
     type: "whatsapp",
+    category: "sample-feedback",
     description: "Pedir feedback de muestra Hydrating",
     dueAt: "2026-04-22T14:00:00.000Z", // overdue, later than ft-09
     status: "pending",
@@ -153,6 +163,7 @@ const SEED: FollowupTask[] = [
     clientId: "cl-cristina" as ClientId,
     baId: "us-ba-per-lcm-1" as StaffId, // Regina
     type: "call",
+    category: "special-event",
     description: "Llamar para invitar a evento Absolue",
     dueAt: "2026-05-10T16:00:00.000Z", // upcoming
     status: "pending",
@@ -179,7 +190,7 @@ export interface FollowupTaskRepository {
   cancel(id: FollowupTaskId): Promise<FollowupTask | null>;
 }
 
-const TASKS: FollowupTask[] = persistent("__clienteling.followupTasks.v2", () => [...SEED]);
+const TASKS: FollowupTask[] = persistent("__clienteling.followupTasks.v3", () => [...SEED]);
 
 function matches(t: FollowupTask, f: FollowupTaskListFilter): boolean {
   if (f.status && t.status !== f.status) return false;

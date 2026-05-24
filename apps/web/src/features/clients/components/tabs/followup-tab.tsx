@@ -76,6 +76,9 @@ export function FollowupTab({ clientId, tasks }: FollowupTabProps) {
       const result = await createFollowupTask({
         clientId,
         type,
+        // Commit 1: category default "general" hasta que Commit 2 exponga
+        // el picker visible en este form.
+        category: "general",
         description,
         dueAt,
       });
