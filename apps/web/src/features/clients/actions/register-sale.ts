@@ -134,6 +134,45 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
     closedRecs.add(rec.id);
   }
 
+  // Auto-tasks de retención: toda compra genera 2 follow-ups futuros con
+  // la categoría que corresponde a cada hito.
+  //   · 3 meses → check-in temprano ("¿cómo te está yendo?")
+  //   · 6 meses → reposición estimada ("¿necesitas un nuevo frasco?")
+  // La BA puede borrar o adelantar cualquiera desde el inbox. Resolvemos
+  // el nombre del primer producto del ticket para que la descripción se
+  // sienta natural; si el SKU no está en catálogo, fallback al SKU.
+  const firstItem = input.items[0];
+  if (firstItem) {
+    const firstProduct = await productRepository.findBySku(firstItem.sku as Sku);
+    const productName = firstProduct?.line ?? firstItem.sku;
+    const firstName = client.name.split(/\s+/)[0] ?? client.name;
+    const purchaseDate = new Date(at);
+
+    const threeMonthsAt = new Date(purchaseDate);
+    threeMonthsAt.setMonth(threeMonthsAt.getMonth() + 3);
+    await followupTaskRepository.create({
+      clientId,
+      baId: staff.id,
+      type: "whatsapp",
+      category: "3-month-check",
+      description: `Check-in con ${firstName}: ¿cómo le está yendo con ${productName}?`,
+      dueAt: threeMonthsAt.toISOString(),
+      sourceInteractionId: interaction.id,
+    });
+
+    const sixMonthsAt = new Date(purchaseDate);
+    sixMonthsAt.setMonth(sixMonthsAt.getMonth() + 6);
+    await followupTaskRepository.create({
+      clientId,
+      baId: staff.id,
+      type: "whatsapp",
+      category: "replenishment",
+      description: `Reposición estimada de ${productName} para ${firstName}`,
+      dueAt: sixMonthsAt.toISOString(),
+      sourceInteractionId: interaction.id,
+    });
+  }
+
   await clientRepository.patchStats(clientId, applyPurchaseToStats(client.stats, total, new Date(at)));
 
   revalidatePath(`/ba/clients/${clientId}`);

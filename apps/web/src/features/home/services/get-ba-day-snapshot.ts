@@ -9,6 +9,7 @@ import { clientRepository } from "@/server/repositories/client.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { listUpcomingEvents } from "@/features/clients/services/list-upcoming-events";
 import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
+import { ensureBirthdayTasks } from "./ensure-birthday-tasks";
 
 export interface AgendaItem {
   appointment: Appointment;
@@ -42,7 +43,7 @@ export async function getBaDaySnapshot(staff: Staff, now = new Date()): Promise<
   const storeIds = storeScopeFor(staff);
   const brands = brandScopeFor(staff);
 
-  const [todayAppts, tomorrowAppts, clients, pendingTasks] = await Promise.all([
+  const [todayAppts, tomorrowAppts, clients] = await Promise.all([
     appointmentRepository.list({
       baId: staff.id,
       brands,
@@ -58,8 +59,18 @@ export async function getBaDaySnapshot(staff: Staff, now = new Date()): Promise<
       to: startDayAfter,
     }),
     clientRepository.list({ brands, storeIds }),
-    followupTaskRepository.listByBA(staff.id, { status: "pending" }),
   ]);
+
+  // Lazy ensure: cada vez que la BA abre Hoy, materializamos tareas de
+  // cumpleaños para clientes cuyo cumple cae en los próximos 30 días.
+  // Idempotente — no duplica si ya existe una task para este año.
+  await ensureBirthdayTasks(staff, clients, now);
+
+  // Listar tasks DESPUÉS de ensure para que las recién creadas aparezcan
+  // en este mismo snapshot.
+  const pendingTasks = await followupTaskRepository.listByBA(staff.id, {
+    status: "pending",
+  });
 
   const clientById = new Map(clients.map((c) => [c.id, c]));
   const resolveName = (a: Appointment) => clientById.get(a.clientId)?.name ?? "—";
