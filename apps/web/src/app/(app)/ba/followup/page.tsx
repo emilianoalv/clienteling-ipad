@@ -1,38 +1,23 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { FollowupScreen, listTemplates } from "@/features/followup";
+import { notFound } from "next/navigation";
 import { listClients } from "@/features/clients";
 import { TaskInbox } from "@/features/clients/components/task-inbox";
-import { listCommunications } from "@/features/communications/server/list-communications";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor, homeStoreFor, storeScopeFor } from "@/server/auth/scope";
-import { storeRepository } from "@/server/repositories/store.repository";
+import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
-import { cn } from "@/lib/cn";
-import type { ClientId } from "@/types/client";
-import type { FollowupTaskId } from "@/types/followup-task";
 
-type View = "tasks" | "messages";
-type InnerTab = "composer" | "log";
-
-export default async function FollowupPage({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    view?: string;
-    clientId?: string;
-    tab?: string;
-    taskId?: string;
-  }>;
-}) {
+/**
+ * `/ba/followup` simplificado a una sola vista: el inbox global de tareas.
+ *
+ * Decisión de Commit CO4: la sub-tab "Comunicaciones" del inbox se eliminó.
+ * La mensajería ahora vive 100% en el perfil del cliente (tab Mensajes) —
+ * ya no se manda un mensaje sin contexto del cliente. El botón "Responder"
+ * de cada task redirige al perfil correspondiente con la task pre-cargada.
+ */
+export default async function FollowupPage() {
   const { staff } = await requireSession();
-  const params = await searchParams;
-  const view: View = params.view === "messages" ? "messages" : "tasks";
-
   const storeIds = storeScopeFor(staff);
   const brands = brandScopeFor(staff);
 
-  // Always-loaded: clients (used by both views for name lookup).
   const clients = await listClients({ brands, storeIds });
   if (clients.length === 0) notFound();
 
@@ -41,100 +26,11 @@ export default async function FollowupPage({
     string
   >;
 
-  if (view === "tasks") {
-    const tasks = await followupTaskRepository.listByBA(staff.id);
-    return (
-      <section className="flex flex-col gap-4">
-        <Tabs active="tasks" clientId={clients[0]!.id} />
-        <TaskInbox tasks={tasks} clientLookup={clientLookup} />
-      </section>
-    );
-  }
-
-  // view === "messages" — keep the legacy composer + log flow.
-  const innerTab: InnerTab = params.tab === "log" ? "log" : "composer";
-  const requestedId = params.clientId?.trim();
-  const matched = requestedId ? clients.find((c) => c.id === requestedId) : undefined;
-  const client = matched ?? clients[0]!;
-
-  if (!matched) {
-    redirect(
-      `/ba/followup?view=messages&clientId=${client.id}${innerTab === "log" ? "&tab=log" : ""}`,
-    );
-  }
-
-  const homeStore = homeStoreFor(staff);
-  const [templates, communications, store, task] = await Promise.all([
-    listTemplates({ brands }),
-    listCommunications({ brands, storeIds }),
-    homeStore ? storeRepository.findById(homeStore) : Promise.resolve(null),
-    // Si el composer abrió desde el botón "Responder" de un task, lo
-    // resolvemos para pasarlo al Composer y para que pueda marcarse
-    // hecho automáticamente al confirmar envío.
-    params.taskId
-      ? followupTaskRepository.findById(params.taskId as FollowupTaskId)
-      : Promise.resolve(null),
-  ]);
-
-  // Guard: si vino taskId pero la task no pertenece al cliente actual o
-  // no es del BA, la ignoramos silenciosamente (no rompe el composer,
-  // solo no aplica el wiring de auto-complete).
-  const taskForComposer =
-    task && task.clientId === client.id && task.baId === staff.id ? task : null;
+  const tasks = await followupTaskRepository.listByBA(staff.id);
 
   return (
     <section className="flex flex-col gap-4">
-      <Tabs active="messages" clientId={client.id} />
-      <FollowupScreen
-        tab={innerTab}
-        client={client}
-        templates={templates}
-        staffName={staff.name}
-        storeName={store?.name ?? "—"}
-        communications={communications}
-        clientLookup={clientLookup as Record<ClientId, string>}
-        task={taskForComposer}
-      />
+      <TaskInbox tasks={tasks} clientLookup={clientLookup} />
     </section>
-  );
-}
-
-function Tabs({ active, clientId }: { active: View; clientId: string }) {
-  return (
-    <nav aria-label="Seguim. views" className="flex gap-0 border-b border-line">
-      <TabLink href="/ba/followup" active={active === "tasks"}>
-        Tareas
-      </TabLink>
-      <TabLink
-        href={`/ba/followup?view=messages&clientId=${clientId}`}
-        active={active === "messages"}
-      >
-        Comunicaciones
-      </TabLink>
-    </nav>
-  );
-}
-
-function TabLink({
-  href,
-  active,
-  children,
-}: {
-  href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "relative px-4 py-2.5 text-[15px] font-semibold leading-none text-ink no-underline cursor-pointer",
-        active
-          ? "after:absolute after:inset-x-3 after:-bottom-px after:h-0.5 after:bg-ink"
-          : "text-ink/60 hover:text-ink",
-      )}
-    >
-      {children}
-    </Link>
   );
 }

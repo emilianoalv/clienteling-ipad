@@ -46,6 +46,12 @@ export interface ClientProfileProps {
   storeName: string;
   /** Nombre del BA — usado para signature de mensajes. */
   staffName: string;
+  /**
+   * Task pre-cargada — cuando viene, el perfil se renderea con la tab
+   * Mensajes activa y el modal del composer abierto pre-cargado con la
+   * task. Se usa para el deep-link "Responder" desde el inbox.
+   */
+  initialTask?: FollowupTask | null;
 }
 
 export async function ClientProfile({
@@ -63,6 +69,7 @@ export async function ClientProfile({
   templates,
   storeName,
   staffName,
+  initialTask,
 }: ClientProfileProps) {
   const t = await getTranslations();
   const segment = segmentClient(client);
@@ -157,6 +164,7 @@ export async function ClientProfile({
           staffName={staffName}
           clientName={client.name}
           clientId={client.id}
+          initialTask={initialTask ?? null}
         />
       </main>
 

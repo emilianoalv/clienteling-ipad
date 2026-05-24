@@ -7,7 +7,7 @@ import type { Channel } from "@/types/communication";
 import type { Client } from "@/types/client";
 import type { FollowupCategory, FollowupTask } from "@/types/followup-task";
 import type { Template, TemplateCategory } from "@/types/template";
-import { Avatar, type AvatarTone, Button, Chip, Icon } from "@/components/primitives";
+import { Avatar, type AvatarTone, Button, Icon } from "@/components/primitives";
 import type { IconName } from "@/types/icon";
 import { Card } from "@/components/patterns";
 import { Modal } from "@/components/feedback";
@@ -95,10 +95,30 @@ export interface ComposerProps {
    *   preview de WhatsApp. Para modal del perfil donde el ancho es menor.
    */
   layout?: "full" | "compact";
+  /**
+   * Callback opcional disparado cuando el envío fue exitoso y la
+   * Communication ya quedó registrada. Lo usa el modal del perfil para
+   * auto-cerrarse tras el notice verde.
+   */
+  onSent?: () => void;
 }
 
 type BrandTab = "all" | BrandId;
 type SendPhase = "idle" | "pending-confirm" | "logging" | "sent";
+
+/**
+ * Si la task viene con un type de canal directo (whatsapp/email),
+ * forzamos el canal del composer y filtramos plantillas a ese canal.
+ * Sample-feedback se asume WhatsApp (es el canal real en piso).
+ * Call/appointment/other dejan canal libre — la BA decide.
+ */
+function lockedChannelForTask(task: FollowupTask | null | undefined): Channel | null {
+  if (!task) return null;
+  if (task.type === "whatsapp") return "WhatsApp";
+  if (task.type === "email") return "Email";
+  if (task.type === "sample-feedback") return "WhatsApp";
+  return null;
+}
 
 export function Composer({
   client,
@@ -107,15 +127,27 @@ export function Composer({
   storeName,
   task,
   layout = "full",
+  onSent,
 }: ComposerProps) {
   const t = useT();
   const [brandFilter, setBrandFilter] = useState<BrandTab>("all");
+
+  const lockedChannel = lockedChannelForTask(task ?? null);
+  // Si la task fija el canal, filtramos las plantillas a ese canal antes
+  // de pasarlas a TemplateList y al picker inicial. Si no, se pasan todas.
+  const channelScopedTemplates = useMemo(
+    () => (lockedChannel ? templates.filter((t) => t.channel === lockedChannel) : templates),
+    [templates, lockedChannel],
+  );
+
   const initialTemplate = useMemo(
-    () => pickTemplateForTask(templates, task ?? null),
-    [templates, task],
+    () => pickTemplateForTask(channelScopedTemplates, task ?? null),
+    [channelScopedTemplates, task],
   );
   const [template, setTemplate] = useState<Template | null>(initialTemplate);
-  const [channel, setChannel] = useState<Channel>(initialTemplate?.channel ?? "WhatsApp");
+  const [channel, setChannel] = useState<Channel>(
+    lockedChannel ?? initialTemplate?.channel ?? "WhatsApp",
+  );
   const [bodyDraft, setBodyDraft] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [phase, setPhase] = useState<SendPhase>("idle");
@@ -191,6 +223,11 @@ export function Composer({
         await completeFollowupTask({ taskId: task.id, result: summary });
       }
       setPhase("sent");
+      // Auto-cierre del modal del perfil cuando el padre lo pide. Damos
+      // 1.5s para que la BA vea el notice verde antes de cerrar.
+      if (onSent) {
+        setTimeout(() => onSent(), 1500);
+      }
     });
   }
 
@@ -212,7 +249,7 @@ export function Composer({
   return (
     <div className={gridClass}>
       <TemplateList
-        templates={templates}
+        templates={channelScopedTemplates}
         selectedId={template?.id ?? null}
         onSelect={onSelectTemplate}
         brand={brandFilter}
@@ -266,30 +303,45 @@ export function Composer({
           </div>
         </Card>
 
-        <div>
-          <span className="block text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2">
-            {t("followup.channel")}
-          </span>
-          <div className="flex gap-2">
-            {CHANNELS.map((ch) => {
-              const active = channel === ch;
-              return (
-                <Button
-                  key={ch}
-                  type="button"
-                  size="sm"
-                  variant={active ? "primary" : "default"}
-                  leading={<Icon name={CHANNEL_ICON[ch]} size={12} />}
-                  onClick={() => setChannel(ch)}
-                  aria-pressed={active}
-                  disabled={phase !== "idle"}
-                >
-                  {ch}
-                </Button>
-              );
-            })}
+        {lockedChannel ? (
+          <div>
+            <span className="block text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2">
+              {t("followup.channel")}
+            </span>
+            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-bone border border-line text-[14px] font-semibold">
+              <Icon name={CHANNEL_ICON[lockedChannel]} size={14} />
+              {lockedChannel}
+              <span className="text-[12.5px] font-normal text-ink/55 ml-1">
+                · canal fijado por la tarea
+              </span>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div>
+            <span className="block text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2">
+              {t("followup.channel")}
+            </span>
+            <div className="flex gap-2">
+              {CHANNELS.map((ch) => {
+                const active = channel === ch;
+                return (
+                  <Button
+                    key={ch}
+                    type="button"
+                    size="sm"
+                    variant={active ? "primary" : "default"}
+                    leading={<Icon name={CHANNEL_ICON[ch]} size={12} />}
+                    onClick={() => setChannel(ch)}
+                    aria-pressed={active}
+                    disabled={phase !== "idle"}
+                  >
+                    {ch}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div>
           <div className="flex items-center justify-between mb-2">
@@ -312,15 +364,6 @@ export function Composer({
             onChange={(e) => setBodyDraft(e.target.value)}
             className="w-full h-[140px] p-3.5 text-[17px] leading-snug rounded-[10px] border border-line bg-white resize-none focus-visible:border-ink outline-none"
           />
-          {template && !isEditing ? (
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {template.tokens.map((tok) => (
-                <Chip key={tok} size="sm">
-                  {tok}
-                </Chip>
-              ))}
-            </div>
-          ) : null}
         </div>
 
         <Card variant="flat" className="bg-bone border-line">

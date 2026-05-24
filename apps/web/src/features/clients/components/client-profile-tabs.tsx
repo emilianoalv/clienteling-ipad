@@ -63,12 +63,18 @@ export interface ClientProfileTabsProps {
   staffName: string;
   clientName: string;
   clientId: string;
+  /**
+   * Task pre-cargada — activa tab Mensajes y abre el modal del composer
+   * con la task asignada. Deep link desde el inbox "Responder".
+   */
+  initialTask?: FollowupTask | null;
 }
 
 export function ClientProfileTabs(props: ClientProfileTabsProps) {
   const t = useTranslations();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<TabId>("purchases");
+  // Si viene initialTask arranca en Mensajes. Si no, default purchases.
+  const [tab, setTab] = useState<TabId>(props.initialTask ? "msgs" : "purchases");
 
   // Allow deep-links like ?tab=followup (used by the Seguimiento action strip button).
   useEffect(() => {
@@ -145,6 +151,7 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
             templates={props.templates}
             staffName={props.staffName}
             storeName={props.storeName}
+            initialTask={props.initialTask ?? null}
           />
         )}
       </Card>
