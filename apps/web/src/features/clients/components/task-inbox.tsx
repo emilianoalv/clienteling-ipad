@@ -12,6 +12,7 @@ import { Avatar, Button, Icon, Input } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import { completeFollowupTask } from "../actions/complete-followup-task";
 import { cancelFollowupTask } from "../actions/cancel-followup-task";
+import { CategoryChip } from "./_parts/category-chip";
 
 const TYPE_ICON: Record<FollowupType, IconName> = {
   call: "device",
@@ -231,6 +232,7 @@ function TaskRow({ task, clientName }: { task: FollowupTask; clientName: string 
               <Icon name={TYPE_ICON[task.type]} size={12} />
               {labelType(task.type)}
             </span>
+            <CategoryChip category={task.category} size="sm" />
             {overdue ? (
               <span className="inline-flex items-center h-5 px-2 rounded-full bg-err/10 text-err text-[11.5px] font-semibold">
                 Vencida

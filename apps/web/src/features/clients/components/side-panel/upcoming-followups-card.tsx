@@ -4,6 +4,7 @@ import type { ClientId } from "@/types/client";
 import { Card } from "@/components/patterns";
 import { Icon } from "@/components/primitives";
 import type { IconName } from "@/types/icon";
+import { CategoryChip } from "../_parts/category-chip";
 
 const TYPE_ICON: Record<FollowupType, IconName> = {
   call: "device",
@@ -52,19 +53,22 @@ export function UpcomingFollowupsCard({ clientId, tasks }: UpcomingFollowupsCard
           {preview.map((task) => (
             <li
               key={task.id}
-              className="grid grid-cols-[32px_minmax(0,1fr)_auto] gap-2.5 items-center px-2.5 py-2 rounded-md bg-bone"
+              className="grid grid-cols-[32px_minmax(0,1fr)_auto] gap-2.5 items-start px-2.5 py-2 rounded-md bg-bone"
             >
               <span
                 aria-hidden
-                className="inline-flex w-8 h-8 items-center justify-center rounded-full bg-white text-ink/70"
+                className="inline-flex w-8 h-8 items-center justify-center rounded-full bg-white text-ink/70 mt-0.5"
               >
                 <Icon name={TYPE_ICON[task.type]} size={14} />
               </span>
-              <span className="text-[14px] font-semibold leading-tight line-clamp-2">
-                {task.description}
-              </span>
+              <div className="min-w-0 flex flex-col gap-1">
+                <CategoryChip category={task.category} size="sm" />
+                <span className="text-[14px] font-semibold leading-tight line-clamp-2">
+                  {task.description}
+                </span>
+              </div>
               <span
-                className={`text-[12.5px] tabular ${
+                className={`text-[12.5px] tabular mt-1 ${
                   isOverdue(task.dueAt) ? "text-err font-semibold" : "text-ink/60"
                 }`}
               >

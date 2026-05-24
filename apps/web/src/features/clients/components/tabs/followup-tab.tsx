@@ -3,7 +3,9 @@
 import { useState, useTransition } from "react";
 import type { ClientId } from "@/types/client";
 import {
+  FOLLOWUP_CATEGORIES,
   FOLLOWUP_TYPES,
+  type FollowupCategory,
   type FollowupStatus,
   type FollowupTask,
   type FollowupType,
@@ -13,6 +15,7 @@ import { Button, Icon, Input } from "@/components/primitives";
 import { createFollowupTask } from "../../actions/create-followup-task";
 import { completeFollowupTask } from "../../actions/complete-followup-task";
 import { cancelFollowupTask } from "../../actions/cancel-followup-task";
+import { CategoryChip } from "../_parts/category-chip";
 
 const TYPE_ICON: Record<FollowupType, IconName> = {
   call: "device",
@@ -50,6 +53,7 @@ export interface FollowupTabProps {
 export function FollowupTab({ clientId, tasks }: FollowupTabProps) {
   const [creating, setCreating] = useState(false);
   const [type, setType] = useState<FollowupType>("call");
+  const [category, setCategory] = useState<FollowupCategory>("general");
   const [description, setDescription] = useState("");
   const [dueAt, setDueAt] = useState(addDaysISO(7));
   const [createErrors, setCreateErrors] = useState<Record<string, string[]>>({});
@@ -66,6 +70,7 @@ export function FollowupTab({ clientId, tasks }: FollowupTabProps) {
 
   function resetForm() {
     setType("call");
+    setCategory("general");
     setDescription("");
     setDueAt(addDaysISO(7));
     setCreateErrors({});
@@ -76,9 +81,7 @@ export function FollowupTab({ clientId, tasks }: FollowupTabProps) {
       const result = await createFollowupTask({
         clientId,
         type,
-        // Commit 1: category default "general" hasta que Commit 2 exponga
-        // el picker visible en este form.
-        category: "general",
+        category,
         description,
         dueAt,
       });
@@ -114,7 +117,37 @@ export function FollowupTab({ clientId, tasks }: FollowupTabProps) {
       {creating ? (
         <article className="bg-bone border border-line rounded-lg p-4 flex flex-col gap-3">
           <div>
-            <div className="text-[12.5px] font-semibold text-ink/70 mb-1.5">Tipo</div>
+            <div className="text-[12.5px] font-semibold text-ink/70 mb-1.5">
+              Categoría *
+              <span className="font-normal text-ink/50"> · por qué se hace</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {FOLLOWUP_CATEGORIES.map((fc) => {
+                const active = category === fc.id;
+                return (
+                  <button
+                    key={fc.id}
+                    type="button"
+                    onClick={() => setCategory(fc.id)}
+                    aria-pressed={active}
+                    title={fc.hint}
+                    className={`inline-flex items-center h-8 px-3 rounded-full border text-[12.5px] font-semibold cursor-pointer transition-colors ${
+                      active
+                        ? "bg-ink text-paper border-ink"
+                        : "bg-white text-ink border-line hover:bg-bone"
+                    }`}
+                  >
+                    {fc.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <div className="text-[12.5px] font-semibold text-ink/70 mb-1.5">
+              Canal *
+              <span className="font-normal text-ink/50"> · cómo lo vas a hacer</span>
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {FOLLOWUP_TYPES.map((ft) => {
                 const active = type === ft.id;
@@ -239,10 +272,17 @@ function PendingRow({ task }: { task: FollowupTask }) {
           <Icon name={TYPE_ICON[task.type]} size={16} />
         </span>
         <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <CategoryChip category={task.category} size="sm" />
+            {overdue ? (
+              <span className="inline-flex items-center h-5 px-2 rounded-full bg-err/10 text-err text-[11.5px] font-semibold">
+                Vencida
+              </span>
+            ) : null}
+          </div>
           <div className="text-[15px] font-semibold leading-tight">{task.description}</div>
           <div className="text-[13px] text-ink/60 leading-tight mt-0.5">
             {labelType(task.type)} · vence {formatDue(task.dueAt)}
-            {overdue ? <span className="text-err font-semibold"> · vencida</span> : null}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -305,6 +345,9 @@ function PastRow({ task }: { task: FollowupTask }) {
           <Icon name={cancelled ? "x" : "check"} size={16} />
         </span>
         <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <CategoryChip category={task.category} size="sm" />
+          </div>
           <div className="text-[15px] font-semibold leading-tight">{task.description}</div>
           <div className="text-[13px] text-ink/60 leading-tight mt-0.5">
             {labelType(task.type)} · {STATUS_LABEL[task.status]}
