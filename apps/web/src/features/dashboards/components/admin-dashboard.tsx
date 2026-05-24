@@ -233,7 +233,7 @@ export function AdminDashboard({
                 })),
               }}
             />
-            <ExportButton filters={filters} onExport={(format, f) => exportBaRanking(f, format)} />
+            <ExportButton filters={filters} onExport={exportBaRanking} />
           </>
         }
       />
@@ -275,7 +275,7 @@ export function AdminDashboard({
         <DashBlock
           title="Ranking nacional"
           right={
-            <ExportButton filters={filters} onExport={(format, f) => exportBaRanking(f, format)} label="Exportar ranking" />
+            <ExportButton filters={filters} onExport={exportBaRanking} label="Exportar ranking" />
           }
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -318,7 +318,7 @@ export function AdminDashboard({
         <DashBlock
           title="Comparativa marcas país"
           right={
-            <ExportButton filters={filters} onExport={(format, f) => exportBrandComparison(f, format)} label="Exportar marcas" />
+            <ExportButton filters={filters} onExport={exportBrandComparison} label="Exportar marcas" />
           }
         >
           <div className="bg-white border border-line rounded-lg p-4 grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-5">
@@ -392,7 +392,7 @@ export function AdminDashboard({
         <DashBlock
           title="Alertas + System Health"
           right={
-            <ExportButton filters={filters} onExport={(format, f) => exportAgendaReport(f, format)} label="Exportar agenda" />
+            <ExportButton filters={filters} onExport={exportAgendaReport} label="Exportar agenda" />
           }
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -405,7 +405,7 @@ export function AdminDashboard({
         <DashBlock
           title="Top clientes país"
           right={
-            <ExportButton filters={filters} onExport={(format, f) => exportClientsReport(f, format)} label="Exportar clientes" />
+            <ExportButton filters={filters} onExport={exportClientsReport} label="Exportar clientes" />
           }
         >
           <div className="bg-white border border-line rounded-lg p-4">

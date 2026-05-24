@@ -125,7 +125,7 @@ export function BaDashboard({
             <FilterBar
               roleConfig={{ period: true, store: false, brand: false, baId: false }}
             />
-            <ExportButton filters={filters} onExport={(format, f) => exportBaSales(f, format)} />
+            <ExportButton filters={filters} onExport={exportBaSales} />
           </>
         }
       />
@@ -208,7 +208,7 @@ export function BaDashboard({
                 count={carteraAlerts.count}
                 severity={carteraAlerts.severity}
               />
-              <ExportButton filters={filters} onExport={(format, f) => exportClientsReport(f, format)} label="Exportar clientes" />
+              <ExportButton filters={filters} onExport={exportClientsReport} label="Exportar clientes" />
             </div>
           }
         >
@@ -230,7 +230,7 @@ export function BaDashboard({
                 count={upcomingAlerts.count}
                 severity={upcomingAlerts.severity}
               />
-              <ExportButton filters={filters} onExport={(format, f) => exportAgendaReport(f, format)} label="Exportar agenda" />
+              <ExportButton filters={filters} onExport={exportAgendaReport} label="Exportar agenda" />
             </div>
           }
         >

@@ -177,7 +177,7 @@ export function ManagerDashboard({
                 })),
               }}
             />
-            <ExportButton filters={filters} onExport={(format, f) => exportBaRanking(f, format)} />
+            <ExportButton filters={filters} onExport={exportBaRanking} />
           </>
         }
       />
@@ -233,7 +233,7 @@ export function ManagerDashboard({
         <DashBlock
           title="Comparativa entre marcas"
           right={
-            <ExportButton filters={filters} onExport={(format, f) => exportBrandComparison(f, format)} label="Exportar marcas" />
+            <ExportButton filters={filters} onExport={exportBrandComparison} label="Exportar marcas" />
           }
         >
           <BrandComparison data={data.salesByBrand} />
@@ -263,7 +263,7 @@ export function ManagerDashboard({
         <DashBlock
           title="Salud de la cartera"
           right={
-            <ExportButton filters={filters} onExport={(format, f) => exportClientsReport(f, format)} label="Exportar clientes" />
+            <ExportButton filters={filters} onExport={exportClientsReport} label="Exportar clientes" />
           }
         >
           <div className="bg-white border border-line rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">

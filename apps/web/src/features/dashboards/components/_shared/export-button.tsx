@@ -15,13 +15,14 @@ export interface ExportArtifact {
 
 export interface ExportButtonProps {
   /**
-   * Server-side handler. Receives the active dashboard filters + chosen
-   * format and returns the artifact to download. The wrapping arrow lets
-   * each dashboard pass the matching action — `(format, f) => exportXxx(f, format)`.
+   * Server action that produces the workbook. The signature matches the
+   * server actions in `features/dashboards/server/actions/` so dashboards
+   * pass them by reference — no inline wrapper, which would fail the RSC
+   * serialization boundary when the parent dashboard is a Server Component.
    */
   onExport: (
-    format: ExportFormat,
     filters: DashboardFilters,
+    format: ExportFormat,
   ) => Promise<ExportArtifact>;
   /** Current dashboard filters — forwarded to the server action. */
   filters: DashboardFilters;
@@ -77,7 +78,7 @@ export function ExportButton({
     setOpen(false);
     setBusy(format);
     try {
-      const artifact = await onExport(format, filters);
+      const artifact = await onExport(filters, format);
       triggerDownload(artifact);
       setToast({ kind: "ok", text: `Exportado: ${artifact.filename}` });
     } catch (err) {

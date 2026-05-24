@@ -255,7 +255,7 @@ export function SupervisorDashboard({
                 })),
               }}
             />
-            <ExportButton filters={filters} onExport={(format, f) => exportBaRanking(f, format)} />
+            <ExportButton filters={filters} onExport={exportBaRanking} />
           </>
         }
       />
@@ -376,7 +376,7 @@ export function SupervisorDashboard({
         <DashBlock
           title="Comparativa marcas zona"
           right={
-            <ExportButton filters={filters} onExport={(format, f) => exportBrandComparison(f, format)} label="Exportar marcas" />
+            <ExportButton filters={filters} onExport={exportBrandComparison} label="Exportar marcas" />
           }
         >
           <BrandComparisonByStore
@@ -395,8 +395,8 @@ export function SupervisorDashboard({
           title="Alertas + Operación"
           right={
             <div className="flex items-center gap-2">
-              <ExportButton filters={filters} onExport={(format, f) => exportAgendaReport(f, format)} label="Exportar agenda" />
-              <ExportButton filters={filters} onExport={(format, f) => exportClientsReport(f, format)} label="Exportar clientes" />
+              <ExportButton filters={filters} onExport={exportAgendaReport} label="Exportar agenda" />
+              <ExportButton filters={filters} onExport={exportClientsReport} label="Exportar clientes" />
             </div>
           }
         >
