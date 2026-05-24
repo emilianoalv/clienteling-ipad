@@ -25,3 +25,8 @@ export {
 } from "./alert-banner";
 export { AlertBadge, type AlertBadgeProps } from "./alert-badge";
 export { HeroBlock, type HeroBlockProps } from "./hero-block";
+export {
+  BADrillDownModal,
+  type BADrillDownModalProps,
+  type BaDrillDownData,
+} from "./ba-drill-down-modal";

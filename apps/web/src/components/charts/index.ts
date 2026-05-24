@@ -12,3 +12,4 @@ export { StatusLight, type StatusLightProps, type StatusLightLevel } from "./sta
 export { RankCard, type RankCardProps, type RankItem } from "./rank-card";
 export { ConversionBar, type ConversionBarProps } from "./conversion-bar";
 export { Donut, type DonutProps, type DonutSegment } from "./donut";
+export { Funnel, type FunnelProps, type FunnelStage } from "./funnel";

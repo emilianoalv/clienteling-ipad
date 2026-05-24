@@ -80,3 +80,68 @@ function dayDiff(a: Date, b: Date): number {
     (startOfDay(b).getTime() - startOfDay(a).getTime()) / 86_400_000,
   );
 }
+
+// ── Forecast with simulation (Gerente/Supervisor) ───────────────────────────
+
+export interface ForecastSimulationInput {
+  salesAmount: number;
+  monthlyTarget: number;
+  period: { from: Date; to: Date };
+  now?: Date;
+  /**
+   * If provided, simulate the upside of the worst-performing BA recovering
+   * to the team average. `deficit` is the extra sales the team would book if
+   * that BA hit the average — usually `(teamAverage - worstSales)` for the
+   * period.
+   */
+  worstPerformer?: {
+    name: string;
+    deficit: number;
+  };
+}
+
+export interface ForecastSimulationResult {
+  /** Display text combining base projection + optional simulation line. */
+  text: string;
+  projection: number;
+  simulatedProjection?: number;
+  noTarget: boolean;
+}
+
+/**
+ * Same algorithm as `computePacing`, but extended with an optional
+ * "what-if the worst BA recovers" scenario. Returns a 1-2 line text and
+ * both projections so the UI can color the second line in green when the
+ * scenario would push the team over target.
+ */
+export function computeForecastWithSimulation(
+  input: ForecastSimulationInput,
+): ForecastSimulationResult {
+  const base = computePacing(input);
+  if (base.noTarget) {
+    return { text: "", projection: 0, noTarget: true };
+  }
+
+  const lines: string[] = [base.text];
+
+  let simulatedProjection: number | undefined;
+  if (input.worstPerformer && input.worstPerformer.deficit > 0) {
+    simulatedProjection = base.projection + input.worstPerformer.deficit;
+    const overPct =
+      ((simulatedProjection - input.monthlyTarget) / input.monthlyTarget) * 100;
+    lines.push(
+      `proyección si ${input.worstPerformer.name} recupera: ${compact(simulatedProjection)} (${formatPercentChange(overPct)} sobre meta)`,
+    );
+  }
+
+  return {
+    text: lines.join(" · "),
+    projection: base.projection,
+    simulatedProjection,
+    noTarget: false,
+  };
+}
+
+function compact(n: number): string {
+  return formatCurrencyCompact(n);
+}

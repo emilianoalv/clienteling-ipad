@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computePacing } from "./pacing";
+import { computeForecastWithSimulation, computePacing } from "./pacing";
 
 const APRIL_2026 = {
   from: new Date(2026, 3, 1),
@@ -56,5 +56,49 @@ describe("computePacing", () => {
     });
     expect(out.ratio).toBeCloseTo(1, 1);
     expect(out.text).toMatch(/adelantado|sobre meta/);
+  });
+});
+
+describe("computeForecastWithSimulation", () => {
+  const NOW = new Date(2026, 3, 15);
+
+  it("returns the same base text when no simulation is provided", () => {
+    const base = computePacing({
+      salesAmount: 100_000,
+      monthlyTarget: 500_000,
+      period: APRIL_2026,
+      now: NOW,
+    });
+    const out = computeForecastWithSimulation({
+      salesAmount: 100_000,
+      monthlyTarget: 500_000,
+      period: APRIL_2026,
+      now: NOW,
+    });
+    expect(out.text).toBe(base.text);
+    expect(out.simulatedProjection).toBeUndefined();
+  });
+
+  it("adds a simulation line when worstPerformer.deficit > 0", () => {
+    const out = computeForecastWithSimulation({
+      salesAmount: 100_000,
+      monthlyTarget: 500_000,
+      period: APRIL_2026,
+      now: NOW,
+      worstPerformer: { name: "Diego", deficit: 150_000 },
+    });
+    expect(out.text).toMatch(/Diego recupera/);
+    expect(out.simulatedProjection).toBeGreaterThan(out.projection);
+  });
+
+  it("falls back to noTarget when monthlyTarget is 0", () => {
+    const out = computeForecastWithSimulation({
+      salesAmount: 0,
+      monthlyTarget: 0,
+      period: APRIL_2026,
+      now: NOW,
+    });
+    expect(out.noTarget).toBe(true);
+    expect(out.text).toBe("");
   });
 });
