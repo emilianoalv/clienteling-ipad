@@ -12,10 +12,8 @@ import { appointmentRepository } from "@/server/repositories/appointment.reposit
 import { communicationRepository } from "@/server/repositories/communication.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { productRepository } from "@/server/repositories/product.repository";
-import { storeRepository } from "@/server/repositories/store.repository";
-import { templateRepository } from "@/server/repositories/template.repository";
 import { userRepository } from "@/server/repositories/user.repository";
-import { brandScopeFor, homeStoreFor, isStoreInScope } from "@/server/auth/scope";
+import { brandScopeFor, isStoreInScope } from "@/server/auth/scope";
 import type { Product, Sku } from "@/types/product";
 
 /**
@@ -43,7 +41,6 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
   if (!isStoreInScope(staff, initial.storeId)) notFound();
 
   const brands = brandScopeFor(staff);
-  const homeStore = homeStoreFor(staff);
   const [
     client,
     interactions,
@@ -56,8 +53,6 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     followupTasks,
     users,
     products,
-    templates,
-    store,
   ] = await Promise.all([
     clientRepository.findById(clientId),
     interactionRepository.listByClient(clientId),
@@ -70,8 +65,6 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     followupTaskRepository.listByClient(clientId),
     userRepository.list(),
     productRepository.list({ brands }),
-    templateRepository.list({ brands }),
-    homeStore ? storeRepository.findById(homeStore) : Promise.resolve(null),
   ]);
   if (!client) notFound();
 
@@ -98,8 +91,5 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     followupTasks,
     baLookup,
     productBySku,
-    templates,
-    storeName: store?.name ?? "—",
-    staffName: staff.name,
   };
 }

@@ -1,15 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Client } from "@/types/client";
 import type { Channel, Communication } from "@/types/communication";
-import type { FollowupTask } from "@/types/followup-task";
-import type { Template } from "@/types/template";
-import { Button, Icon } from "@/components/primitives";
+import { Icon } from "@/components/primitives";
 import type { IconName } from "@/types/icon";
-import { Modal } from "@/components/feedback";
 import { CommLog } from "@/features/communications";
-import { Composer } from "@/features/followup/components/composer";
 
 type ChannelFilter = "all" | Channel;
 
@@ -22,40 +19,16 @@ const CHANNEL_ICON: Record<Channel, IconName> = {
 export interface MessagesTabProps {
   client: Client;
   communications: readonly Communication[];
-  templates: readonly Template[];
-  staffName: string;
-  storeName: string;
-  /**
-   * Task pre-cargada — cuando viene, el modal del composer se abre
-   * automáticamente al montar y el composer la recibe para pre-seleccionar
-   * plantilla y fijar canal. Deep link "Responder" desde el inbox.
-   */
-  initialTask?: FollowupTask | null;
 }
 
 /**
- * Tab Mensajes del perfil del cliente — vista unificada que reemplaza
- * el log read-only anterior.
+ * Tab Mensajes del perfil del cliente — log + entrada al composer.
  *
- * Layout:
- *   - Header con botón "Nuevo mensaje" → abre modal con Composer en
- *     modo compact (cliente pre-cargado, plantillas filtradas a marca).
- *   - CommLog abajo filtrado al cliente actual.
- *
- * Cierra el gap más visible del flujo Comunicaciones↔Perfil: antes la
- * BA tenía que salir del perfil al `/ba/followup` para mandar un
- * mensaje. Ahora todo pasa sin perder el contexto del cliente.
+ * El composer vive en pantalla completa (`/ba/clients/[id]/message/new`)
+ * para tener espacio para el preview tipo teléfono. Esta tab solo muestra
+ * el historial filtrable + el botón que navega al composer.
  */
-export function MessagesTab({
-  client,
-  communications,
-  templates,
-  staffName,
-  storeName,
-  initialTask,
-}: MessagesTabProps) {
-  // Si viene initialTask del deep-link, el modal abre solo al montar.
-  const [open, setOpen] = useState(initialTask != null);
+export function MessagesTab({ client, communications }: MessagesTabProps) {
   const [channelFilter, setChannelFilter] = useState<ChannelFilter>("all");
 
   const clientLookup = { [client.id]: client.name } as Record<string, string>;
@@ -94,14 +67,13 @@ export function MessagesTab({
             mensaje con plantillas pre-cargadas.
           </p>
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          leading={<Icon name="whatsapp" size={12} />}
-          onClick={() => setOpen(true)}
+        <Link
+          href={`/ba/clients/${client.id}/message/new`}
+          className="inline-flex items-center gap-2 h-8 px-3 rounded-[10px] border border-ink bg-white text-ink text-[16px] font-semibold no-underline hover:bg-bone transition-colors"
         >
+          <Icon name="whatsapp" size={12} />
           Nuevo mensaje
-        </Button>
+        </Link>
       </header>
 
       {availableChannels.length > 2 ? (
@@ -130,24 +102,6 @@ export function MessagesTab({
       ) : null}
 
       <CommLog communications={filtered} clientLookup={clientLookup} compact />
-
-      <Modal
-        open={open}
-        onClose={() => setOpen(false)}
-        title={`Nuevo mensaje a ${client.name.split(/\s+/)[0] ?? client.name}`}
-        description="Selecciona plantilla, ajusta el mensaje y abre tu app de mensajería."
-        size="lg"
-      >
-        <Composer
-          client={client}
-          templates={templates}
-          staffName={staffName}
-          storeName={storeName}
-          layout="compact"
-          task={initialTask ?? null}
-          onSent={() => setOpen(false)}
-        />
-      </Modal>
     </div>
   );
 }

@@ -324,9 +324,9 @@ function TaskRow({
           {task.status === "pending" && !marking ? (
             <>
               <Link
-                href={`/ba/clients/${task.clientId}?tab=msgs&taskId=${task.id}#profile-tabs`}
-                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-ink bg-ink text-paper text-[13px] font-semibold no-underline hover:opacity-90 transition-opacity"
-                title="Abre el composer en el perfil del cliente con la tarea pre-cargada"
+                href={`/ba/clients/${task.clientId}/message/new?taskId=${task.id}`}
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-ink bg-white text-ink text-[13px] font-semibold no-underline hover:bg-bone transition-colors"
+                title="Abre el composer en pantalla completa con la tarea pre-cargada"
               >
                 <Icon name="whatsapp" size={12} />
                 Responder

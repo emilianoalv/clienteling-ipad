@@ -12,7 +12,6 @@ import type { Product } from "@/types/product";
 import type { Recommendation } from "@/types/recommendation";
 import type { Communication } from "@/types/communication";
 import type { FollowupTask } from "@/types/followup-task";
-import type { Template } from "@/types/template";
 import { Card } from "@/components/patterns";
 import { cn } from "@/lib/cn";
 import { PurchasesPreview } from "./tabs/purchases-preview";
@@ -55,26 +54,14 @@ export interface ClientProfileTabsProps {
   baLookup: Record<string, string>;
   /** SKU → Product. Used by recs/samples previews to render real names. */
   productBySku: Record<string, Product>;
-  /** Templates filtered by BA brand scope — used by Mensajes tab composer. */
-  templates: readonly Template[];
-  /** BA's store name — used by Mensajes tab composer to render templates. */
-  storeName: string;
-  /** BA's own display name — used by Mensajes tab composer signature. */
-  staffName: string;
   clientName: string;
   clientId: string;
-  /**
-   * Task pre-cargada — activa tab Mensajes y abre el modal del composer
-   * con la task asignada. Deep link desde el inbox "Responder".
-   */
-  initialTask?: FollowupTask | null;
 }
 
 export function ClientProfileTabs(props: ClientProfileTabsProps) {
   const t = useTranslations();
   const searchParams = useSearchParams();
-  // Si viene initialTask arranca en Mensajes. Si no, default purchases.
-  const [tab, setTab] = useState<TabId>(props.initialTask ? "msgs" : "purchases");
+  const [tab, setTab] = useState<TabId>("purchases");
 
   // Allow deep-links like ?tab=followup (used by the Seguimiento action strip button).
   useEffect(() => {
@@ -145,14 +132,7 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
           <FollowupTab clientId={props.clientId as ClientId} tasks={props.followupTasks} />
         )}
         {tab === "msgs" && (
-          <MessagesTab
-            client={props.client}
-            communications={props.communications}
-            templates={props.templates}
-            staffName={props.staffName}
-            storeName={props.storeName}
-            initialTask={props.initialTask ?? null}
-          />
+          <MessagesTab client={props.client} communications={props.communications} />
         )}
       </Card>
     </div>
