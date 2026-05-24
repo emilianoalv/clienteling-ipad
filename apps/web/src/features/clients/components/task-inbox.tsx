@@ -96,17 +96,6 @@ function labelType(t: FollowupType): string {
   return FOLLOWUP_TYPES.find((ft) => ft.id === t)?.label ?? t;
 }
 
-/**
- * Para qué tipos de task ofrecemos el atajo "Responder con plantilla":
- * canales de mensajería digital. Llamadas / citas / sample-feedback
- * suelen tener un componente WhatsApp también (de hecho sample-feedback
- * generalmente es WhatsApp), pero el flujo de composer aplica a las que
- * el BA puede ejecutar con un mensaje desde la app.
- */
-function canReplyWithTemplate(type: FollowupType): boolean {
-  return type === "whatsapp" || type === "email" || type === "sample-feedback";
-}
-
 export interface TaskInboxProps {
   tasks: readonly FollowupTask[];
   /** Map ClientId → display name. Vacío en modo client-scoped (no se usa). */
@@ -331,15 +320,14 @@ function TaskRow({
           </span>
           {task.status === "pending" && !marking ? (
             <>
-              {canReplyWithTemplate(task.type) ? (
-                <Link
-                  href={`/ba/followup?view=messages&clientId=${task.clientId}&taskId=${task.id}`}
-                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-ink bg-ink text-paper text-[13px] font-semibold no-underline hover:opacity-90 transition-opacity"
-                >
-                  <Icon name={TYPE_ICON[task.type]} size={12} />
-                  Responder
-                </Link>
-              ) : null}
+              <Link
+                href={`/ba/followup?view=messages&clientId=${task.clientId}&taskId=${task.id}`}
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-ink bg-ink text-paper text-[13px] font-semibold no-underline hover:opacity-90 transition-opacity"
+                title="Abre el composer con plantilla pre-seleccionada según la categoría"
+              >
+                <Icon name="whatsapp" size={12} />
+                Responder
+              </Link>
               <Button size="sm" variant="ghost" onClick={onCancel} disabled={isPending}>
                 Cancelar
               </Button>
