@@ -39,3 +39,15 @@ export {
   StoreHealthCard,
   type StoreHealthCardProps,
 } from "./store-health-card";
+export {
+  StrategicInsightCard,
+  type StrategicInsightCardProps,
+} from "./strategic-insight-card";
+export {
+  ComplianceScoreCard,
+  type ComplianceScoreCardProps,
+} from "./compliance-score-card";
+export {
+  AdoptionTracker,
+  type AdoptionTrackerProps,
+} from "./adoption-tracker";
