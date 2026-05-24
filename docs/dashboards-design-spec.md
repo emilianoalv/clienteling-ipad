@@ -1,8 +1,8 @@
 # Dashboards Design Spec — Etapa 2
 
 > **Audiencia**: Claude Code agents implementando Etapa 2 + Isa Valdez (referencia)
-> **Fecha**: 2026-05-20
-> **Versión**: 1.0 (cierre del design workshop)
+> **Fecha**: 2026-05-20 (v1.0) · 2026-05-25 (v1.1 implementación cerrada)
+> **Versión**: 1.1 (implementado — 4 dashboards conectados, exports operativos)
 > **Scope**: BA · Gerente · Supervisor · Admin
 > **Out of scope**: F4 (cohort analysis, YoY profundo, virtual try-on, RF-39 link tracking)
 
@@ -996,6 +996,29 @@ export function formatPercentDelta(value: number): string {
 ```
 
 ---
+
+## Cambios durante implementación (v1.0 → v1.1)
+
+Durante Días 4-10 se desviaron del spec los siguientes puntos. Cada uno está documentado en su commit y/o en `docs/etapa-2-summary.md`.
+
+### Removed
+- **`<ScatterPlot>`** (Día 10): el spec §4.1 listaba el componente como opcional para "Adopción vs ventas (Supervisor)". Reemplazado por `<StoreHealthCard>` (§3.3 Sec 1) — sin consumidor real. Eliminado en Día 10.
+
+### Approximated (gaps de seed/schema)
+- **`getCounterAverages` solo BA**: para Gerente/Supervisor/Admin se computa `computeCounterAveragesByBrand(baRanking)` inline en el page Server Component. Esto produce un promedio por brand-counter consistente sin extender Etapa 1.
+- **`per-store convReco` para Strategic Insight 2**: el `StoreRankingEntry` no expone conv reco. Se aproxima promediando los BAs del store (`estimateStoreConvReco` en `app/(app)/admin/page.tsx`).
+- **`Compliance Score · RtBF backlog`**: el modelo `Right to be Forgotten` no existe en el seed. `computeComplianceData` busca eventos en audit log con regex `rtbf|olvido|borr|delete` y aproxima días promedio. F4 lo formalizará.
+- **`Adoption Tracker · interactionRate`**: proxy de iPad usage = total interactions del período, contra esperado `baTotal × 5 × 7` (5 interactions/BA/día × 7 días). No hay device-session telemetry.
+- **`System Health` integraciones**: panel estático placeholder (Admin Sec 8). F4 wireará telemetría POS/WhatsApp/e-commerce.
+
+### Decisión confirmada en implementación
+- **BA Ranking con nombres + "Tú"** (no anónimo): culturas de retail luxe premian reconocimiento social. Confirmado por chart-props-audit y aplicado en `toBaRankingBarData` + `toBaRankCards`.
+- **Counter Comparison BA Sec 1**: solo 4 de las métricas tienen counter equivalent en `getCounterAverages`. Las otras (transacciones, clientes nuevos, follow-ups) muestran "—" en la columna counter — documentado inline.
+
+### Adiciones no previstas
+- **`<ExportButton>` con filter wiring (Día 9)**: el spec no detallaba la API de exportación. Se diseñó `onExport(format, filters)` para que cada export respete el FilterBar activo.
+- **`docs/ipad-audit-2026-05-25.md`** (Día 9): audit de responsive + touch targets que no estaba previsto en el spec original.
+- **`docs/etapa-2-summary.md`** (Día 10): resumen ejecutivo para pitch.
 
 ## Fin del documento
 

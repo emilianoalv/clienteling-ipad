@@ -9,9 +9,9 @@
  * Naming convention: `to<Target>(input, ...context)`.
  *
  * Excluded by audit decision:
- *   - A3 (StoreRanking → ScatterPlot): replaced by `<StoreHealthCard>` in
- *     the Supervisor design — see spec §3.3. ScatterPlot is dead code for
- *     now.
+ *   - A3 (StoreRanking → ScatterPlot): the Supervisor design uses
+ *     `<StoreHealthCard>` (spec §3.3) instead. ScatterPlot was removed
+ *     during Día 10 cleanup.
  */
 
 import { formatCurrencyCompact } from "@/lib/format/number";

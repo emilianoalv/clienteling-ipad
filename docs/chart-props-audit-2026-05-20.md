@@ -4,6 +4,11 @@
 > **Propósito**: cruzar shapes de los componentes de chart con outputs de las queries de `features/dashboards/server/queries/` para identificar **adapters necesarios** antes de conectar UI ↔ data en Etapa 2.
 > **Alcance**: 8 componentes (7 en `components/charts/` + `RankCard` interno) × 4 queries críticas.
 > **Acción tomada**: NINGUNA. Esto es un reporte de read-only.
+>
+> **Resolución post-implementación (2026-05-25)**:
+> - A1, A2, A4, A5, A6 → implementados en `features/dashboards/lib/adapters.ts`.
+> - **A3 (StoreRanking → ScatterPlot) → DESCARTADO**: el Supervisor design final usa `<StoreHealthCard>` en lugar de scatter. `<ScatterPlot>` se eliminó en Día 10 cleanup.
+> - "RankCard enterrado" → extraído a `components/charts/rank-card.tsx` (commit `48e6368`).
 
 ---
 
