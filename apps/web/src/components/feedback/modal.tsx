@@ -92,7 +92,7 @@ export function Modal({
           </div>
           <button
             type="button"
-            className="shrink-0 w-9 h-9 rounded-md bg-transparent text-ink/60 cursor-pointer hover:bg-ink/[0.04] hover:text-ink"
+            className="shrink-0 w-11 h-11 rounded-md bg-transparent text-ink/60 cursor-pointer hover:bg-ink/[0.04] hover:text-ink inline-flex items-center justify-center"
             onClick={onClose}
             aria-label="Cerrar"
           >

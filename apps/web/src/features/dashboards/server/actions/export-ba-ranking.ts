@@ -6,9 +6,9 @@ import type { ExportColumn, ExportFormat } from "@/lib/export";
 import { getBaRanking } from "../queries/get-ba-ranking";
 import { getRecoToPurchaseRate } from "../queries/get-reco-to-purchase-rate";
 import { getSampleToPurchaseRate } from "../queries/get-sample-to-purchase-rate";
-import { thisMonth } from "../utils/date-ranges";
 import { RoleNotPermittedError } from "../errors";
 import { packArtifact, type ExportArtifact } from "./_artifact";
+import type { DashboardFilters } from "../types";
 
 interface RankingRow {
   rank: number;
@@ -45,14 +45,13 @@ const COLUMNS: ReadonlyArray<ExportColumn<RankingRow>> = [
 ];
 
 export async function exportBaRanking(
+  filters: DashboardFilters,
   format: ExportFormat,
 ): Promise<ExportArtifact> {
   const { staff } = await requireSession();
   if (staff.role === "BA") {
     throw new RoleNotPermittedError(staff.role, "exportBaRanking");
   }
-
-  const filters = { period: thisMonth() };
 
   const [ranking, users] = await Promise.all([
     getBaRanking(staff, filters, { topN: 50 }),

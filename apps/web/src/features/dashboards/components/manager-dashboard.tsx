@@ -177,7 +177,7 @@ export function ManagerDashboard({
                 })),
               }}
             />
-            <ExportButton onExport={exportBaRanking} />
+            <ExportButton filters={filters} onExport={(format, f) => exportBaRanking(f, format)} />
           </>
         }
       />
@@ -233,7 +233,7 @@ export function ManagerDashboard({
         <DashBlock
           title="Comparativa entre marcas"
           right={
-            <ExportButton onExport={exportBrandComparison} label="Exportar marcas" />
+            <ExportButton filters={filters} onExport={(format, f) => exportBrandComparison(f, format)} label="Exportar marcas" />
           }
         >
           <BrandComparison data={data.salesByBrand} />
@@ -263,7 +263,7 @@ export function ManagerDashboard({
         <DashBlock
           title="Salud de la cartera"
           right={
-            <ExportButton onExport={exportClientsReport} label="Exportar clientes" />
+            <ExportButton filters={filters} onExport={(format, f) => exportClientsReport(f, format)} label="Exportar clientes" />
           }
         >
           <div className="bg-white border border-line rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -460,8 +460,8 @@ function BaRankingTable({
   const topQuartile = Math.max(1, Math.ceil(ranking.length / 4));
 
   return (
-    <div className="bg-white border border-line rounded-lg p-4">
-      <div className="grid grid-cols-[1.4fr_0.6fr_1fr_0.7fr_0.9fr_0.9fr] gap-3 px-1 pb-2 border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+    <div className="bg-white border border-line rounded-lg p-4 overflow-x-auto">
+      <div className="grid grid-cols-[1.4fr_0.6fr_1fr_0.7fr_0.9fr_0.9fr] gap-3 px-1 pb-2 border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60 min-w-[640px]">
         <span>BA</span>
         <span>Marca</span>
         <span>Ventas</span>
@@ -469,7 +469,7 @@ function BaRankingTable({
         <span>Conv</span>
         <span>Estado</span>
       </div>
-      <ul className="list-none m-0 p-0">
+      <ul className="list-none m-0 p-0 min-w-[640px]">
         {ranking.map((entry, i) => {
           const target = targets.get(entry.baId) ?? 0;
           const ratio = target > 0 ? entry.salesAmount / target : 0;
@@ -745,7 +745,7 @@ function CarteraStats({
   const atRiskPct = total > 0 ? atRiskClients / total : 0;
   return (
     <div className="flex flex-col gap-4 justify-center">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Stat label="Activos" value={formatCount(activeClients)} />
         <Stat
           label="En riesgo"

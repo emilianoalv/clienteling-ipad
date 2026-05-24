@@ -3,9 +3,9 @@
 import { requireSession } from "@/server/auth/session";
 import type { ExportColumn, ExportFormat, ExportSheet } from "@/lib/export";
 import { getSalesByBrand } from "../queries/get-sales-by-brand";
-import { thisMonth } from "../utils/date-ranges";
 import { RoleNotPermittedError } from "../errors";
 import { packArtifact, type ExportArtifact } from "./_artifact";
+import type { DashboardFilters } from "../types";
 
 interface SummaryRow {
   marca: string;
@@ -62,6 +62,7 @@ const PRODUCT_COLUMNS: ReadonlyArray<ExportColumn<ProductRow>> = [
 ];
 
 export async function exportBrandComparison(
+  filters: DashboardFilters,
   format: ExportFormat,
 ): Promise<ExportArtifact> {
   const { staff } = await requireSession();
@@ -69,7 +70,6 @@ export async function exportBrandComparison(
     throw new RoleNotPermittedError(staff.role, "exportBrandComparison");
   }
 
-  const filters = { period: thisMonth() };
   const data = await getSalesByBrand(staff, filters);
   const total = data.Lancome.salesAmount + data.YSL.salesAmount;
 

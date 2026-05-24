@@ -7,7 +7,6 @@ import { storeRepository } from "@/server/repositories/store.repository";
 import { requireSession } from "@/server/auth/session";
 import type { ExportColumn, ExportFormat } from "@/lib/export";
 import { mergeScope } from "../utils/scope-merge";
-import { thisMonth } from "../utils/date-ranges";
 import { packArtifact, type ExportArtifact } from "./_artifact";
 import { appointmentKindLabel, appointmentStatusLabel } from "./_labels";
 import type { DashboardFilters } from "../types";
@@ -40,10 +39,10 @@ const COLUMNS: ReadonlyArray<ExportColumn<AgendaRow>> = [
 ];
 
 export async function exportAgendaReport(
+  filters: DashboardFilters,
   format: ExportFormat,
 ): Promise<ExportArtifact> {
   const { staff } = await requireSession();
-  const filters: DashboardFilters = { period: thisMonth() };
   const { storeIds, brands, isEmpty } = mergeScope(staff, filters);
 
   if (isEmpty) {

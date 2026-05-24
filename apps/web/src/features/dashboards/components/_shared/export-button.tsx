@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button, Icon } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import type { ExportFormat } from "@/lib/export";
+import type { DashboardFilters } from "../../server/types";
 
 export interface ExportArtifact {
   /** Base64-encoded XLSX/CSV body returned by the server action. */
@@ -13,8 +14,17 @@ export interface ExportArtifact {
 }
 
 export interface ExportButtonProps {
-  /** Server-side handler. Receives the chosen format, returns an artifact. */
-  onExport: (format: ExportFormat) => Promise<ExportArtifact>;
+  /**
+   * Server-side handler. Receives the active dashboard filters + chosen
+   * format and returns the artifact to download. The wrapping arrow lets
+   * each dashboard pass the matching action — `(format, f) => exportXxx(f, format)`.
+   */
+  onExport: (
+    format: ExportFormat,
+    filters: DashboardFilters,
+  ) => Promise<ExportArtifact>;
+  /** Current dashboard filters — forwarded to the server action. */
+  filters: DashboardFilters;
   label?: string;
   size?: "sm" | "md";
   disabled?: boolean;
@@ -28,8 +38,9 @@ export interface ExportButtonProps {
  */
 export function ExportButton({
   onExport,
+  filters,
   label = "Exportar",
-  size = "sm",
+  size = "md",
   disabled = false,
   className,
 }: ExportButtonProps) {
@@ -66,7 +77,7 @@ export function ExportButton({
     setOpen(false);
     setBusy(format);
     try {
-      const artifact = await onExport(format);
+      const artifact = await onExport(format, filters);
       triggerDownload(artifact);
       setToast({ kind: "ok", text: `Exportado: ${artifact.filename}` });
     } catch (err) {
@@ -139,7 +150,7 @@ function MenuItem({
       type="button"
       role="menuitem"
       onClick={onClick}
-      className="w-full text-left text-[15px] px-3 py-2 rounded-sm cursor-pointer hover:bg-bone"
+      className="w-full text-left text-[15px] px-3 py-2.5 rounded-sm cursor-pointer hover:bg-bone min-h-10"
     >
       {children}
     </button>

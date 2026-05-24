@@ -133,7 +133,7 @@ interface SelectProps {
 
 function Select({ ariaLabel, icon, label, value, options, onChange }: SelectProps) {
   return (
-    <label className="relative inline-flex items-center gap-1.5 h-8 px-3 rounded-pill border border-line bg-white text-[16px] cursor-pointer hover:bg-bone">
+    <label className="relative inline-flex items-center gap-1.5 h-10 px-3 rounded-pill border border-line bg-white text-[16px] cursor-pointer hover:bg-bone">
       <Icon name={icon} size={12} />
       <span className="text-ink/60">{label}</span>
       <span className="sr-only">{ariaLabel}</span>

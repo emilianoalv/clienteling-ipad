@@ -58,7 +58,7 @@ export function PeriodPicker({ value, onChange, className }: PeriodPickerProps) 
         aria-expanded={open}
         aria-label="Seleccionar período"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill border border-line bg-white text-[16px] hover:bg-bone cursor-pointer"
+        className="inline-flex items-center gap-1.5 h-10 px-3 rounded-pill border border-line bg-white text-[16px] hover:bg-bone cursor-pointer"
       >
         <Icon name="calendar" size={12} />
         <span className="text-ink/60">Período</span>
@@ -87,7 +87,7 @@ export function PeriodPicker({ value, onChange, className }: PeriodPickerProps) 
                     setOpen(false);
                   }}
                   className={cn(
-                    "w-full text-left text-[16px] px-3 py-2 rounded-sm cursor-pointer",
+                    "w-full text-left text-[16px] px-3 py-2.5 rounded-sm cursor-pointer min-h-10",
                     active ? "bg-ink/[0.06] font-semibold" : "hover:bg-bone",
                     opt.disabled && "opacity-50 cursor-not-allowed",
                   )}

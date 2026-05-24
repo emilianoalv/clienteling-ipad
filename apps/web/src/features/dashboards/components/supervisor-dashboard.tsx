@@ -255,7 +255,7 @@ export function SupervisorDashboard({
                 })),
               }}
             />
-            <ExportButton onExport={exportBaRanking} />
+            <ExportButton filters={filters} onExport={(format, f) => exportBaRanking(f, format)} />
           </>
         }
       />
@@ -376,7 +376,7 @@ export function SupervisorDashboard({
         <DashBlock
           title="Comparativa marcas zona"
           right={
-            <ExportButton onExport={exportBrandComparison} label="Exportar marcas" />
+            <ExportButton filters={filters} onExport={(format, f) => exportBrandComparison(f, format)} label="Exportar marcas" />
           }
         >
           <BrandComparisonByStore
@@ -395,8 +395,8 @@ export function SupervisorDashboard({
           title="Alertas + Operación"
           right={
             <div className="flex items-center gap-2">
-              <ExportButton onExport={exportAgendaReport} label="Exportar agenda" />
-              <ExportButton onExport={exportClientsReport} label="Exportar clientes" />
+              <ExportButton filters={filters} onExport={(format, f) => exportAgendaReport(f, format)} label="Exportar agenda" />
+              <ExportButton filters={filters} onExport={(format, f) => exportClientsReport(f, format)} label="Exportar clientes" />
             </div>
           }
         >
@@ -602,8 +602,8 @@ function CrossStoreRankingTable({
   const topQuartile = Math.max(1, Math.ceil(ranking.length / 4));
 
   return (
-    <div className="bg-white border border-line rounded-lg p-4">
-      <div className="grid grid-cols-[1.2fr_1fr_0.6fr_1fr_0.7fr_0.8fr_0.9fr] gap-3 px-1 pb-2 border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+    <div className="bg-white border border-line rounded-lg p-4 overflow-x-auto">
+      <div className="grid grid-cols-[1.2fr_1fr_0.6fr_1fr_0.7fr_0.8fr_0.9fr] gap-3 px-1 pb-2 border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60 min-w-[720px]">
         <span>BA</span>
         <span>Tienda</span>
         <span>Marca</span>
@@ -633,7 +633,7 @@ function CrossStoreRankingTable({
               <button
                 type="button"
                 onClick={() => onSelect(entry)}
-                className="w-full text-left grid grid-cols-[1.2fr_1fr_0.6fr_1fr_0.7fr_0.8fr_0.9fr] gap-3 items-center px-1 py-2.5 border-b border-dashed border-line last:border-b-0 cursor-pointer hover:bg-bone rounded"
+                className="w-full text-left grid grid-cols-[1.2fr_1fr_0.6fr_1fr_0.7fr_0.8fr_0.9fr] gap-3 items-center px-1 py-2.5 border-b border-dashed border-line last:border-b-0 cursor-pointer hover:bg-bone rounded min-w-[720px]"
               >
                 <span className="text-[16px] font-medium">{entry.name}</span>
                 <span className="text-[15px] text-ink/60">{entry.storeName}</span>
@@ -908,14 +908,14 @@ function SideBySide({
   ];
 
   return (
-    <div className="bg-white border border-line rounded-lg p-4">
-      <div className="grid grid-cols-[1.4fr_1fr_1fr_0.7fr] gap-3 px-1 pb-2 border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+    <div className="bg-white border border-line rounded-lg p-4 overflow-x-auto">
+      <div className="grid grid-cols-[1.4fr_1fr_1fr_0.7fr] gap-3 px-1 pb-2 border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60 min-w-[560px]">
         <span>Métrica</span>
         <span>{strong.storeName}</span>
         <span>{weak.storeName}</span>
         <span>Δ</span>
       </div>
-      <ul className="list-none m-0 p-0">
+      <ul className="list-none m-0 p-0 min-w-[560px]">
         {rows.map((r) => (
           <li
             key={r.label}

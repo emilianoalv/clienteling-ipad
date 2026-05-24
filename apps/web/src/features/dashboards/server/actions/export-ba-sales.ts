@@ -6,8 +6,8 @@ import { purchaseRepository } from "@/server/repositories/purchase.repository";
 import { storeRepository } from "@/server/repositories/store.repository";
 import type { ExportColumn, ExportFormat } from "@/lib/export";
 import { mergeScope } from "../utils/scope-merge";
-import { thisMonth } from "../utils/date-ranges";
 import { packArtifact, type ExportArtifact } from "./_artifact";
+import type { DashboardFilters } from "../types";
 
 interface SaleRow {
   fecha: Date;
@@ -30,10 +30,10 @@ const COLUMNS: ReadonlyArray<ExportColumn<SaleRow>> = [
 ];
 
 export async function exportBaSales(
+  filters: DashboardFilters,
   format: ExportFormat,
 ): Promise<ExportArtifact> {
   const { staff } = await requireSession();
-  const filters = { period: thisMonth() };
   const { storeIds, brands, isEmpty } = mergeScope(staff, filters);
 
   if (isEmpty) {

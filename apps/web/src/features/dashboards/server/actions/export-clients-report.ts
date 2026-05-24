@@ -9,7 +9,6 @@ import { userRepository } from "@/server/repositories/user.repository";
 import { requireSession } from "@/server/auth/session";
 import type { ExportColumn, ExportFormat } from "@/lib/export";
 import { mergeScope } from "../utils/scope-merge";
-import { thisMonth } from "../utils/date-ranges";
 import type { DashboardFilters } from "../types";
 import { packArtifact, type ExportArtifact } from "./_artifact";
 import { followupTypeLabel } from "./_labels";
@@ -54,10 +53,10 @@ const COLUMNS: ReadonlyArray<ExportColumn<ClientRow>> = [
 ];
 
 export async function exportClientsReport(
+  filters: DashboardFilters,
   format: ExportFormat,
 ): Promise<ExportArtifact> {
   const { staff } = await requireSession();
-  const filters: DashboardFilters = { period: thisMonth() };
   const { storeIds, brands, isEmpty } = mergeScope(staff, filters);
 
   if (isEmpty) {
