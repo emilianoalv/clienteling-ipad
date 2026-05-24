@@ -44,12 +44,12 @@ const PRODUCT_PLACEHOLDER = "Libre Le Parfum Intense";
  */
 const CATEGORY_TO_TEMPLATE: Partial<Record<FollowupCategory, TemplateCategory>> = {
   "sample-feedback": "Muestra",
-  "post-purchase": "Post-visita",
+  "post-purchase": "Seguimiento",
   birthday: "Cumpleaños",
   replenishment: "Reposición",
-  "3-month-check": "Post-visita",
+  "3-month-check": "Seguimiento",
   "6-month-check": "Reposición",
-  "special-event": "Lanzamiento",
+  "special-event": "Promoción",
 };
 
 function pickTemplateForTask(

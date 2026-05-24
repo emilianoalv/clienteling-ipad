@@ -6,9 +6,11 @@ export type TemplateId = Branded<string, "Template">;
 
 export type TemplateCategory =
   | "Post-visita"
+  | "Seguimiento"
   | "Lanzamiento"
   | "Cumpleaños"
   | "Reposición"
+  | "Promoción"
   | "Muestra"
   | "Aniversario"
   | "Recordatorio cita"
