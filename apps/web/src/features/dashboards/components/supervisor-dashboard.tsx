@@ -1,5 +1,5 @@
 import { Button, Icon, ProgressBar } from "@/components/primitives";
-import { Heatmap, LineChart, ScatterPlot, StatusLight, type StatusLightLevel } from "@/components/charts";
+import { Heatmap, LineChart, RankCard, ScatterPlot, StatusLight, type StatusLightLevel } from "@/components/charts";
 import { formatCurrency } from "@/lib/format/format-currency";
 import { cn } from "@/lib/cn";
 import { DashBlock, DashHeader, DashKpi } from "./_shared";
@@ -138,13 +138,13 @@ export function SupervisorDashboard({ supervisorName }: SupervisorDashboardProps
           <div className="grid grid-cols-2 gap-3">
             <RankCard
               title="Top / Bottom · Ventas"
-              rows={[...STORES]
+              items={[...STORES]
                 .sort((a, b) => b.sales - a.sales)
                 .map((s) => ({ label: s.label, value: formatCurrency(s.sales) }))}
             />
             <RankCard
               title="Top / Bottom · Adopción"
-              rows={[...STORES]
+              items={[...STORES]
                 .sort((a, b) => b.adoption - a.adoption)
                 .map((s) => ({ label: s.label, value: `${s.adoption}%` }))}
             />
@@ -313,52 +313,3 @@ function SemBucket({
   );
 }
 
-function RankCard({
-  title,
-  rows,
-}: {
-  title: string;
-  rows: ReadonlyArray<{ label: string; value: string }>;
-}) {
-  return (
-    <article className="bg-white border border-line rounded-lg p-4">
-      <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-        {title}
-      </div>
-      <ul className="list-none m-0 mt-1 p-0">
-        {rows.map((r, i) => {
-          const isTop = i < 2;
-          const isBot = i === rows.length - 1;
-          return (
-            <li
-              key={r.label}
-              className="grid grid-cols-[24px_1fr_auto_auto] gap-2.5 items-center py-2 border-b border-dashed border-line last:border-b-0"
-            >
-              <span
-                className={cn(
-                  "text-[16px] font-semibold tabular",
-                  isTop ? "text-ok" : isBot ? "text-err" : "text-ink/60",
-                )}
-              >
-                #{i + 1}
-              </span>
-              <span className="text-[16px]">{r.label}</span>
-              <span className="text-[16px] font-semibold tabular">{r.value}</span>
-              {isTop ? (
-                <span className="text-[14px] font-semibold uppercase tracking-[0.04em] text-ok px-1.5 rounded-pill border border-ok/20 bg-ok/10">
-                  TOP
-                </span>
-              ) : isBot ? (
-                <span className="text-[14px] font-semibold uppercase tracking-[0.04em] text-err px-1.5 rounded-pill border border-err/20 bg-err/10">
-                  BOTTOM
-                </span>
-              ) : (
-                <span />
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </article>
-  );
-}

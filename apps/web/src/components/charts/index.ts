@@ -9,3 +9,4 @@ export {
   type ScatterPoint,
 } from "./scatter-plot";
 export { StatusLight, type StatusLightProps, type StatusLightLevel } from "./status-light";
+export { RankCard, type RankCardProps, type RankItem } from "./rank-card";
