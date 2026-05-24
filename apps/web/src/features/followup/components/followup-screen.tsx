@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getT } from "@/lib/i18n/get-t";
 import type { Client } from "@/types/client";
 import type { Communication } from "@/types/communication";
+import type { FollowupTask } from "@/types/followup-task";
 import type { Template } from "@/types/template";
 import { Composer } from "./composer";
 import { CommLog, CommMetrics } from "@/features/communications";
@@ -16,6 +17,8 @@ export interface FollowupScreenProps {
   storeName: string;
   communications: readonly Communication[];
   clientLookup: Readonly<Record<string, string>>;
+  /** Task que originó el composer (deep link desde inbox). Opcional. */
+  task?: FollowupTask | null;
 }
 
 export async function FollowupScreen({
@@ -26,6 +29,7 @@ export async function FollowupScreen({
   storeName,
   communications,
   clientLookup,
+  task,
 }: FollowupScreenProps) {
   const t = await getT();
 
@@ -49,6 +53,7 @@ export async function FollowupScreen({
           templates={templates}
           staffName={staffName}
           storeName={storeName}
+          task={task ?? null}
         />
       ) : (
         <div className="grid grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">

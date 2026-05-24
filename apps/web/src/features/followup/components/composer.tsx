@@ -5,13 +5,15 @@ import { useT } from "@/lib/i18n/use-t";
 import type { BrandId } from "@/types/brand";
 import type { Channel } from "@/types/communication";
 import type { Client } from "@/types/client";
-import type { Template } from "@/types/template";
+import type { FollowupCategory, FollowupTask } from "@/types/followup-task";
+import type { Template, TemplateCategory } from "@/types/template";
 import { Avatar, type AvatarTone, Button, Chip, Icon } from "@/components/primitives";
 import type { IconName } from "@/types/icon";
 import { Card } from "@/components/patterns";
 import { Modal } from "@/components/feedback";
 import { renderTemplate } from "@/features/communications";
 import { sendCommunication } from "@/features/communications";
+import { completeFollowupTask } from "@/features/clients/actions/complete-followup-task";
 import { buildMessageUrl } from "@/lib/messaging/build-message-url";
 import { TemplateList } from "./template-list";
 import { WhatsappPreview } from "./whatsapp-preview";
@@ -32,21 +34,74 @@ const CHANNEL_LABEL: Record<Channel, string> = {
 
 const PRODUCT_PLACEHOLDER = "Libre Le Parfum Intense";
 
+/**
+ * Mapeo de FollowupCategory → TemplateCategory para preseleccionar la
+ * plantilla más relevante cuando el composer abre como respuesta a una
+ * tarea. Cubre los casos comunes; "3-month-check" usa Post-visita
+ * (check-in suave), "6-month-check" usa Reposición (asume hora de
+ * reposición), "special-event" usa Lanzamiento. "general" no mapea —
+ * deja la selección al BA.
+ */
+const CATEGORY_TO_TEMPLATE: Partial<Record<FollowupCategory, TemplateCategory>> = {
+  "sample-feedback": "Muestra",
+  "post-purchase": "Post-visita",
+  birthday: "Cumpleaños",
+  replenishment: "Reposición",
+  "3-month-check": "Post-visita",
+  "6-month-check": "Reposición",
+  "special-event": "Lanzamiento",
+};
+
+function pickTemplateForTask(
+  templates: readonly Template[],
+  task: FollowupTask | null,
+): Template | null {
+  if (!task) return templates[0] ?? null;
+  const targetCategory = CATEGORY_TO_TEMPLATE[task.category];
+  if (!targetCategory) return templates[0] ?? null;
+  // Prefiere plantilla que matchee categoría + tipo de la task. Si no,
+  // cualquiera de la misma categoría. Si no, fallback al primer template.
+  const sameCatSameChannel = templates.find(
+    (t) =>
+      t.category === targetCategory &&
+      (task.type === "whatsapp"
+        ? t.channel === "WhatsApp"
+        : task.type === "email"
+          ? t.channel === "Email"
+          : true),
+  );
+  if (sameCatSameChannel) return sameCatSameChannel;
+  const sameCat = templates.find((t) => t.category === targetCategory);
+  return sameCat ?? templates[0] ?? null;
+}
+
 export interface ComposerProps {
   client: Client;
   templates: readonly Template[];
   staffName: string;
   storeName: string;
+  /**
+   * Tarea de seguimiento que originó este composer (deep link desde el
+   * inbox). Cuando viene presente:
+   *  - Pre-selecciona la plantilla más relevante por categoría.
+   *  - Al confirmar envío exitoso, marca la task como done con el body
+   *    del mensaje como result.
+   */
+  task?: FollowupTask | null;
 }
 
 type BrandTab = "all" | BrandId;
 type SendPhase = "idle" | "pending-confirm" | "logging" | "sent";
 
-export function Composer({ client, templates, staffName, storeName }: ComposerProps) {
+export function Composer({ client, templates, staffName, storeName, task }: ComposerProps) {
   const t = useT();
   const [brandFilter, setBrandFilter] = useState<BrandTab>("all");
-  const [template, setTemplate] = useState<Template | null>(templates[0] ?? null);
-  const [channel, setChannel] = useState<Channel>(templates[0]?.channel ?? "WhatsApp");
+  const initialTemplate = useMemo(
+    () => pickTemplateForTask(templates, task ?? null),
+    [templates, task],
+  );
+  const [template, setTemplate] = useState<Template | null>(initialTemplate);
+  const [channel, setChannel] = useState<Channel>(initialTemplate?.channel ?? "WhatsApp");
   const [bodyDraft, setBodyDraft] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [phase, setPhase] = useState<SendPhase>("idle");
@@ -111,6 +166,16 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
         setPhase("pending-confirm");
         return;
       }
+      // Si este composer abrió respondiendo a una task pendiente,
+      // ciérrala automáticamente con el body como result. La BA no debe
+      // tener que marcar manualmente "hecha" después de mandar el mensaje
+      // — el envío ES la ejecución de la task.
+      if (task && task.status === "pending") {
+        const summary = `Mensaje ${CHANNEL_LABEL[channel]} enviado: "${
+          body.length > 140 ? body.slice(0, 137) + "…" : body
+        }"`;
+        await completeFollowupTask({ taskId: task.id, result: summary });
+      }
       setPhase("sent");
     });
   }
@@ -146,6 +211,31 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
               : t("followup.no_template")}
           </h2>
         </header>
+
+        {task && task.status === "pending" ? (
+          <Card
+            variant="flat"
+            className="bg-ink/[0.04] border-ink/15 flex items-start gap-3"
+          >
+            <span
+              aria-hidden
+              className="inline-flex w-9 h-9 items-center justify-center rounded-md bg-white text-ink shrink-0"
+            >
+              <Icon name="check" size={16} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="text-[14px] font-semibold tracking-[0.08em] uppercase text-ink/55">
+                Respondiendo a una tarea
+              </div>
+              <p className="m-0 mt-0.5 text-[15px] leading-snug">
+                <strong className="text-ink">{task.description}</strong>
+              </p>
+              <p className="m-0 mt-1 text-[13.5px] text-ink/55">
+                Al confirmar envío, esta tarea se marcará como hecha automáticamente.
+              </p>
+            </div>
+          </Card>
+        ) : null}
 
         <Card variant="flat" className="flex items-center gap-3 bg-bone border-transparent">
           <Avatar initials={initials(client.name)} tone={tone} size={40} />
@@ -231,8 +321,12 @@ export function Composer({ client, templates, staffName, storeName }: ComposerPr
         ) : null}
 
         {phase === "sent" ? (
-          <div className="inline-flex items-center gap-2 px-4 py-3 bg-ok/[0.1] text-ok rounded-md text-[16px] font-semibold leading-none border border-ok/25 self-start">
-            <Icon name="check" /> Mensaje registrado en el historial de {client.name.split(" ")[0]}.
+          <div className="inline-flex items-center gap-2 px-4 py-3 bg-ok/[0.1] text-ok rounded-md text-[15.5px] font-semibold leading-snug border border-ok/25 self-start">
+            <Icon name="check" />
+            <span>
+              Mensaje registrado en el historial de {client.name.split(" ")[0]}.
+              {task && task.status === "pending" ? " Tarea marcada como hecha." : ""}
+            </span>
           </div>
         ) : null}
 

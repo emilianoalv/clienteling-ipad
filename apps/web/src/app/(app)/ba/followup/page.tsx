@@ -10,6 +10,7 @@ import { storeRepository } from "@/server/repositories/store.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { cn } from "@/lib/cn";
 import type { ClientId } from "@/types/client";
+import type { FollowupTaskId } from "@/types/followup-task";
 
 type View = "tasks" | "messages";
 type InnerTab = "composer" | "log";
@@ -17,7 +18,12 @@ type InnerTab = "composer" | "log";
 export default async function FollowupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; clientId?: string; tab?: string }>;
+  searchParams: Promise<{
+    view?: string;
+    clientId?: string;
+    tab?: string;
+    taskId?: string;
+  }>;
 }) {
   const { staff } = await requireSession();
   const params = await searchParams;
@@ -58,11 +64,23 @@ export default async function FollowupPage({
   }
 
   const homeStore = homeStoreFor(staff);
-  const [templates, communications, store] = await Promise.all([
+  const [templates, communications, store, task] = await Promise.all([
     listTemplates({ brands }),
     listCommunications({ brands, storeIds }),
     homeStore ? storeRepository.findById(homeStore) : Promise.resolve(null),
+    // Si el composer abrió desde el botón "Responder" de un task, lo
+    // resolvemos para pasarlo al Composer y para que pueda marcarse
+    // hecho automáticamente al confirmar envío.
+    params.taskId
+      ? followupTaskRepository.findById(params.taskId as FollowupTaskId)
+      : Promise.resolve(null),
   ]);
+
+  // Guard: si vino taskId pero la task no pertenece al cliente actual o
+  // no es del BA, la ignoramos silenciosamente (no rompe el composer,
+  // solo no aplica el wiring de auto-complete).
+  const taskForComposer =
+    task && task.clientId === client.id && task.baId === staff.id ? task : null;
 
   return (
     <section className="flex flex-col gap-4">
@@ -75,6 +93,7 @@ export default async function FollowupPage({
         storeName={store?.name ?? "—"}
         communications={communications}
         clientLookup={clientLookup as Record<ClientId, string>}
+        task={taskForComposer}
       />
     </section>
   );
