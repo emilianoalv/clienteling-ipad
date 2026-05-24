@@ -10,6 +10,7 @@ import type { Appointment } from "@/types/appointment";
 import type { Communication } from "@/types/communication";
 import type { FollowupTask } from "@/types/followup-task";
 import type { Product } from "@/types/product";
+import type { Template } from "@/types/template";
 import { Avatar, type AvatarTone, BrandTag, Button, Chip, Icon } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import { ClientProfileTabs } from "./client-profile-tabs";
@@ -39,6 +40,12 @@ export interface ClientProfileProps {
   baLookup: Record<string, string>;
   /** SKU → Product. Used by recs/samples previews to render real names. */
   productBySku: Record<string, Product>;
+  /** Templates del scope del BA — usadas en tab Mensajes. */
+  templates: readonly Template[];
+  /** Tienda del BA — usada para render de plantillas. */
+  storeName: string;
+  /** Nombre del BA — usado para signature de mensajes. */
+  staffName: string;
 }
 
 export async function ClientProfile({
@@ -53,6 +60,9 @@ export async function ClientProfile({
   followupTasks,
   baLookup,
   productBySku,
+  templates,
+  storeName,
+  staffName,
 }: ClientProfileProps) {
   const t = await getTranslations();
   const segment = segmentClient(client);
@@ -142,6 +152,9 @@ export async function ClientProfile({
           followupTasks={followupTasks}
           baLookup={baLookup}
           productBySku={productBySku}
+          templates={templates}
+          storeName={storeName}
+          staffName={staffName}
           clientName={client.name}
           clientId={client.id}
         />

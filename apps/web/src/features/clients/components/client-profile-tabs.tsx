@@ -12,6 +12,7 @@ import type { Product } from "@/types/product";
 import type { Recommendation } from "@/types/recommendation";
 import type { Communication } from "@/types/communication";
 import type { FollowupTask } from "@/types/followup-task";
+import type { Template } from "@/types/template";
 import { Card } from "@/components/patterns";
 import { cn } from "@/lib/cn";
 import { PurchasesPreview } from "./tabs/purchases-preview";
@@ -19,8 +20,8 @@ import { SamplesPreview } from "./tabs/samples-preview";
 import { RecsPreview } from "./tabs/recs-preview";
 import { AppointmentsPreview } from "./tabs/appointments-preview";
 import { FollowupTab } from "./tabs/followup-tab";
+import { MessagesTab } from "./tabs/messages-tab";
 import { BeautyProfileTab } from "./beauty-profile-tab";
-import { CommLog } from "@/features/communications";
 
 type TabId =
   | "purchases"
@@ -54,6 +55,12 @@ export interface ClientProfileTabsProps {
   baLookup: Record<string, string>;
   /** SKU → Product. Used by recs/samples previews to render real names. */
   productBySku: Record<string, Product>;
+  /** Templates filtered by BA brand scope — used by Mensajes tab composer. */
+  templates: readonly Template[];
+  /** BA's store name — used by Mensajes tab composer to render templates. */
+  storeName: string;
+  /** BA's own display name — used by Mensajes tab composer signature. */
+  staffName: string;
   clientName: string;
   clientId: string;
 }
@@ -132,10 +139,12 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
           <FollowupTab clientId={props.clientId as ClientId} tasks={props.followupTasks} />
         )}
         {tab === "msgs" && (
-          <CommLog
+          <MessagesTab
+            client={props.client}
             communications={props.communications}
-            clientLookup={{ [props.communications[0]?.clientId ?? ""]: props.clientName }}
-            compact
+            templates={props.templates}
+            staffName={props.staffName}
+            storeName={props.storeName}
           />
         )}
       </Card>

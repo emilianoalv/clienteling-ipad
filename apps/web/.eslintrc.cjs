@@ -76,6 +76,10 @@ module.exports = {
               // las server actions transition/reschedule/cancel del feature
               // appointments para evitar duplicar la lógica de transiciones.
               ["features", { feature: "appointments" }],
+              // Commit 6: tab Mensajes del perfil reutiliza el Composer del
+              // feature followup en modo compact dentro de un modal. Evita
+              // duplicar la lógica de plantillas + delegated send.
+              ["features", { feature: "followup" }],
             ],
           },
           {

@@ -88,12 +88,26 @@ export interface ComposerProps {
    *    del mensaje como result.
    */
   task?: FollowupTask | null;
+  /**
+   * "full" (default) — 3 columnas: template list + composer + WhatsApp
+   *   preview. Para /ba/followup donde hay espacio horizontal.
+   * "compact" — 2 columnas: template list (más angosta) + composer, sin
+   *   preview de WhatsApp. Para modal del perfil donde el ancho es menor.
+   */
+  layout?: "full" | "compact";
 }
 
 type BrandTab = "all" | BrandId;
 type SendPhase = "idle" | "pending-confirm" | "logging" | "sent";
 
-export function Composer({ client, templates, staffName, storeName, task }: ComposerProps) {
+export function Composer({
+  client,
+  templates,
+  staffName,
+  storeName,
+  task,
+  layout = "full",
+}: ComposerProps) {
   const t = useT();
   const [brandFilter, setBrandFilter] = useState<BrandTab>("all");
   const initialTemplate = useMemo(
@@ -190,8 +204,13 @@ export function Composer({ client, templates, staffName, storeName, task }: Comp
     setIsEditing(false);
   }
 
+  const gridClass =
+    layout === "compact"
+      ? "grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] gap-4 items-start"
+      : "grid grid-cols-[320px_minmax(0,1fr)_300px] gap-5 items-start";
+
   return (
-    <div className="grid grid-cols-[320px_minmax(0,1fr)_300px] gap-5 items-start">
+    <div className={gridClass}>
       <TemplateList
         templates={templates}
         selectedId={template?.id ?? null}
@@ -354,11 +373,13 @@ export function Composer({ client, templates, staffName, storeName, task }: Comp
         </footer>
       </Card>
 
-      <WhatsappPreview
-        body={body || t("followup.preview.fallback")}
-        contactName={`${staffName.split(" ")[0] ?? staffName} · ${template?.brand ?? "Lancôme"}`}
-        contactInitials={(staffName[0] ?? "B").toUpperCase()}
-      />
+      {layout === "full" ? (
+        <WhatsappPreview
+          body={body || t("followup.preview.fallback")}
+          contactName={`${staffName.split(" ")[0] ?? staffName} · ${template?.brand ?? "Lancôme"}`}
+          contactInitials={(staffName[0] ?? "B").toUpperCase()}
+        />
+      ) : null}
 
       <Modal
         open={phase === "pending-confirm" || phase === "logging"}
