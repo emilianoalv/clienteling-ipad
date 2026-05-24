@@ -141,34 +141,43 @@ export function Composer({
   );
 
   const initialTemplate = useMemo(
-    () => pickTemplateForTask(channelScopedTemplates, task ?? null),
+    () => (task ? pickTemplateForTask(channelScopedTemplates, task) : null),
     [channelScopedTemplates, task],
   );
+  // Sin task: default "mensaje en blanco" (caso más común de "Nuevo
+  // mensaje"). Con task: pre-selecciona plantilla matchada por categoría.
   const [template, setTemplate] = useState<Template | null>(initialTemplate);
+  const [isBlank, setIsBlank] = useState<boolean>(!task);
   const [channel, setChannel] = useState<Channel>(
     lockedChannel ?? initialTemplate?.channel ?? "WhatsApp",
   );
   const [bodyDraft, setBodyDraft] = useState<string | null>(null);
+  // Con plantilla, edición opt-in (botón "Editar mensaje"). En blanco,
+  // siempre editable (no hay plantilla a la cual "volver").
   const [isEditing, setIsEditing] = useState(false);
   const [phase, setPhase] = useState<SendPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const renderedBody = useMemo(() => {
-    if (!template) return "";
+    if (!template || isBlank) return "";
     return renderTemplate(template, {
       nombre: client.name.split(" ")[0] ?? client.name,
       tienda: storeName,
       ba: staffName.split(" ")[0] ?? staffName,
       producto: PRODUCT_PLACEHOLDER,
     });
-  }, [template, client, storeName, staffName]);
+  }, [template, isBlank, client, storeName, staffName]);
 
   const body = bodyDraft ?? renderedBody;
   const tone: AvatarTone = brandToTone(client.brands[0]);
+  // En modo blank el editor siempre acepta input. Con plantilla, solo
+  // cuando isEditing está activo (preserva la intención de la plantilla).
+  const bodyEditable = isBlank || isEditing;
 
   function onSelectTemplate(tpl: Template) {
     setTemplate(tpl);
+    setIsBlank(false);
     setChannel(tpl.channel);
     setBodyDraft(null);
     setIsEditing(false);
@@ -176,15 +185,34 @@ export function Composer({
     setError(null);
   }
 
-  function onOpenExternal() {
-    if (!template) return;
+  function onSelectBlank() {
+    setIsBlank(true);
+    setTemplate(null);
+    // En blanco respetamos el canal fijado por la task si existe; si no,
+    // default WhatsApp y la BA puede cambiarlo.
+    if (!lockedChannel) setChannel("WhatsApp");
+    setBodyDraft("");
+    setIsEditing(true);
+    setPhase("idle");
     setError(null);
+  }
+
+  function onOpenExternal() {
+    if (!isBlank && !template) return;
+    if (!body.trim()) {
+      setError("El mensaje no puede estar vacío.");
+      return;
+    }
+    setError(null);
+    const subject = template
+      ? `${template.category} · ${template.brand}`
+      : `Mensaje · ${client.brands[0] ?? "Lancôme"}`;
     const url = buildMessageUrl({
       channel,
       phone: client.phone,
       email: client.email,
       body,
-      subject: `${template.category} · ${template.brand}`,
+      subject,
     });
     // Marcamos el composer en "pending-confirm" ANTES de abrir la app
     // externa. Cuando la BA vuelva a la app de clienteling, verá el
@@ -196,16 +224,25 @@ export function Composer({
   }
 
   function onConfirmSent() {
-    if (!template) return;
+    if (!isBlank && !template) return;
     setError(null);
     setPhase("logging");
+    // En modo blank no hay templateId. La marca del registro es la
+    // primera del cliente (los clientes en este BA siempre tienen al
+    // menos una marca por la validación de creación).
+    const brandForLog = template?.brand ?? client.brands[0];
+    if (!brandForLog) {
+      setError("El cliente no tiene marca asignada para registrar el mensaje.");
+      setPhase("pending-confirm");
+      return;
+    }
     startTransition(async () => {
       const result = await sendCommunication({
         clientId: client.id,
         channel,
         body,
-        brand: template.brand,
-        templateId: template.id,
+        brand: brandForLog,
+        ...(template ? { templateId: template.id } : {}),
       });
       if (!result.ok) {
         setError(result.message ?? t("followup.error.send"));
@@ -254,6 +291,8 @@ export function Composer({
         onSelect={onSelectTemplate}
         brand={brandFilter}
         onBrandChange={setBrandFilter}
+        blankSelected={isBlank}
+        onSelectBlank={onSelectBlank}
       />
 
       <Card variant="luxe" className="flex flex-col gap-4">
@@ -264,7 +303,9 @@ export function Composer({
           <h2 className="m-0 font-display text-[28px] leading-tight tracking-[-0.005em]">
             {template
               ? `${template.category} · ${template.brand}`
-              : t("followup.no_template")}
+              : isBlank
+                ? `Mensaje en blanco · ${client.brands[0] ?? ""}`
+                : t("followup.no_template")}
           </h2>
         </header>
 
@@ -348,7 +389,7 @@ export function Composer({
             <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
               {t("followup.body")}
             </span>
-            {phase === "idle" && template ? (
+            {phase === "idle" && template && !isBlank ? (
               <button
                 type="button"
                 onClick={() => setIsEditing((v) => !v)}
@@ -360,8 +401,9 @@ export function Composer({
           </div>
           <textarea
             value={body}
-            readOnly={!isEditing || phase !== "idle"}
+            readOnly={!bodyEditable || phase !== "idle"}
             onChange={(e) => setBodyDraft(e.target.value)}
+            placeholder={isBlank ? "Escribe tu mensaje aquí…" : undefined}
             className="w-full h-[140px] p-3.5 text-[17px] leading-snug rounded-[10px] border border-line bg-white resize-none focus-visible:border-ink outline-none"
           />
         </div>
@@ -406,7 +448,7 @@ export function Composer({
             <Button
               variant="primary"
               onClick={onOpenExternal}
-              disabled={!template || phase !== "idle"}
+              disabled={(!template && !isBlank) || phase !== "idle"}
               leading={<Icon name={CHANNEL_ICON[channel]} size={14} />}
               trailing={<Icon name="arrow-right" />}
             >

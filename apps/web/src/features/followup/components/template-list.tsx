@@ -15,6 +15,14 @@ export interface TemplateListProps {
   onSelect(template: Template): void;
   brand: BrandTab;
   onBrandChange(b: BrandTab): void;
+  /**
+   * Cuando viene true, la lista renderea como primer item una card
+   * "Mensaje en blanco" arriba de las plantillas reales. Permite a la BA
+   * escribir sin elegir plantilla sin sacar el flow de su contexto.
+   * Útil cuando no hay task forzando una plantilla específica.
+   */
+  blankSelected?: boolean;
+  onSelectBlank?(): void;
 }
 
 export function TemplateList({
@@ -23,6 +31,8 @@ export function TemplateList({
   onSelect,
   brand,
   onBrandChange,
+  blankSelected = false,
+  onSelectBlank,
 }: TemplateListProps) {
   const t = useT();
 
@@ -71,6 +81,27 @@ export function TemplateList({
         </div>
       ) : null}
       <ul className="list-none m-0 p-0 flex flex-col gap-2">
+        {onSelectBlank ? (
+          <li>
+            <button
+              type="button"
+              onClick={onSelectBlank}
+              aria-pressed={blankSelected}
+              className={`block w-full text-left p-3 rounded-md cursor-pointer transition-colors ${
+                blankSelected
+                  ? "bg-bone border border-ink"
+                  : "bg-white border border-dashed border-line hover:border-ink/30"
+              }`}
+            >
+              <div className="text-[16px] font-semibold leading-tight">
+                Mensaje en blanco
+              </div>
+              <div className="text-[15px] font-medium leading-snug text-ink/60 mt-1">
+                Escribir desde cero, sin plantilla.
+              </div>
+            </button>
+          </li>
+        ) : null}
         {filtered.map((tpl) => {
           const active = selectedId === tpl.id;
           return (
