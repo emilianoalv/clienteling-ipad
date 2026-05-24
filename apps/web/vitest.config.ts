@@ -16,4 +16,9 @@ export default defineConfig({
       "server-only": fileURLToPath(new URL("./test/server-only-shim.ts", import.meta.url)),
     },
   },
+  // Use the automatic JSX runtime so `.test.tsx` files don't need to import
+  // React explicitly — matches Next's runtime behavior.
+  esbuild: {
+    jsx: "automatic",
+  },
 });
