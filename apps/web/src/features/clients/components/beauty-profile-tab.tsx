@@ -198,7 +198,7 @@ export function BeautyProfileTab({ client }: BeautyProfileTabProps) {
             Estos datos alimentan el ranking de productos recomendados.
           </p>
         </div>
-        <Button variant="primary" onClick={enterEdit} leading={<Icon name="check" />}>
+        <Button variant="outline" onClick={enterEdit} leading={<Icon name="check" />}>
           Editar perfil
         </Button>
       </header>

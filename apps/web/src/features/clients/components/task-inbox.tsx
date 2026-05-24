@@ -441,7 +441,7 @@ function CreateTaskGlobalRow({
     return (
       <div className="flex items-center justify-end">
         <Button
-          variant="primary"
+          variant="outline"
           size="sm"
           leading={<Icon name="plus" size={12} />}
           onClick={() => setCreating(true)}
@@ -606,7 +606,7 @@ function CreateTaskRow({ clientId }: { clientId: ClientId }) {
           resultado para mantener el historial.
         </p>
         <Button
-          variant="primary"
+          variant="outline"
           size="sm"
           leading={<Icon name="plus" size={12} />}
           onClick={() => setCreating(true)}
