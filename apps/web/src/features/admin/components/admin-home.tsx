@@ -1,10 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import type { AuditEvent } from "@/types/audit-event";
 import type { Product } from "@/types/product";
 import type { Template } from "@/types/template";
 import type { User } from "@/types/user";
 import { Button, Chip, Icon } from "@/components/primitives";
 import { Card, KvRow } from "@/components/patterns";
+import { PreviewDialog } from "@/components/feedback";
 import { AuditLog } from "./audit-log";
 
 const ROLE_SCOPES: ReadonlyArray<{ role: string; scopes: readonly string[] }> = [
@@ -19,6 +23,14 @@ const ROLE_SCOPES: ReadonlyArray<{ role: string; scopes: readonly string[] }> = 
     scopes: ["Acceso global", "Catálogo", "Plantillas", "Auditoría", "Integraciones"],
   },
 ];
+
+type PreviewKey = "users" | "templates" | "catalog";
+
+const PREVIEW_FEATURE: Record<PreviewKey, string> = {
+  users: "usuarios",
+  templates: "plantillas de seguimiento",
+  catalog: "catálogo de productos",
+};
 
 export interface AdminHomeProps {
   users: readonly User[];
@@ -37,11 +49,14 @@ export function AdminHome({
   privacyNoticeVersion,
   storeLookup,
 }: AdminHomeProps) {
+  const [openPreview, setOpenPreview] = useState<PreviewKey | null>(null);
+
   const lancomeCount = products.filter((p) => p.brand === "Lancôme").length;
   const yslCount = products.filter((p) => p.brand === "YSL").length;
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <>
+      <div className="grid grid-cols-3 gap-4">
       <Card variant="luxe" className="col-span-3">
         <span className="block text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
           Admin Central · L&apos;Oréal Luxe México
@@ -79,7 +94,13 @@ export function AdminHome({
             </li>
           ))}
         </ul>
-        <Button variant="default" size="sm" className="mt-3" leading={<Icon name="plus" size={12} />}>
+        <Button
+          variant="default"
+          size="sm"
+          className="mt-3"
+          leading={<Icon name="plus" size={12} />}
+          onClick={() => setOpenPreview("users")}
+        >
           Crear usuario
         </Button>
       </Card>
@@ -109,10 +130,19 @@ export function AdminHome({
           <KvRow label="Aviso de privacidad" value={privacyNoticeVersion} dashed={false} />
         </div>
         <div className="flex gap-2 mt-3">
-          <Button variant="default" size="sm" leading={<Icon name="plus" size={12} />}>
+          <Button
+            variant="default"
+            size="sm"
+            leading={<Icon name="plus" size={12} />}
+            onClick={() => setOpenPreview("templates")}
+          >
             Nueva plantilla
           </Button>
-          <Button variant="default" size="sm">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setOpenPreview("catalog")}
+          >
             Actualizar catálogo
           </Button>
         </div>
@@ -121,7 +151,14 @@ export function AdminHome({
       <div className="col-span-3">
         <AuditLog events={auditEvents.slice(0, 4)} compact />
       </div>
-    </div>
+      </div>
+
+      <PreviewDialog
+        open={openPreview !== null}
+        onClose={() => setOpenPreview(null)}
+        feature={openPreview ? PREVIEW_FEATURE[openPreview] : ""}
+      />
+    </>
   );
 }
 
