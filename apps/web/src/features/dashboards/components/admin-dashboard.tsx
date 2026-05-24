@@ -11,7 +11,7 @@ import {
   type DonutSegment,
   type FunnelStage,
 } from "@/components/charts";
-import { Button, Chip, Icon, ProgressBar } from "@/components/primitives";
+import { Chip, Icon, ProgressBar } from "@/components/primitives";
 import type { AuditEvent } from "@/types/audit-event";
 import type { Product } from "@/types/product";
 import type { Template } from "@/types/template";
@@ -46,6 +46,12 @@ import type { ComplianceData } from "../lib/compliance-score";
 import { computeForecastWithSimulation } from "../lib/pacing";
 import type { StrategicInsight } from "../lib/strategic-insights";
 import {
+  exportAgendaReport,
+  exportBaRanking,
+  exportBrandComparison,
+  exportClientsReport,
+} from "../server/actions";
+import {
   AdoptionTracker,
   AlertBanner,
   AlertCard,
@@ -53,6 +59,7 @@ import {
   ComplianceScoreCard,
   DashBlock,
   DashHeader,
+  ExportButton,
   FilterBar,
   HeroBlock,
   StoreDrillDownModal,
@@ -226,13 +233,7 @@ export function AdminDashboard({
                 })),
               }}
             />
-            <Button
-              variant="default"
-              size="sm"
-              leading={<Icon name="download" size={12} />}
-            >
-              Exportar
-            </Button>
+            <ExportButton onExport={exportBaRanking} />
           </>
         }
       />
@@ -271,7 +272,12 @@ export function AdminDashboard({
         />
 
         {/* Sec 1 — Ranking nacional */}
-        <DashBlock title="Ranking nacional">
+        <DashBlock
+          title="Ranking nacional"
+          right={
+            <ExportButton onExport={exportBaRanking} label="Exportar ranking" />
+          }
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <TopStoresTable
               ranking={data.storeRanking}
@@ -309,7 +315,12 @@ export function AdminDashboard({
         </DashBlock>
 
         {/* Sec 3 — Comparativa marcas país */}
-        <DashBlock title="Comparativa marcas país">
+        <DashBlock
+          title="Comparativa marcas país"
+          right={
+            <ExportButton onExport={exportBrandComparison} label="Exportar marcas" />
+          }
+        >
           <div className="bg-white border border-line rounded-lg p-4 grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-5">
             <div className="flex flex-col gap-3">
               <span className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
@@ -378,7 +389,12 @@ export function AdminDashboard({
         </DashBlock>
 
         {/* Sec 8 — Alertas + System Health */}
-        <DashBlock title="Alertas + System Health">
+        <DashBlock
+          title="Alertas + System Health"
+          right={
+            <ExportButton onExport={exportAgendaReport} label="Exportar agenda" />
+          }
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SystemHealthCard />
             <OperationalAlertsList alerts={data.operationalAlerts} />
@@ -386,7 +402,12 @@ export function AdminDashboard({
         </DashBlock>
 
         {/* Top clientes nacional */}
-        <DashBlock title="Top clientes país">
+        <DashBlock
+          title="Top clientes país"
+          right={
+            <ExportButton onExport={exportClientsReport} label="Exportar clientes" />
+          }
+        >
           <div className="bg-white border border-line rounded-lg p-4">
             <TopClientsList clients={data.topClients} />
           </div>

@@ -10,7 +10,7 @@ import {
   type DonutSegment,
   type FunnelStage,
 } from "@/components/charts";
-import { Button, Chip, Icon, ProgressBar } from "@/components/primitives";
+import { Chip, Icon, ProgressBar } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { formatDateRelative } from "@/lib/format/date";
 import {
@@ -45,11 +45,17 @@ import {
 import type { BrandCounterAverages } from "../lib/counter-averages";
 import { computeForecastWithSimulation } from "../lib/pacing";
 import {
+  exportBaRanking,
+  exportBrandComparison,
+  exportClientsReport,
+} from "../server/actions";
+import {
   AlertBanner,
   AlertCard,
   BADrillDownModal,
   DashBlock,
   DashHeader,
+  ExportButton,
   FilterBar,
   HeroBlock,
   type BaDrillDownData,
@@ -171,13 +177,7 @@ export function ManagerDashboard({
                 })),
               }}
             />
-            <Button
-              variant="default"
-              size="sm"
-              leading={<Icon name="download" size={12} />}
-            >
-              Exportar
-            </Button>
+            <ExportButton onExport={exportBaRanking} />
           </>
         }
       />
@@ -230,7 +230,12 @@ export function ManagerDashboard({
         </DashBlock>
 
         {/* Sección 2 — Comparativa entre marcas */}
-        <DashBlock title="Comparativa entre marcas">
+        <DashBlock
+          title="Comparativa entre marcas"
+          right={
+            <ExportButton onExport={exportBrandComparison} label="Exportar marcas" />
+          }
+        >
           <BrandComparison data={data.salesByBrand} />
         </DashBlock>
 
@@ -255,7 +260,12 @@ export function ManagerDashboard({
         </DashBlock>
 
         {/* Sección 5 — Salud de la cartera */}
-        <DashBlock title="Salud de la cartera">
+        <DashBlock
+          title="Salud de la cartera"
+          right={
+            <ExportButton onExport={exportClientsReport} label="Exportar clientes" />
+          }
+        >
           <div className="bg-white border border-line rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <CarteraStats
               activeClients={data.activeClients}

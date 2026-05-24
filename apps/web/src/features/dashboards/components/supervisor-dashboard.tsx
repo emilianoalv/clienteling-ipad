@@ -11,7 +11,7 @@ import {
   type DonutSegment,
   type FunnelStage,
 } from "@/components/charts";
-import { Button, Chip, Icon, ProgressBar } from "@/components/primitives";
+import { Chip, Icon, ProgressBar } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { formatDateRelative } from "@/lib/format/date";
 import {
@@ -48,11 +48,18 @@ import type { BestPracticeInsight } from "../lib/best-practices";
 import { computeForecastWithSimulation } from "../lib/pacing";
 import type { StoreHealth } from "../lib/store-health";
 import {
+  exportAgendaReport,
+  exportBaRanking,
+  exportBrandComparison,
+  exportClientsReport,
+} from "../server/actions";
+import {
   AlertBanner,
   AlertCard,
   BADrillDownModal,
   DashBlock,
   DashHeader,
+  ExportButton,
   FilterBar,
   HeroBlock,
   StoreDrillDownModal,
@@ -248,13 +255,7 @@ export function SupervisorDashboard({
                 })),
               }}
             />
-            <Button
-              variant="default"
-              size="sm"
-              leading={<Icon name="download" size={12} />}
-            >
-              Exportar
-            </Button>
+            <ExportButton onExport={exportBaRanking} />
           </>
         }
       />
@@ -372,7 +373,12 @@ export function SupervisorDashboard({
         </DashBlock>
 
         {/* Sec 6 — Comparativa marcas zona */}
-        <DashBlock title="Comparativa marcas zona">
+        <DashBlock
+          title="Comparativa marcas zona"
+          right={
+            <ExportButton onExport={exportBrandComparison} label="Exportar marcas" />
+          }
+        >
           <BrandComparisonByStore
             salesByBrand={data.salesByBrand}
             storeSnapshots={data.storeSnapshots}
@@ -385,7 +391,15 @@ export function SupervisorDashboard({
         </DashBlock>
 
         {/* Sec 8 — Alertas + Operación */}
-        <DashBlock title="Alertas + Operación">
+        <DashBlock
+          title="Alertas + Operación"
+          right={
+            <div className="flex items-center gap-2">
+              <ExportButton onExport={exportAgendaReport} label="Exportar agenda" />
+              <ExportButton onExport={exportClientsReport} label="Exportar clientes" />
+            </div>
+          }
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <OperationStats
               appointments={data.appointmentsTotal}

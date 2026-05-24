@@ -5,7 +5,7 @@ import {
   Sparkline,
   type DonutSegment,
 } from "@/components/charts";
-import { Button, Icon, ProgressBar } from "@/components/primitives";
+import { Icon, ProgressBar } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { formatDateRelative, formatDateShort, smartFormatDate } from "@/lib/format/date";
 import {
@@ -33,9 +33,15 @@ import type { DashboardFilters } from "../server/types";
 import { toSparklinePoints } from "../lib/adapters";
 import { computePacing } from "../lib/pacing";
 import {
+  exportAgendaReport,
+  exportBaSales,
+  exportClientsReport,
+} from "../server/actions";
+import {
   AlertBadge,
   DashBlock,
   DashHeader,
+  ExportButton,
   FilterBar,
   HeroBlock,
   type Severity,
@@ -119,9 +125,7 @@ export function BaDashboard({
             <FilterBar
               roleConfig={{ period: true, store: false, brand: false, baId: false }}
             />
-            <Button variant="default" size="sm" leading={<Icon name="download" size={12} />}>
-              Exportar
-            </Button>
+            <ExportButton onExport={exportBaSales} />
           </>
         }
       />
@@ -199,10 +203,13 @@ export function BaDashboard({
         <DashBlock
           title="Mi cartera"
           right={
-            <AlertBadge
-              count={carteraAlerts.count}
-              severity={carteraAlerts.severity}
-            />
+            <div className="flex items-center gap-3">
+              <AlertBadge
+                count={carteraAlerts.count}
+                severity={carteraAlerts.severity}
+              />
+              <ExportButton onExport={exportClientsReport} label="Exportar clientes" />
+            </div>
           }
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white border border-line rounded-lg p-4">
@@ -218,10 +225,13 @@ export function BaDashboard({
         <DashBlock
           title="Próximos pasos"
           right={
-            <AlertBadge
-              count={upcomingAlerts.count}
-              severity={upcomingAlerts.severity}
-            />
+            <div className="flex items-center gap-3">
+              <AlertBadge
+                count={upcomingAlerts.count}
+                severity={upcomingAlerts.severity}
+              />
+              <ExportButton onExport={exportAgendaReport} label="Exportar agenda" />
+            </div>
           }
         >
           <div className="bg-white border border-line rounded-lg p-4 flex flex-col gap-5">

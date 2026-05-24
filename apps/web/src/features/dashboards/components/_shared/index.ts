@@ -51,3 +51,8 @@ export {
   AdoptionTracker,
   type AdoptionTrackerProps,
 } from "./adoption-tracker";
+export {
+  ExportButton,
+  type ExportButtonProps,
+  type ExportArtifact,
+} from "./export-button";
