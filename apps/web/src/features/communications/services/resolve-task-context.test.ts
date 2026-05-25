@@ -102,6 +102,8 @@ describe("resolveTaskContext", () => {
       makeDeps({ samples: [sample()] }),
     );
     expect(ctx["muestra.producto"]).toBe("Idôle EDP 1.5ml vial");
+    expect(ctx["muestra.productos"]).toBe("Idôle EDP 1.5ml vial");
+    expect(ctx["muestra.productos.lista"]).toBe("• Idôle EDP 1.5ml vial");
     expect(ctx["muestra.dia"]).toBe("el lunes");
   });
 
@@ -112,6 +114,25 @@ describe("resolveTaskContext", () => {
       makeDeps({ samples: [] }),
     );
     expect(ctx).toEqual({});
+  });
+
+  it("sample-feedback agrupa todas las muestras dadas el mismo día", async () => {
+    const givenAt = new Date(NOW.getTime() - 4 * 86_400_000).toISOString();
+    const s1 = sample({ id: "sm-1" as SampleId, name: "La Vie Est Belle", givenAt });
+    const s2 = sample({ id: "sm-2" as SampleId, name: "Hydra Zen", givenAt });
+    const s3 = sample({
+      id: "sm-3" as SampleId,
+      name: "Antigua (semana pasada)",
+      givenAt: new Date(NOW.getTime() - 10 * 86_400_000).toISOString(),
+    });
+    const ctx = await resolveTaskContext(
+      task("sample-feedback"),
+      NOW,
+      makeDeps({ samples: [s1, s2, s3] }),
+    );
+    expect(ctx["muestra.producto"]).toBe("La Vie Est Belle");
+    expect(ctx["muestra.productos"]).toBe("La Vie Est Belle y Hydra Zen");
+    expect(ctx["muestra.productos.lista"]).toBe("• La Vie Est Belle\n• Hydra Zen");
   });
 
   it("post-purchase resuelve producto + día + fecha corta", async () => {

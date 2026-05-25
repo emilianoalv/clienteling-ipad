@@ -79,8 +79,20 @@ async function resolveLastSample(
   const samples = await deps.listSamplesByClient(clientId);
   const last = samples[0];
   if (!last) return {};
+
+  // Agrupar las muestras de la "misma sesión": las que comparten día con
+  // la última. Una visita típica entrega 2-3 muestras a la vez y la BA
+  // necesita mencionarlas todas en el mensaje. Día = los primeros 10
+  // chars del ISO (YYYY-MM-DD) — local a la zona horaria del servidor,
+  // suficiente para demo y para producción con tiendas en una sola TZ.
+  const lastDay = last.givenAt.slice(0, 10);
+  const sameDay = samples.filter((s) => s.givenAt.slice(0, 10) === lastDay);
+  const names = sameDay.map((s) => s.name);
+
   return {
     "muestra.producto": last.name,
+    "muestra.productos": formatNameList(names),
+    "muestra.productos.lista": formatBulletList(names),
     "muestra.dia": formatConversationalDate(last.givenAt, now),
   };
 }

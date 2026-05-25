@@ -22,7 +22,12 @@ export type TemplateCategory =
  * `resolveTaskContext` (para tasks) o por la propia página del composer
  * (para intents de evento) para que el mensaje suene natural en español:
  *
- *   {muestra.producto} → "Iris Absolu Eau de Parfum"
+ *   {muestra.producto} → "Iris Absolu Eau de Parfum" (la primera, legacy)
+ *   {muestra.productos} → "Iris Absolu y Hydra Zen" o
+ *                         "Iris Absolu, Hydra Zen y Génifique" (frase
+ *                         natural; agrupa todas las muestras dadas el
+ *                         mismo día — típicamente una visita).
+ *   {muestra.productos.lista} → bullets verticales para Email.
  *   {muestra.dia}      → "el lunes" / "la semana pasada"
  *   {compra.producto}  → "Génifique Sérum" (siempre el primero, legacy)
  *   {compra.productos} → "Génifique Sérum y Absolue Eye Cream" o
@@ -46,6 +51,8 @@ export type TemplateToken =
   | "{producto}"
   | "{fecha}"
   | "{muestra.producto}"
+  | "{muestra.productos}"
+  | "{muestra.productos.lista}"
   | "{muestra.dia}"
   | "{compra.producto}"
   | "{compra.productos}"

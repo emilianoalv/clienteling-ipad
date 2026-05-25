@@ -67,8 +67,8 @@ const SEED: Template[] = [
     channel: "WhatsApp",
     category: "Muestra",
     body:
-      "{nombre}, ¿cómo te ha ido con la muestra de {muestra.producto} que te llevaste {muestra.dia}? Cualquier impresión que tengas me encantaría escucharla. — {ba}, Lancôme",
-    tokens: ["{nombre}", "{muestra.producto}", "{muestra.dia}", "{ba}"],
+      "{nombre}, ¿cómo te ha ido con la muestra de {muestra.productos} que te llevaste {muestra.dia}? Cualquier impresión que tengas me encantaría escucharla. — {ba}, Lancôme",
+    tokens: ["{nombre}", "{muestra.productos}", "{muestra.dia}", "{ba}"],
   },
   {
     id: "tpl-aniv-lancome-wa" as TemplateId,
@@ -96,8 +96,8 @@ const SEED: Template[] = [
     channel: "WhatsApp",
     category: "Muestra",
     body:
-      "{nombre}, ¿cómo te sentiste con la muestra de {muestra.producto} que te llevaste {muestra.dia}? Me encantaría escuchar tu experiencia. — {ba}, YSL Beauty",
-    tokens: ["{nombre}", "{muestra.producto}", "{muestra.dia}", "{ba}"],
+      "{nombre}, ¿cómo te sentiste con la muestra de {muestra.productos} que te llevaste {muestra.dia}? Me encantaría escuchar tu experiencia. — {ba}, YSL Beauty",
+    tokens: ["{nombre}", "{muestra.productos}", "{muestra.dia}", "{ba}"],
   },
   {
     id: "tpl-seguimiento-ysl" as TemplateId,
@@ -147,13 +147,12 @@ const SEED: Template[] = [
 ];
 
 import { persistent } from "./_persist";
-// v7 invalida el seed v6 para refrescar las plantillas de seguimiento
-// (Lancôme + YSL) que ahora usan {compra.productos} plural en lugar
-// de {compra.producto} singular — RF: cuando el cliente se lleva
-// más de un producto, la plantilla lista todos sin que la BA tenga
-// que reescribir el mensaje.
+// v8 invalida v7 para que las plantillas Muestra también se actualicen
+// a {muestra.productos} plural — la BA puede dar 2-3 muestras en una
+// visita y el mensaje de seguimiento debe listarlas todas, no solo la
+// más reciente. Replica el patrón ya hecho para {compra.productos}.
 const TEMPLATES = persistent(
-  "__clienteling.templates.v7",
+  "__clienteling.templates.v8",
   () => new Map<TemplateId, Template>(SEED.map((t) => [t.id, t])),
 );
 
