@@ -12,6 +12,7 @@ import { FOLLOWUP_TYPES, type FollowupType } from "@/types/followup-task";
 import { registerVisit } from "../actions/register-visit";
 import type { RegisterVisitInput } from "../schemas/register-visit.schema";
 import { CompatibilityPicker } from "./compatibility-picker";
+import { buildFollowupDescription } from "../services/build-followup-description";
 
 const WIZARD_STEPS = [
   { label: "Motivo" },
@@ -92,6 +93,42 @@ export function RegisterVisitForm({
   const [followupDescription, setFollowupDescription] = useState("");
   const [followupDueAt, setFollowupDueAt] = useState<string>(addDaysISO(7));
   const [followupPrefilled, setFollowupPrefilled] = useState(false);
+  // Una vez que el BA toca el texto manualmente, dejamos de re-armar la
+  // descripción al cambiar el tipo. Sin este lock, el BA escribe algo
+  // bonito y al darle a otro chip se pierde.
+  const [descriptionEdited, setDescriptionEdited] = useState(false);
+
+  /** Nombres de producto de las muestras seleccionadas — alimenta el helper. */
+  function sampleProductNames(): string[] {
+    return sampleSkus
+      .map((sku) => {
+        const product = products.find((p) => (p.sku as unknown as string) === sku);
+        return product?.line ?? null;
+      })
+      .filter((n): n is string => n !== null);
+  }
+
+  /** Re-arma la descripción usando el tipo y las muestras actuales. */
+  function recomputeFollowupDescription(type: FollowupType): string {
+    const names = sampleProductNames();
+    return buildFollowupDescription({
+      type,
+      firstName: client.name.split(/\s+/)[0] ?? client.name,
+      ...(names.length > 0 ? { context: { kind: "sample", productNames: names } } : {}),
+    });
+  }
+
+  function changeFollowupType(next: FollowupType) {
+    setFollowupType(next);
+    if (!descriptionEdited) {
+      setFollowupDescription(recomputeFollowupDescription(next));
+    }
+  }
+
+  function changeFollowupDescription(next: string) {
+    setFollowupDescription(next);
+    setDescriptionEdited(true);
+  }
 
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [isPending, startTransition] = useTransition();
@@ -131,23 +168,16 @@ export function RegisterVisitForm({
         setSampleSkus([...sampleSkus, ...missing]);
       }
     }
-    // Al entrar al paso de Seguimiento por primera vez: si hay muestras dadas
-    // pre-rellena la sección con plantilla auto-armada (WhatsApp + 14d +
-    // descripción "Pedir feedback de X a {firstName}"). El cierre del ciclo
-    // de muestra siempre debe nacer del sistema, no de la memoria del BA.
+    // Al entrar al paso de Seguimiento por primera vez con muestras dadas:
+    // sembramos el checkbox + tipo + due. La descripción la arma el helper
+    // adaptativo, así que cambia automáticamente si después el BA toca otro
+    // chip de tipo (hasta que edite el texto manualmente). El cierre del
+    // ciclo de muestra siempre debe nacer del sistema, no de la memoria
+    // del BA.
     if (step === STEP_INDEX.SAMPLES && !followupPrefilled && sampleSkus.length > 0) {
-      const sampleLines = sampleSkus.map((sku) => {
-        const product = products.find((p) => (p.sku as unknown as string) === sku);
-        return product?.line ?? sku;
-      });
-      const productList =
-        sampleLines.length === 1
-          ? sampleLines[0]
-          : `${sampleLines.slice(0, -1).join(", ")} y ${sampleLines[sampleLines.length - 1]}`;
-      const firstName = client.name.split(/\s+/)[0] ?? client.name;
       setShowFollowup(true);
       setFollowupType("whatsapp");
-      setFollowupDescription(`Pedir feedback de ${productList} a ${firstName}`);
+      setFollowupDescription(recomputeFollowupDescription("whatsapp"));
       setFollowupDueAt(addDaysISO(14));
       setFollowupPrefilled(true);
     }
@@ -249,9 +279,9 @@ export function RegisterVisitForm({
             show={showFollowup}
             onToggle={setShowFollowup}
             type={followupType}
-            onChangeType={setFollowupType}
+            onChangeType={changeFollowupType}
             description={followupDescription}
-            onChangeDescription={setFollowupDescription}
+            onChangeDescription={changeFollowupDescription}
             dueAt={followupDueAt}
             onChangeDueAt={setFollowupDueAt}
             errors={errors}

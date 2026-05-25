@@ -13,6 +13,11 @@ import { formatCurrency } from "@/lib/format/format-currency";
 import { registerSale } from "../actions/register-sale";
 import type { RegisterSaleInput } from "../schemas/register-sale.schema";
 import { ProductPicker } from "./product-picker";
+import { buildFollowupDescription } from "../services/build-followup-description";
+
+// El seguimiento de una VENTA nunca debería ser "Feedback de muestra"
+// porque en venta no se entrega muestra. Filtramos ese tipo del picker.
+const SALE_FOLLOWUP_TYPES = FOLLOWUP_TYPES.filter((ft) => ft.id !== "sample-feedback");
 
 const PAYMENTS = ["card", "cash", "transfer", "store-credit"] as const;
 type Payment = (typeof PAYMENTS)[number];
@@ -81,6 +86,10 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
   const [followupType, setFollowupType] = useState<FollowupType>("call");
   const [followupDescription, setFollowupDescription] = useState("");
   const [followupDueAt, setFollowupDueAt] = useState<string>(addDaysISO(14));
+  // Lock: cuando el BA edita la descripción manualmente, dejamos de
+  // re-armarla al cambiar el tipo. Sin esto, escribir un mensaje y darle
+  // a otro chip lo pisa.
+  const [descriptionEdited, setDescriptionEdited] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [scannerOpen, setScannerOpen] = useState<number | null>(null);
@@ -92,15 +101,35 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
     () => filledItems.reduce((acc, it) => acc + it.qty * it.product.price, 0),
     [filledItems],
   );
-  const mainProduct = filledItems[0]?.product;
+
+  function recomputeFollowupDescription(type: FollowupType): string {
+    const productNames = filledItems.map((it) => it.product.line);
+    return buildFollowupDescription({
+      type,
+      firstName: client.name.split(/\s+/)[0] ?? client.name,
+      ...(productNames.length > 0
+        ? { context: { kind: "purchase", productNames } }
+        : {}),
+    });
+  }
 
   function toggleFollowup(next: boolean) {
     setShowFollowup(next);
-    if (next && !followupDescription && mainProduct) {
-      setFollowupDescription(
-        `Llamar a ${client.name.split(/\s+/)[0]} para feedback de ${mainProduct.line}`,
-      );
+    if (next && !followupDescription) {
+      setFollowupDescription(recomputeFollowupDescription(followupType));
     }
+  }
+
+  function changeFollowupType(next: FollowupType) {
+    setFollowupType(next);
+    if (!descriptionEdited) {
+      setFollowupDescription(recomputeFollowupDescription(next));
+    }
+  }
+
+  function changeFollowupDescription(next: string) {
+    setFollowupDescription(next);
+    setDescriptionEdited(true);
   }
   const unitCount = filledItems.reduce((acc, it) => acc + it.qty, 0);
   const brandsInSale = Array.from(new Set(filledItems.map((it) => it.product.brand)));
@@ -403,13 +432,13 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
                 <div>
                   <div className="text-[12.5px] font-semibold text-ink/70 mb-1.5">Tipo</div>
                   <div className="flex flex-wrap gap-1.5">
-                    {FOLLOWUP_TYPES.map((ft) => {
+                    {SALE_FOLLOWUP_TYPES.map((ft) => {
                       const active = followupType === ft.id;
                       return (
                         <button
                           key={ft.id}
                           type="button"
-                          onClick={() => setFollowupType(ft.id)}
+                          onClick={() => changeFollowupType(ft.id)}
                           aria-pressed={active}
                           className={`inline-flex items-center h-8 px-3 rounded-full border text-[12.5px] font-semibold cursor-pointer transition-colors ${
                             active
@@ -428,7 +457,7 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
                     label="Descripción *"
                     placeholder='ej. "Llamar para feedback post-compra"'
                     value={followupDescription}
-                    onChange={(e) => setFollowupDescription(e.target.value)}
+                    onChange={(e) => changeFollowupDescription(e.target.value)}
                     {...(errors["followup.description"]?.[0]
                       ? { error: errors["followup.description"][0] }
                       : {})}
