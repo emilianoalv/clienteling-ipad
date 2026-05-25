@@ -89,13 +89,20 @@ export interface ComposerProps {
    */
   task?: FollowupTask | null;
   /**
-   * Contexto enriquecido resuelto en el server para la task (último
-   * producto comprado / muestra dada, fecha relativa). Se merge con
-   * nombre/tienda/ba al renderear la plantilla. Si falta, los tokens
-   * dot-notation se dejan literales en el body — la BA edita antes de
-   * enviar. Opción A acordada con el cliente.
+   * Contexto enriquecido resuelto en el server para la task o el evento
+   * (último producto comprado / muestra dada, fecha relativa, años de
+   * aniversario). Se merge con nombre/tienda/ba al renderear la plantilla.
+   * Si falta, los tokens dot-notation se dejan literales en el body —
+   * la BA edita antes de enviar. Opción A acordada con el cliente.
    */
   taskContext?: TemplateContext;
+  /**
+   * Categoría de plantilla a pre-seleccionar cuando no hay task — caso de
+   * uso: deep link desde un evento (cumpleaños/aniversario) en la
+   * pantalla Hoy. Si no hay match en el scope de plantillas (cliente sin
+   * Aniversario para su marca, p.ej.), el composer arranca en blanco.
+   */
+  initialCategory?: TemplateCategory;
   /**
    * "full" (default) — 3 columnas: template list + composer + WhatsApp
    *   preview. Para /ba/followup donde hay espacio horizontal.
@@ -135,6 +142,7 @@ export function Composer({
   storeName,
   task,
   taskContext,
+  initialCategory,
   layout = "full",
   onSent,
 }: ComposerProps) {
@@ -149,14 +157,26 @@ export function Composer({
     [templates, lockedChannel],
   );
 
-  const initialTemplate = useMemo(
-    () => (task ? pickTemplateForTask(channelScopedTemplates, task) : null),
-    [channelScopedTemplates, task],
-  );
-  // Sin task: default "mensaje en blanco" (caso más común de "Nuevo
-  // mensaje"). Con task: pre-selecciona plantilla matchada por categoría.
+  const initialTemplate = useMemo(() => {
+    if (task) return pickTemplateForTask(channelScopedTemplates, task);
+    if (initialCategory) {
+      // Buscamos la plantilla de la categoría pedida, preferentemente
+      // de la marca primaria del cliente.
+      const clientBrand = client.brands[0];
+      const sameCatSameBrand = channelScopedTemplates.find(
+        (tpl) => tpl.category === initialCategory && tpl.brand === clientBrand,
+      );
+      if (sameCatSameBrand) return sameCatSameBrand;
+      const sameCat = channelScopedTemplates.find((tpl) => tpl.category === initialCategory);
+      return sameCat ?? null;
+    }
+    return null;
+  }, [channelScopedTemplates, task, initialCategory, client.brands]);
+  // Sin task ni initialCategory: arranca en "mensaje en blanco". Con
+  // cualquiera de los dos: pre-selecciona plantilla.
+  const hasPreselect = task != null || initialCategory != null;
   const [template, setTemplate] = useState<Template | null>(initialTemplate);
-  const [isBlank, setIsBlank] = useState<boolean>(!task);
+  const [isBlank, setIsBlank] = useState<boolean>(!hasPreselect || initialTemplate == null);
   const [channel, setChannel] = useState<Channel>(
     lockedChannel ?? initialTemplate?.channel ?? "WhatsApp",
   );
@@ -287,11 +307,12 @@ export function Composer({
     setBodyDraft(null);
   }
 
-  // Cuando no hay task, "Nuevo mensaje" es mensaje libre puro: ocultamos
-  // la lista de plantillas y el grid colapsa a composer + preview (o solo
-  // composer en compact). Acuerdo con el cliente: las plantillas son para
-  // responder tareas; mensajes ad-hoc son blank por default.
-  const showTemplates = task != null;
+  // Cuando no hay task ni intent de evento, "Nuevo mensaje" es mensaje
+  // libre puro: ocultamos la lista de plantillas y el grid colapsa a
+  // composer + preview. Acuerdo con el cliente: las plantillas son para
+  // responder tareas o eventos (cumple/aniversario); mensajes ad-hoc
+  // son blank por default.
+  const showTemplates = hasPreselect;
   const gridClass = showTemplates
     ? layout === "compact"
       ? "grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] gap-4 items-start"

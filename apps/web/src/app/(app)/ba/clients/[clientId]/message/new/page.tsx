@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/primitives";
 import { fetchClient } from "@/features/clients";
+import { type TemplateContext } from "@/features/communications";
 import { resolveTaskContext } from "@/features/communications/services/resolve-task-context";
 import { Composer } from "@/features/followup/components/composer";
 import { requireSession } from "@/server/auth/session";
@@ -9,6 +10,8 @@ import { followupTaskRepository } from "@/server/repositories/followup-task.repo
 import { storeRepository } from "@/server/repositories/store.repository";
 import { templateRepository } from "@/server/repositories/template.repository";
 import type { FollowupTaskId } from "@/types/followup-task";
+import type { LifeEventKind } from "@/types/life-event";
+import type { TemplateCategory } from "@/types/template";
 
 /**
  * Pantalla completa de composer. Reemplaza al modal que vivía en la tab
@@ -17,17 +20,42 @@ import type { FollowupTaskId } from "@/types/followup-task";
  * WhatsApp tipo teléfono.
  *
  * Se usa para:
- *  - "Nuevo mensaje" desde la tab Mensajes del perfil.
- *  - "Responder" desde el inbox de tareas (con ?taskId=…). Si la task
- *    es del BA y matchea el cliente, se preselecciona plantilla y se
- *    fija canal; al confirmar envío la task se marca como hecha.
+ *  - "Nuevo mensaje" desde la tab Mensajes del perfil — sin task ni
+ *    intent, abre en modo blank.
+ *  - "Responder" desde el inbox de tareas (?taskId=…). Pre-selecciona
+ *    plantilla por categoría y al confirmar envío marca la task hecha.
+ *  - "Felicitar" desde Eventos en /ba/home (?intent=birthday|anniversary).
+ *    Pre-selecciona plantilla y, en aniversario, calcula los años
+ *    cumplidos desde client.since para meterlos en el mensaje.
  */
+const INTENT_TO_CATEGORY: Record<LifeEventKind, TemplateCategory> = {
+  birthday: "Cumpleaños",
+  anniversary: "Aniversario",
+};
+
+function isLifeEventKind(value: string | undefined): value is LifeEventKind {
+  return value === "birthday" || value === "anniversary";
+}
+
+/** Años cumplidos desde `iso` hasta `now`. 0 si la fecha es inválida o futura. */
+function yearsSince(iso: string | undefined, now: Date): number {
+  if (!iso) return 0;
+  const start = new Date(iso);
+  if (Number.isNaN(start.getTime())) return 0;
+  let years = now.getFullYear() - start.getFullYear();
+  const beforeAnniv =
+    now.getMonth() < start.getMonth() ||
+    (now.getMonth() === start.getMonth() && now.getDate() < start.getDate());
+  if (beforeAnniv) years -= 1;
+  return Math.max(0, years);
+}
+
 export default async function NewMessagePage({
   params,
   searchParams,
 }: {
   params: Promise<{ clientId: string }>;
-  searchParams: Promise<{ taskId?: string }>;
+  searchParams: Promise<{ taskId?: string; intent?: string }>;
 }) {
   const { clientId } = await params;
   const { staff } = await requireSession();
@@ -46,9 +74,25 @@ export default async function NewMessagePage({
   // Guard: la task debe pertenecer a este cliente y al BA actual.
   const initialTask =
     task && task.clientId === clientId && task.baId === staff.id ? task : null;
-  // Resolvemos el contexto enriquecido solo si la task es válida — sin
-  // task no hay categoría desde la cual inferir qué buscar.
-  const taskContext = initialTask ? await resolveTaskContext(initialTask) : undefined;
+  // Task context (último purchase/sample con fecha relativa) — solo aplica
+  // a tasks con categoría que necesita hidratación.
+  const taskContextFromTask = initialTask ? await resolveTaskContext(initialTask) : undefined;
+
+  // Intent de evento → categoría de plantilla + contexto extra (años
+  // cumplidos para Aniversario). Solo se aplica si NO viene task.
+  const intent = !initialTask && isLifeEventKind(sp.intent) ? sp.intent : null;
+  const initialCategory: TemplateCategory | undefined = intent
+    ? INTENT_TO_CATEGORY[intent]
+    : undefined;
+  const intentContext: TemplateContext | undefined = (() => {
+    if (intent === "anniversary") {
+      const years = yearsSince(client.since, new Date());
+      return years > 0 ? { "evento.anos": String(years) } : {};
+    }
+    return undefined;
+  })();
+
+  const taskContext = taskContextFromTask ?? intentContext;
 
   return (
     <section className="flex flex-col gap-4">
@@ -86,6 +130,7 @@ export default async function NewMessagePage({
         layout="full"
         task={initialTask}
         taskContext={taskContext}
+        initialCategory={initialCategory}
       />
     </section>
   );
