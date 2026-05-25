@@ -20,7 +20,10 @@ export type CompatibilityReasonKind =
   | "routine-gap-fill"
   | "preferred-ingredient"
   | "avoided-ingredient"
-  | "active-allergy-conflict";
+  | "active-allergy-conflict"
+  | "line-affinity"
+  | "fragrance-family-match"
+  | "gender-match";
 
 export interface CompatibilityReason {
   kind: CompatibilityReasonKind;
@@ -50,6 +53,33 @@ const WEIGHT_TIMING_MISMATCH = -1;
 const WEIGHT_ROUTINE_GAP_FILL = 1;
 const WEIGHT_PREFERRED_INGREDIENT = 1;
 const WEIGHT_AVOIDED_INGREDIENT = -3;
+const WEIGHT_LINE_AFFINITY = 2;
+const WEIGHT_FRAGRANCE_FAMILY = 2;
+const WEIGHT_GENDER_MATCH = 1;
+
+/**
+ * Familias olfativas reconocidas en los `interests` del cliente. El
+ * matcher normaliza acentos y género gramatical para que "amaderado",
+ * "Amaderada" y "amaderada" cuenten como el mismo token.
+ */
+const FRAGRANCE_INTERESTS = [
+  "Floral",
+  "Oriental",
+  "Amaderada",
+  "Cítrica",
+  "Gourmand",
+  "Almizclada",
+  "Chypre",
+  "Frutal",
+] as const;
+
+function normalizeFamilyToken(raw: string): string {
+  return raw
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/o$/, "a"); // "amaderado" → "amaderada"
+}
 
 const ROUTINE_RANK: Record<string, number> = {
   Ninguna: 0,
@@ -218,7 +248,61 @@ export function scoreProductCompatibility(
     }
   }
 
-  // 6-11. Tech-derived signals (only when ficha técnica available).
+  // 6. Line affinity — cliente con afinidad explícita por esta línea
+  //    (ya compró antes, o el sistema la rellenó por preferencia).
+  //    Match por substring case-insensitive para tolerar variantes
+  //    ("Génifique" vs "Advanced Génifique").
+  const productLine = product.line.toLowerCase();
+  for (const affinity of client.affinities) {
+    const needle = affinity.trim().toLowerCase();
+    if (!needle) continue;
+    if (productLine.includes(needle) || needle.includes(productLine)) {
+      raw += WEIGHT_LINE_AFFINITY;
+      reasons.push({
+        kind: "line-affinity",
+        positive: true,
+        label: `Ya disfrutas ${affinity}`,
+      });
+      break; // un solo boost por producto, aunque haya varias afinidades
+    }
+  }
+
+  // 7. Fragrance family match — para fragancias parsea la familia y
+  //    compara contra los intereses olfativos del cliente.
+  if (product.attrs.familia) {
+    const familyTokens = product.attrs.familia.split(/\s+/).map(normalizeFamilyToken);
+    const clientInterests = client.interests.map(normalizeFamilyToken);
+    const matched = FRAGRANCE_INTERESTS.find((fam) => {
+      const famNorm = normalizeFamilyToken(fam);
+      return familyTokens.includes(famNorm) && clientInterests.includes(famNorm);
+    });
+    if (matched) {
+      raw += WEIGHT_FRAGRANCE_FAMILY;
+      reasons.push({
+        kind: "fragrance-family-match",
+        positive: true,
+        label: `Familia ${matched.toLowerCase()} que te interesa`,
+      });
+    }
+  }
+
+  // 8. Gender match — soft positive. Un hombre puede usar fragancia
+  //    femenina sin penalización, por eso solo suma cuando matchea.
+  if (product.attrs.gender && client.gender) {
+    if (
+      product.attrs.gender === client.gender ||
+      product.attrs.gender === "Unisex"
+    ) {
+      raw += WEIGHT_GENDER_MATCH;
+      reasons.push({
+        kind: "gender-match",
+        positive: true,
+        label: `Pensado para audiencia ${product.attrs.gender.toLowerCase()}`,
+      });
+    }
+  }
+
+  // 9+. Tech-derived signals (only when ficha técnica available).
   if (tech) {
     const extras = scoreTechExtras(client, tech);
     raw += extras.delta;

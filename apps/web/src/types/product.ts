@@ -26,6 +26,12 @@ export interface Product {
      * undefined for skincare and fragrances (subtone doesn't apply).
      */
     subtone?: Subtone;
+    /**
+     * Audience del producto. Soft signal — un hombre puede usar fragancia
+     * femenina sin problema, por eso solo da boost cuando matchea y no
+     * penaliza cuando no.
+     */
+    gender?: "Femenino" | "Masculino" | "Unisex";
   };
   /** Application / usage instructions. */
   howTo: string;

@@ -377,6 +377,147 @@ describe("scoreProductCompatibility", () => {
     expect(reason?.label).toBe("Contiene Fragancia floral (prefieres evitar)");
   });
 
+  it("adds line-affinity bonus when product.line matches a client affinity", () => {
+    const client = makeClient({
+      affinities: ["Génifique"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({
+      line: "Advanced Génifique",
+      attrs: { tipo: "Sérum", piel: ["Todas"] },
+    });
+    const result = scoreProductCompatibility(client, product);
+    // skin +3, line-affinity +2 = 5
+    expect(result.score).toBe(5);
+    const reason = result.reasons.find((r) => r.kind === "line-affinity");
+    expect(reason?.label).toBe("Ya disfrutas Génifique");
+  });
+
+  it("does not double-boost when client has multiple matching affinities", () => {
+    const client = makeClient({
+      affinities: ["Génifique", "Génifique Sérum"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({
+      line: "Advanced Génifique",
+      attrs: { tipo: "Sérum", piel: ["Todas"] },
+    });
+    const result = scoreProductCompatibility(client, product);
+    // skin +3, line-affinity +2 (uno solo) = 5
+    expect(result.score).toBe(5);
+    expect(result.reasons.filter((r) => r.kind === "line-affinity")).toHaveLength(1);
+  });
+
+  it("adds fragrance-family bonus when product familia overlaps with client interests", () => {
+    const client = makeClient({
+      interests: ["Floral", "Oriental"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+    });
+    const product = makeProduct({
+      line: "Idôle",
+      attrs: { tipo: "Fragancia", familia: "Floral Chypre" },
+    });
+    const result = scoreProductCompatibility(client, product);
+    // sin skin (fragancia no tiene piel), interest "Floral" no está en
+    // productInterestCategories → no aplica interest-match general.
+    // Pero fragrance-family +2 = 2
+    expect(result.score).toBe(2);
+    const reason = result.reasons.find((r) => r.kind === "fragrance-family-match");
+    expect(reason?.label).toBe("Familia floral que te interesa");
+  });
+
+  it("normalizes accents and gender so 'amaderado' matches 'Amaderada'", () => {
+    const client = makeClient({
+      interests: ["Amaderada"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+    });
+    const product = makeProduct({
+      attrs: { tipo: "Fragancia", familia: "Floral amaderado" },
+    });
+    const result = scoreProductCompatibility(client, product);
+    // fragrance-family +2 = 2
+    expect(result.score).toBe(2);
+    expect(result.reasons.some((r) => r.kind === "fragrance-family-match")).toBe(true);
+  });
+
+  it("does not add fragrance-family bonus when no interest overlaps", () => {
+    const client = makeClient({
+      interests: ["Cítrica"],
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+    });
+    const product = makeProduct({
+      attrs: { tipo: "Fragancia", familia: "Floral Gourmand" },
+    });
+    const result = scoreProductCompatibility(client, product);
+    expect(result.score).toBe(0);
+    expect(result.reasons.some((r) => r.kind === "fragrance-family-match")).toBe(false);
+  });
+
+  it("adds gender-match bonus when product.attrs.gender equals client.gender", () => {
+    const client = makeClient({
+      gender: "Femenino",
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({
+      attrs: { tipo: "Labial", gender: "Femenino" },
+    });
+    const result = scoreProductCompatibility(client, product);
+    // gender +1 = 1
+    expect(result.score).toBe(1);
+    expect(result.reasons.some((r) => r.kind === "gender-match")).toBe(true);
+  });
+
+  it("gender Unisex matches any client gender as soft positive", () => {
+    const client = makeClient({
+      gender: "Masculino",
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({
+      attrs: { tipo: "Fragancia", gender: "Unisex" },
+    });
+    const result = scoreProductCompatibility(client, product);
+    expect(result.reasons.some((r) => r.kind === "gender-match")).toBe(true);
+  });
+
+  it("gender mismatch does not penalize (soft positive only)", () => {
+    const client = makeClient({
+      gender: "Masculino",
+      skin: { type: "Mixta", concerns: [], tone: "Medio" },
+      interests: [],
+    });
+    const product = makeProduct({
+      attrs: { tipo: "Fragancia", gender: "Femenino" },
+    });
+    const result = scoreProductCompatibility(client, product);
+    expect(result.score).toBe(0);
+    expect(result.reasons.some((r) => r.kind === "gender-match")).toBe(false);
+  });
+
+  it("lifestyle products (lipstick) stack multiple new signals to rank competitively", () => {
+    const client = makeClient({
+      gender: "Femenino",
+      affinities: ["L'Absolu Rouge"],
+      skin: { type: "Mixta", concerns: ["Hidratación"], tone: "Medio" },
+      interests: ["Maquillaje"],
+    });
+    const lipstick = makeProduct({
+      line: "L'Absolu Rouge",
+      attrs: {
+        tipo: "Labial",
+        concerns: ["Hidratación", "Color duradero"],
+        gender: "Femenino",
+      },
+    });
+    const result = scoreProductCompatibility(client, lipstick);
+    // concern Hidratación +2, interest Maquillaje +1, line-affinity +2,
+    // gender +1 = 6 (antes solo daba interest +1 = 1)
+    expect(result.score).toBe(6);
+  });
+
   it("ranks products by score descending", () => {
     const client = makeClient({
       skin: { type: "Madura", concerns: ["Firmeza"], tone: "Medio" },
