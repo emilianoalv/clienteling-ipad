@@ -70,6 +70,15 @@ const SEED: Template[] = [
       "Hola {nombre}, ¿cómo vas con tu {compra.producto}? Te lo llevaste {compra.dia} — si te está por acabar, te reservo uno nuevo. — {ba}",
     tokens: ["{nombre}", "{compra.producto}", "{compra.dia}", "{ba}"],
   },
+  {
+    id: "tpl-sample-lancome" as TemplateId,
+    brand: "Lancôme",
+    channel: "WhatsApp",
+    category: "Muestra",
+    body:
+      "{nombre}, ¿cómo te ha ido con la muestra de {muestra.producto} que te llevaste {muestra.dia}? Cualquier impresión que tengas me encantaría escucharla. — {ba}, Lancôme",
+    tokens: ["{nombre}", "{muestra.producto}", "{muestra.dia}", "{ba}"],
+  },
 
   // ── YSL Beauty ───────────────────────────────────────────────────────
   {
@@ -138,10 +147,11 @@ const SEED: Template[] = [
 ];
 
 import { persistent } from "./_persist";
-// v3 invalida el seed v2 para que el HMR cargue las plantillas con
-// tokens dot-notation enriquecidos por resolveTaskContext.
+// v4 invalida el seed v3 para que el HMR cargue la plantilla Muestra
+// Lancôme (faltaba — solo YSL tenía Muestra y el matching fallaba
+// para tasks sample-feedback de clientas Lancôme).
 const TEMPLATES = persistent(
-  "__clienteling.templates.v3",
+  "__clienteling.templates.v4",
   () => new Map<TemplateId, Template>(SEED.map((t) => [t.id, t])),
 );
 
