@@ -44,15 +44,6 @@ const SEED: Template[] = [
     tokens: ["{nombre}", "{tienda}", "{ba}"],
   },
   {
-    id: "tpl-birthday-es" as TemplateId,
-    brand: "Lancôme",
-    channel: "Email",
-    category: "Cumpleaños",
-    body:
-      "Feliz cumpleaños, {nombre}. Te esperamos en {tienda} con un obsequio especial durante el mes.",
-    tokens: ["{nombre}", "{tienda}"],
-  },
-  {
     id: "tpl-promocion-lancome" as TemplateId,
     brand: "Lancôme",
     channel: "WhatsApp",
@@ -87,15 +78,6 @@ const SEED: Template[] = [
     body:
       "{nombre}, hoy se cumplen {evento.anos} años desde que decidiste formar parte de Lancôme. Te esperamos en {tienda} con un detalle especial para celebrarlo contigo. — {ba}",
     tokens: ["{nombre}", "{evento.anos}", "{tienda}", "{ba}"],
-  },
-  {
-    id: "tpl-aniv-lancome-email" as TemplateId,
-    brand: "Lancôme",
-    channel: "Email",
-    category: "Aniversario",
-    body:
-      "Hola {nombre}, hoy celebramos {evento.anos} años contigo en Lancôme. Pásate por {tienda} este mes — preparamos un detalle de aniversario hecho a tu medida.",
-    tokens: ["{nombre}", "{evento.anos}", "{tienda}"],
   },
 
   // ── YSL Beauty ───────────────────────────────────────────────────────
@@ -136,15 +118,6 @@ const SEED: Template[] = [
     tokens: ["{nombre}", "{tienda}", "{ba}"],
   },
   {
-    id: "tpl-birthday-ysl-email" as TemplateId,
-    brand: "YSL",
-    channel: "Email",
-    category: "Cumpleaños",
-    body:
-      "{nombre}, felicidades de parte de YSL Beauty. Este mes te tenemos una experiencia exclusiva en {tienda}. Cuando quieras, agenda tu visita.",
-    tokens: ["{nombre}", "{tienda}"],
-  },
-  {
     id: "tpl-promocion-ysl" as TemplateId,
     brand: "YSL",
     channel: "WhatsApp",
@@ -171,23 +144,14 @@ const SEED: Template[] = [
       "{nombre}, hoy son {evento.anos} años desde que llegaste a YSL Beauty. Ven a {tienda} — tenemos algo único preparado para celebrarlo. — {ba}",
     tokens: ["{nombre}", "{evento.anos}", "{tienda}", "{ba}"],
   },
-  {
-    id: "tpl-aniv-ysl-email" as TemplateId,
-    brand: "YSL",
-    channel: "Email",
-    category: "Aniversario",
-    body:
-      "{nombre}, hoy YSL Beauty celebra contigo {evento.anos} años de complicidad. Este mes te tenemos una experiencia exclusiva en {tienda}. Cuando quieras, agenda tu visita.",
-    tokens: ["{nombre}", "{evento.anos}", "{tienda}"],
-  },
 ];
 
 import { persistent } from "./_persist";
-// v5 invalida el seed v4 para que el HMR cargue las 4 plantillas
-// Aniversario (Lancôme/YSL × WhatsApp/Email) con el nuevo token
-// {evento.anos}.
+// v6 invalida el seed v5 para que el HMR drop las variantes Email
+// de Cumpleaños y Aniversario — el cliente pidió una sola plantilla
+// por evento (WhatsApp).
 const TEMPLATES = persistent(
-  "__clienteling.templates.v5",
+  "__clienteling.templates.v6",
   () => new Map<TemplateId, Template>(SEED.map((t) => [t.id, t])),
 );
 
