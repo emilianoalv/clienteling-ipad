@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button, Input } from "@/components/primitives";
 import { signInAction } from "@/features/auth/actions/sign-in";
 
 export function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -15,15 +17,20 @@ export function LoginForm() {
     setError(null);
     setSubmitting(true);
     const result = await signInAction({ email, password });
+    if (result.ok) {
+      // Navegación client-side — evita el bug de Next 15 donde el
+      // NEXT_REDIRECT del Server Action no se procesa para ciertas
+      // rutas con muchas queries paralelas (supervisor/admin).
+      router.push(result.redirectTo);
+      return;
+    }
     setSubmitting(false);
-    if (!result.ok) {
-      if (result.reason === "invalid_credentials") {
-        setError("Correo o contraseña incorrectos.");
-      } else if (result.reason === "invalid_input") {
-        setError(result.message ?? "Datos inválidos.");
-      } else {
-        setError("Error desconocido. Inténtalo de nuevo.");
-      }
+    if (result.reason === "invalid_credentials") {
+      setError("Correo o contraseña incorrectos.");
+    } else if (result.reason === "invalid_input") {
+      setError(result.message ?? "Datos inválidos.");
+    } else {
+      setError("Error desconocido. Inténtalo de nuevo.");
     }
   }
 

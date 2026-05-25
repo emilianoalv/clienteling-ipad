@@ -1,7 +1,6 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createSession } from "@/server/auth/session";
 import { homeFor } from "@/config/routes";
@@ -14,22 +13,24 @@ const inputSchema = z.object({
 });
 
 export type SignInResult =
-  | { ok: true }
+  | { ok: true; redirectTo: string }
   | { ok: false; reason: "invalid_credentials" }
   | { ok: false; reason: "invalid_input"; message?: string };
 
 /**
  * Login real simulado (Sprint 1.2). Busca usuario por email + valida
- * password con bcrypt contra el hash del seed. Cada usuario tiene su
- * propia credencial — ya no hay selector de roles ni PIN compartido.
+ * password con bcrypt contra el hash del seed.
  *
- * Las credenciales viven en código (seed `user.repository.ts`) por
- * ahora; cuando Sprint 2 conecte Postgres, lo único que cambia aquí
- * es el lookup — el resto del flujo se mantiene idéntico.
+ * Decisión de diseño: devolvemos `redirectTo` en el resultado en vez
+ * de llamar `redirect()` server-side. Razón: Next 15 + Server Actions
+ * tiene un bug conocido donde el client a veces no procesa el
+ * `NEXT_REDIRECT` correctamente para ciertas rutas (ej. /supervisor,
+ * /admin con muchas queries paralelas), terminando en consola roja y
+ * el form colgado sin navegar. Hacer `router.push()` desde el cliente
+ * es 100% determinista.
  *
- * Por seguridad básica: mensaje genérico "Correo o contraseña
- * incorrectos" tanto si el email no existe como si la password falla
- * (evita enumeración de cuentas válidas).
+ * Mensaje genérico "Correo o contraseña incorrectos" tanto si el email
+ * no existe como si la password falla (evita enumeración de cuentas).
  */
 export async function signInAction(input: {
   email: string;
@@ -52,5 +53,5 @@ export async function signInAction(input: {
 
   await createSession(user.id as unknown as StaffId, user.role);
 
-  redirect(homeFor(user.role));
+  return { ok: true, redirectTo: homeFor(user.role) };
 }
