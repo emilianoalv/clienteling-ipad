@@ -26,6 +26,24 @@ const TYPE_CTA: Record<FollowupType, string> = {
   other: "Atender",
 };
 
+/**
+ * Dependiendo del tipo de tarea, llevamos directo a la acción:
+ *   whatsapp/email/sample-feedback → composer con la task pre-cargada.
+ *   appointment                    → form de nueva cita con cliente fijo.
+ *   call/other                     → tab de seguimientos del perfil.
+ *
+ * Ahorra a la BA un paso intermedio en el perfil cuando ya sabe a qué viene.
+ */
+function hrefForTask(task: FollowupTask): string {
+  if (task.type === "whatsapp" || task.type === "email" || task.type === "sample-feedback") {
+    return `/ba/clients/${task.clientId}/message/new?taskId=${task.id}`;
+  }
+  if (task.type === "appointment") {
+    return `/ba/appointments/new?clientId=${encodeURIComponent(task.clientId)}`;
+  }
+  return `/ba/clients/${task.clientId}?tab=followup#profile-tabs`;
+}
+
 const PREVIEW_COUNT = 5;
 
 type Urgency = "overdue" | "today" | "week" | "later";
@@ -104,7 +122,7 @@ export function PendingList({ tasks, clientLookup }: PendingListProps) {
             return (
               <li key={task.id}>
                 <Link
-                  href={`/ba/clients/${task.clientId}?tab=followup#profile-tabs`}
+                  href={hrefForTask(task)}
                   className="flex items-center gap-3 px-3 py-3 rounded-md transition-colors hover:bg-bone text-ink no-underline"
                 >
                   <span

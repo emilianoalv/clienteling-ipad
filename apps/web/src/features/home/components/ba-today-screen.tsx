@@ -23,9 +23,6 @@ export function BaTodayScreen({ baName, storeName, snapshot, now = new Date() }:
   const dateLabel = formatDateLabel(now);
   const greeting = greetingFor(now);
   const pendingCount = snapshot.pendingTasks.length;
-  const monthGoalPct = 72;
-  const monthGoalAmount = 1_184_020;
-  const monthGoalTarget = 1_650_000;
 
   return (
     <div className="px-8 py-7 flex flex-col gap-6">
@@ -36,9 +33,6 @@ export function BaTodayScreen({ baName, storeName, snapshot, now = new Date() }:
         storeName={storeName}
         todayApptCount={snapshot.today.length}
         pendingCount={pendingCount}
-        monthGoalPct={monthGoalPct}
-        monthGoalAmount={monthGoalAmount}
-        monthGoalTarget={monthGoalTarget}
       />
 
       <QuickActions />

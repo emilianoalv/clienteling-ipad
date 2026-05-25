@@ -80,7 +80,10 @@ function AgendaRow({ item }: { item: AgendaItem }) {
   const hh = at.getHours().toString().padStart(2, "0");
   const mm = at.getMinutes().toString().padStart(2, "0");
   return (
-    <div className="grid grid-cols-[56px_1px_36px_1fr_auto] items-center gap-3.5 py-3 border-b border-line last:border-b-0">
+    <Link
+      href={`/ba/clients/${appointment.clientId}/appointments/${appointment.id}`}
+      className="grid grid-cols-[56px_1px_36px_1fr_auto] items-center gap-3.5 py-3 border-b border-line last:border-b-0 hover:bg-bone/50 transition-colors text-ink no-underline rounded-sm px-1 -mx-1"
+    >
       <div className="text-right">
         <div className="font-display text-[20px] leading-none">
           {hh}:{mm}
@@ -100,7 +103,7 @@ function AgendaRow({ item }: { item: AgendaItem }) {
         </div>
       </div>
       <BrandTag brand={appointment.brand} alwaysShow />
-    </div>
+    </Link>
   );
 }
 

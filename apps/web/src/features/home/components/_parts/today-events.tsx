@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ClientId } from "@/types/client";
 import type { LifeEventKind } from "@/types/life-event";
 import type { UpcomingEventEntry } from "../../services/get-ba-day-snapshot";
 import { formatDate } from "@/lib/format/format-date";
@@ -30,6 +31,20 @@ const STYLES: Record<LifeEventKind, EventStyle> = {
     glyph: "⟳",
   },
 };
+
+/**
+ * Mapea el tipo de evento a la acción que la BA quiere hacer cuando le
+ * da click:
+ *   birthday/anniversary → abrir composer con plantilla (felicitar).
+ *   replenishment        → registrar venta (la reposición es venta).
+ *
+ * Eliminamos el detour al perfil del cliente — la BA ya sabe quién es,
+ * lo que necesita es el formulario para resolver.
+ */
+function hrefFor(clientId: ClientId, kind: LifeEventKind): string {
+  if (kind === "replenishment") return `/ba/clients/${clientId}/sale`;
+  return `/ba/clients/${clientId}/message/new`;
+}
 
 export interface TodayEventsProps {
   entries: readonly UpcomingEventEntry[];
@@ -65,7 +80,7 @@ export function TodayEvents({ entries }: TodayEventsProps) {
           return (
             <li key={`${e.client.id}-${e.event.kind}-${e.event.date}`}>
               <Link
-                href={`/ba/clients/${e.client.id}`}
+                href={hrefFor(e.client.id, e.event.kind)}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-md border ${s.bg} ${s.border} transition-opacity hover:opacity-90 text-inherit no-underline`}
               >
                 <span
