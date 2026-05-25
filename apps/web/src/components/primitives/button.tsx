@@ -26,9 +26,11 @@ const VARIANTS: Record<ButtonVariant, string> = {
   default: "border-line bg-white text-ink hover:bg-bone",
   primary:
     "border-ink bg-ink text-paper hover:brightness-110 hover:bg-ink/95",
-  // Outline: borde y texto negros, fondo blanco. Para CTAs de "abrir form"
-  // donde primary (sólido negro) se lee como "ya está seleccionado".
-  outline: "border-ink bg-white text-ink hover:bg-bone",
+  // Outline: borde gris suave, fondo blanco, texto negro. Para CTAs
+  // secundarios de header (Editar perfil, Nueva tarea) — match con el
+  // estilo del Link "Ver todo" de los previews para que toda la UI
+  // tenga el mismo look de "acción complementaria".
+  outline: "border-line bg-white text-ink hover:bg-bone",
   ghost: "border-transparent bg-transparent text-ink hover:bg-ink/[0.04]",
   danger: "border-err bg-err text-white hover:bg-err/90",
 };

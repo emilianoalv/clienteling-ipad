@@ -69,7 +69,7 @@ export function MessagesTab({ client, communications }: MessagesTabProps) {
         </div>
         <Link
           href={`/ba/clients/${client.id}/message/new`}
-          className="inline-flex items-center gap-2 h-8 px-3 rounded-[10px] border border-ink bg-white text-ink text-[16px] font-semibold no-underline hover:bg-bone transition-colors"
+          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-ink text-[14px] font-semibold no-underline hover:bg-bone transition-colors"
         >
           <Icon name="whatsapp" size={12} />
           Nuevo mensaje

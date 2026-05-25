@@ -325,7 +325,7 @@ function TaskRow({
             <>
               <Link
                 href={`/ba/clients/${task.clientId}/message/new?taskId=${task.id}`}
-                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-ink bg-white text-ink text-[13px] font-semibold no-underline hover:bg-bone transition-colors"
+                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-ink text-[14px] font-semibold no-underline hover:bg-bone transition-colors"
                 title="Abre el composer en pantalla completa con la tarea pre-cargada"
               >
                 <Icon name="whatsapp" size={12} />
@@ -334,7 +334,7 @@ function TaskRow({
               <Button size="sm" variant="ghost" onClick={onCancel} disabled={isPending}>
                 Cancelar
               </Button>
-              <Button size="sm" variant="primary" onClick={() => setMarking(true)}>
+              <Button size="sm" variant="outline" onClick={() => setMarking(true)}>
                 Marcar hecha
               </Button>
             </>
