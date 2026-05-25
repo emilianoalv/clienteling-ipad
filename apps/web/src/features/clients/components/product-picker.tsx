@@ -21,13 +21,18 @@ export function ProductPicker({ products, value, onSelect, brandScope }: Product
 
   const candidates = useMemo(() => {
     const q = query.trim().toLowerCase();
+    // Antes había un `.slice(0, 8)` fijo que ocultaba el resto del catálogo
+    // cuando el BA abría el picker sin tipear. Ahora el dropdown muestra
+    // todos los productos en scope y el `overflow-y-auto` del <ul> maneja
+    // el scroll. Cap defensivo de 200 para evitar listas absurdas si en
+    // el futuro un Admin sin scope ve el catálogo nacional completo.
     return products
       .filter((p) => {
         if (brandScope && brandScope !== "Todas" && p.brand !== brandScope) return false;
         if (!q) return true;
         return `${p.sku} ${p.line} ${p.name} ${p.brand}`.toLowerCase().includes(q);
       })
-      .slice(0, 8);
+      .slice(0, 200);
   }, [products, query, brandScope]);
 
   const display = value ? `${value.sku} · ${value.line}` : query;
