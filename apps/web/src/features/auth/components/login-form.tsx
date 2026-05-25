@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button, Input } from "@/components/primitives";
 import { signInAction } from "@/features/auth/actions/sign-in";
 
 export function LoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,21 +14,30 @@ export function LoginForm() {
     event.preventDefault();
     setError(null);
     setSubmitting(true);
-    const result = await signInAction({ email, password });
-    if (result.ok) {
-      // Navegación client-side — evita el bug de Next 15 donde el
-      // NEXT_REDIRECT del Server Action no se procesa para ciertas
-      // rutas con muchas queries paralelas (supervisor/admin).
-      router.push(result.redirectTo);
-      return;
-    }
-    setSubmitting(false);
-    if (result.reason === "invalid_credentials") {
-      setError("Correo o contraseña incorrectos.");
-    } else if (result.reason === "invalid_input") {
-      setError(result.message ?? "Datos inválidos.");
-    } else {
-      setError("Error desconocido. Inténtalo de nuevo.");
+    try {
+      const result = await signInAction({ email, password });
+      if (result.ok) {
+        // window.location.href en vez de router.push: fuerza full page
+        // reload, garantiza que la cookie de sesión recién creada se
+        // envíe con la siguiente request. Evita un bug intermitente
+        // de Next 15 donde router.push() de rutas pesadas (admin,
+        // supervisor) no procesaba la cookie a tiempo y quedaba en
+        // loop con el middleware.
+        window.location.href = result.redirectTo;
+        return;
+      }
+      setSubmitting(false);
+      if (result.reason === "invalid_credentials") {
+        setError("Correo o contraseña incorrectos.");
+      } else if (result.reason === "invalid_input") {
+        setError(result.message ?? "Datos inválidos.");
+      } else {
+        setError("Error desconocido. Inténtalo de nuevo.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setSubmitting(false);
+      setError("Error inesperado. Recarga la página e inténtalo de nuevo.");
     }
   }
 
