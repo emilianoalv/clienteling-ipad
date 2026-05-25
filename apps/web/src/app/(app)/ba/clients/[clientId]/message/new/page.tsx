@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/primitives";
 import { fetchClient } from "@/features/clients";
+import { resolveTaskContext } from "@/features/communications/services/resolve-task-context";
 import { Composer } from "@/features/followup/components/composer";
 import { requireSession } from "@/server/auth/session";
 import { brandScopeFor, homeStoreFor } from "@/server/auth/scope";
@@ -45,6 +46,9 @@ export default async function NewMessagePage({
   // Guard: la task debe pertenecer a este cliente y al BA actual.
   const initialTask =
     task && task.clientId === clientId && task.baId === staff.id ? task : null;
+  // Resolvemos el contexto enriquecido solo si la task es válida — sin
+  // task no hay categoría desde la cual inferir qué buscar.
+  const taskContext = initialTask ? await resolveTaskContext(initialTask) : undefined;
 
   return (
     <section className="flex flex-col gap-4">
@@ -81,6 +85,7 @@ export default async function NewMessagePage({
         storeName={store?.name ?? "—"}
         layout="full"
         task={initialTask}
+        taskContext={taskContext}
       />
     </section>
   );

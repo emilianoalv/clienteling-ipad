@@ -11,7 +11,7 @@ import { Avatar, type AvatarTone, Button, Icon } from "@/components/primitives";
 import type { IconName } from "@/types/icon";
 import { Card } from "@/components/patterns";
 import { Modal } from "@/components/feedback";
-import { renderTemplate } from "@/features/communications";
+import { renderTemplate, type TemplateContext } from "@/features/communications";
 import { sendCommunication } from "@/features/communications";
 import { completeFollowupTask } from "@/features/clients/actions/complete-followup-task";
 import { buildMessageUrl } from "@/lib/messaging/build-message-url";
@@ -89,6 +89,14 @@ export interface ComposerProps {
    */
   task?: FollowupTask | null;
   /**
+   * Contexto enriquecido resuelto en el server para la task (último
+   * producto comprado / muestra dada, fecha relativa). Se merge con
+   * nombre/tienda/ba al renderear la plantilla. Si falta, los tokens
+   * dot-notation se dejan literales en el body — la BA edita antes de
+   * enviar. Opción A acordada con el cliente.
+   */
+  taskContext?: TemplateContext;
+  /**
    * "full" (default) — 3 columnas: template list + composer + WhatsApp
    *   preview. Para /ba/followup donde hay espacio horizontal.
    * "compact" — 2 columnas: template list (más angosta) + composer, sin
@@ -126,6 +134,7 @@ export function Composer({
   staffName,
   storeName,
   task,
+  taskContext,
   layout = "full",
   onSent,
 }: ComposerProps) {
@@ -152,35 +161,37 @@ export function Composer({
     lockedChannel ?? initialTemplate?.channel ?? "WhatsApp",
   );
   const [bodyDraft, setBodyDraft] = useState<string | null>(null);
-  // Con plantilla, edición opt-in (botón "Editar mensaje"). En blanco,
-  // siempre editable (no hay plantilla a la cual "volver").
-  const [isEditing, setIsEditing] = useState(false);
+  // El textarea siempre acepta input — la BA puede afinar el mensaje sin
+  // tener que pasar por un toggle "Editar". Decisión de UX: la plantilla
+  // sirve como punto de partida, no como sello inmutable.
   const [phase, setPhase] = useState<SendPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const renderedBody = useMemo(() => {
     if (!template || isBlank) return "";
+    // Merge: contexto de la task (si vino) + contexto base. Los keys del
+    // task context tienen precedencia porque son los específicos
+    // (muestra.producto, compra.dia, etc.); los base solo agregan
+    // nombre/tienda/ba/producto-placeholder que las plantillas siguen
+    // usando.
     return renderTemplate(template, {
       nombre: client.name.split(" ")[0] ?? client.name,
       tienda: storeName,
       ba: staffName.split(" ")[0] ?? staffName,
       producto: PRODUCT_PLACEHOLDER,
+      ...(taskContext ?? {}),
     });
-  }, [template, isBlank, client, storeName, staffName]);
+  }, [template, isBlank, client, storeName, staffName, taskContext]);
 
   const body = bodyDraft ?? renderedBody;
   const tone: AvatarTone = brandToTone(client.brands[0]);
-  // En modo blank el editor siempre acepta input. Con plantilla, solo
-  // cuando isEditing está activo (preserva la intención de la plantilla).
-  const bodyEditable = isBlank || isEditing;
 
   function onSelectTemplate(tpl: Template) {
     setTemplate(tpl);
     setIsBlank(false);
     setChannel(tpl.channel);
     setBodyDraft(null);
-    setIsEditing(false);
     setPhase("idle");
     setError(null);
   }
@@ -192,7 +203,6 @@ export function Composer({
     // default WhatsApp y la BA puede cambiarlo.
     if (!lockedChannel) setChannel("WhatsApp");
     setBodyDraft("");
-    setIsEditing(true);
     setPhase("idle");
     setError(null);
   }
@@ -275,7 +285,6 @@ export function Composer({
   function onComposeAgain() {
     setPhase("idle");
     setBodyDraft(null);
-    setIsEditing(false);
   }
 
   const gridClass =
@@ -389,19 +398,19 @@ export function Composer({
             <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
               {t("followup.body")}
             </span>
-            {phase === "idle" && template && !isBlank ? (
+            {phase === "idle" && template && !isBlank && bodyDraft !== null ? (
               <button
                 type="button"
-                onClick={() => setIsEditing((v) => !v)}
+                onClick={() => setBodyDraft(null)}
                 className="text-[14px] font-medium text-ink/60 hover:text-ink underline-offset-2 hover:underline bg-transparent border-0 p-0 cursor-pointer"
               >
-                {isEditing ? "Volver a plantilla" : "Editar mensaje"}
+                Restaurar plantilla
               </button>
             ) : null}
           </div>
           <textarea
             value={body}
-            readOnly={!bodyEditable || phase !== "idle"}
+            readOnly={phase !== "idle"}
             onChange={(e) => setBodyDraft(e.target.value)}
             placeholder={isBlank ? "Escribe tu mensaje aquí…" : undefined}
             className="w-full h-[140px] p-3.5 text-[17px] leading-snug rounded-[10px] border border-line bg-white resize-none focus-visible:border-ink outline-none"
