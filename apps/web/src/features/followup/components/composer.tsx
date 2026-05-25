@@ -287,22 +287,32 @@ export function Composer({
     setBodyDraft(null);
   }
 
-  const gridClass =
-    layout === "compact"
+  // Cuando no hay task, "Nuevo mensaje" es mensaje libre puro: ocultamos
+  // la lista de plantillas y el grid colapsa a composer + preview (o solo
+  // composer en compact). Acuerdo con el cliente: las plantillas son para
+  // responder tareas; mensajes ad-hoc son blank por default.
+  const showTemplates = task != null;
+  const gridClass = showTemplates
+    ? layout === "compact"
       ? "grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] gap-4 items-start"
-      : "grid grid-cols-[320px_minmax(0,1fr)_300px] gap-5 items-start";
+      : "grid grid-cols-[320px_minmax(0,1fr)_300px] gap-5 items-start"
+    : layout === "compact"
+      ? "grid grid-cols-1 gap-4 items-start"
+      : "grid grid-cols-[minmax(0,1fr)_300px] gap-5 items-start";
 
   return (
     <div className={gridClass}>
-      <TemplateList
-        templates={channelScopedTemplates}
-        selectedId={template?.id ?? null}
-        onSelect={onSelectTemplate}
-        brand={brandFilter}
-        onBrandChange={setBrandFilter}
-        blankSelected={isBlank}
-        onSelectBlank={onSelectBlank}
-      />
+      {showTemplates ? (
+        <TemplateList
+          templates={channelScopedTemplates}
+          selectedId={template?.id ?? null}
+          onSelect={onSelectTemplate}
+          brand={brandFilter}
+          onBrandChange={setBrandFilter}
+          blankSelected={isBlank}
+          onSelectBlank={onSelectBlank}
+        />
+      ) : null}
 
       <Card variant="luxe" className="flex flex-col gap-4">
         <header>
@@ -443,17 +453,12 @@ export function Composer({
           </div>
         ) : null}
 
-        <footer className="flex justify-between gap-3 items-center">
+        <footer className="flex justify-end gap-3 items-center">
           {phase === "sent" ? (
             <Button variant="ghost" onClick={onComposeAgain}>
               Componer otro mensaje
             </Button>
           ) : (
-            <Button variant="ghost" disabled aria-disabled="true">
-              {t("followup.save_draft")}
-            </Button>
-          )}
-          {phase !== "sent" ? (
             <Button
               variant="primary"
               onClick={onOpenExternal}
@@ -463,7 +468,7 @@ export function Composer({
             >
               Abrir en {CHANNEL_LABEL[channel]}
             </Button>
-          ) : null}
+          )}
         </footer>
       </Card>
 
