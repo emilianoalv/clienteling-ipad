@@ -2,7 +2,7 @@
 
 import type { Product } from "@/types/product";
 import type { ProductTech, RoutineTimingTag } from "@/types/product-tech";
-import { BrandTag, Chip, Icon } from "@/components/primitives";
+import { BrandTag, Button, Chip, Icon } from "@/components/primitives";
 import { Modal } from "@/components/feedback";
 
 const SLOT_LABEL: Record<ProductTech["usage"]["slot"], string> = {
@@ -41,6 +41,19 @@ export function FichaTecnicaModal({
       title={`${product.line}`}
       description={`${product.name} · ${product.size}`}
       size="lg"
+      footer={
+        tech ? (
+          <Button
+            variant="outline"
+            leading={<Icon name="pdf" />}
+            onClick={() =>
+              window.open(`/print/product-tech/${encodeURIComponent(product.sku)}`, "_blank")
+            }
+          >
+            Descargar PDF
+          </Button>
+        ) : null
+      }
     >
       <div className="flex flex-col gap-5">
         <div>
