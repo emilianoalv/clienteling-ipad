@@ -14,6 +14,8 @@ export interface TemplateContext {
   "muestra.producto"?: string;
   "muestra.dia"?: string;
   "compra.producto"?: string;
+  "compra.productos"?: string;
+  "compra.productos.lista"?: string;
   "compra.dia"?: string;
   "compra.fecha"?: string;
   "evento.anos"?: string;
@@ -28,6 +30,8 @@ const TOKEN_KEY: Record<TemplateToken, keyof TemplateContext> = {
   "{muestra.producto}": "muestra.producto",
   "{muestra.dia}": "muestra.dia",
   "{compra.producto}": "compra.producto",
+  "{compra.productos}": "compra.productos",
+  "{compra.productos.lista}": "compra.productos.lista",
   "{compra.dia}": "compra.dia",
   "{compra.fecha}": "compra.fecha",
   "{evento.anos}": "evento.anos",
@@ -48,6 +52,27 @@ export function renderTemplate(template: Template, context: TemplateContext): st
     if (!key) return match;
     return context[key] ?? match;
   });
+}
+
+/**
+ * Formatea una lista de nombres como frase natural en español:
+ *   1 → "X"
+ *   2 → "X y Y"
+ *   3+ → "X, Y y Z"
+ *
+ * Pure helper — usado por `resolveTaskContext` para multi-producto.
+ */
+export function formatNameList(names: readonly string[]): string {
+  if (names.length === 0) return "";
+  if (names.length === 1) return names[0]!;
+  if (names.length === 2) return `${names[0]} y ${names[1]}`;
+  const head = names.slice(0, -1).join(", ");
+  return `${head} y ${names[names.length - 1]}`;
+}
+
+/** Versión vertical con bullets — útil para Email cuando hay 2+ items. */
+export function formatBulletList(names: readonly string[]): string {
+  return names.map((n) => `• ${n}`).join("\n");
 }
 
 /** Returns the tokens that are declared by the template but not provided. */

@@ -121,8 +121,56 @@ describe("resolveTaskContext", () => {
       makeDeps({ purchases: [purchase()], products: [product()] }),
     );
     expect(ctx["compra.producto"]).toBe("Génifique Sérum 30ml");
+    expect(ctx["compra.productos"]).toBe("Génifique Sérum 30ml");
+    expect(ctx["compra.productos.lista"]).toBe("• Génifique Sérum 30ml");
     expect(ctx["compra.dia"]).toBe("hace 3 semanas");
     expect(ctx["compra.fecha"]).toMatch(/\d+\s+\w+/); // "1 may", "30 abr", etc.
+  });
+
+  it("post-purchase con 2 productos lista ambos en frase natural", async () => {
+    const p1 = product();
+    const p2 = product({
+      sku: "LC-ABS-50" as Sku,
+      name: "Absolue Soft Cream",
+    });
+    const pu = purchase({
+      items: [
+        { sku: "LC-GEN-30" as Sku, qty: 1, unitPrice: 1990 },
+        { sku: "LC-ABS-50" as Sku, qty: 1, unitPrice: 6700 },
+      ],
+    });
+    const ctx = await resolveTaskContext(
+      task("post-purchase"),
+      NOW,
+      makeDeps({ purchases: [pu], products: [p1, p2] }),
+    );
+    expect(ctx["compra.producto"]).toBe("Génifique Sérum 30ml");
+    expect(ctx["compra.productos"]).toBe("Génifique Sérum 30ml y Absolue Soft Cream");
+    expect(ctx["compra.productos.lista"]).toBe(
+      "• Génifique Sérum 30ml\n• Absolue Soft Cream",
+    );
+  });
+
+  it("post-purchase con 3 productos usa coma + 'y' al final", async () => {
+    const items = [
+      { sku: "LC-GEN-30" as Sku, qty: 1, unitPrice: 1990 },
+      { sku: "LC-ABS-50" as Sku, qty: 1, unitPrice: 6700 },
+      { sku: "LC-IDP-50" as Sku, qty: 1, unitPrice: 2400 },
+    ];
+    const pu = purchase({ items });
+    const products = [
+      product(),
+      product({ sku: "LC-ABS-50" as Sku, name: "Absolue Soft Cream" }),
+      product({ sku: "LC-IDP-50" as Sku, name: "Idôle EDP" }),
+    ];
+    const ctx = await resolveTaskContext(
+      task("post-purchase"),
+      NOW,
+      makeDeps({ purchases: [pu], products }),
+    );
+    expect(ctx["compra.productos"]).toBe(
+      "Génifique Sérum 30ml, Absolue Soft Cream y Idôle EDP",
+    );
   });
 
   it("replenishment y check-ins comparten resolución de compra", async () => {

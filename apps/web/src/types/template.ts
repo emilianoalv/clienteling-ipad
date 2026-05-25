@@ -24,7 +24,15 @@ export type TemplateCategory =
  *
  *   {muestra.producto} → "Iris Absolu Eau de Parfum"
  *   {muestra.dia}      → "el lunes" / "la semana pasada"
- *   {compra.producto}  → "Génifique Sérum"
+ *   {compra.producto}  → "Génifique Sérum" (siempre el primero, legacy)
+ *   {compra.productos} → "Génifique Sérum y Absolue Eye Cream" o
+ *                        "Génifique Sérum, Absolue Eye Cream y Idôle EDP".
+ *                        Lista natural en línea para chats. Cuando es 1
+ *                        solo item, equivale a {compra.producto}.
+ *   {compra.productos.lista} → "• Génifique Sérum\n• Absolue Eye Cream".
+ *                        Bullet vertical, ideal para Email donde el
+ *                        cliente lleva 2-3 productos y vale la pena
+ *                        listarlos uno por línea.
  *   {compra.dia}       → "ayer" / "hace 2 semanas"
  *   {compra.fecha}     → "15 abr" (formato corto, para Email donde
  *                        el tono conversacional no es prioritario)
@@ -40,6 +48,8 @@ export type TemplateToken =
   | "{muestra.producto}"
   | "{muestra.dia}"
   | "{compra.producto}"
+  | "{compra.productos}"
+  | "{compra.productos.lista}"
   | "{compra.dia}"
   | "{compra.fecha}"
   | "{evento.anos}";

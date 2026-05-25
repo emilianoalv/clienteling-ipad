@@ -31,8 +31,8 @@ const SEED: Template[] = [
     channel: "WhatsApp",
     category: "Seguimiento",
     body:
-      "{nombre}, paso a saludarte desde Lancôme. ¿Cómo te ha ido con {compra.producto} desde que lo llevaste {compra.dia}? Si quieres ajustar algo o tienes dudas, aquí estoy para ti. — {ba}",
-    tokens: ["{nombre}", "{compra.producto}", "{compra.dia}", "{ba}"],
+      "{nombre}, paso a saludarte desde Lancôme. ¿Cómo te ha ido con {compra.productos} desde que te lo llevaste {compra.dia}? Si quieres ajustar algo o tienes dudas, aquí estoy para ti. — {ba}",
+    tokens: ["{nombre}", "{compra.productos}", "{compra.dia}", "{ba}"],
   },
   {
     id: "tpl-birthday-lancome-wa" as TemplateId,
@@ -105,8 +105,8 @@ const SEED: Template[] = [
     channel: "WhatsApp",
     category: "Seguimiento",
     body:
-      "{nombre}, soy {ba} de YSL Beauty. Quería darte seguimiento — ¿cómo te ha estado sentando {compra.producto}? Cuéntame cuando puedas.",
-    tokens: ["{nombre}", "{compra.producto}", "{ba}"],
+      "{nombre}, soy {ba} de YSL Beauty. Quería darte seguimiento — ¿cómo te ha estado sentando {compra.productos}? Cuéntame cuando puedas.",
+    tokens: ["{nombre}", "{compra.productos}", "{ba}"],
   },
   {
     id: "tpl-birthday-ysl-wa" as TemplateId,
@@ -147,11 +147,13 @@ const SEED: Template[] = [
 ];
 
 import { persistent } from "./_persist";
-// v6 invalida el seed v5 para que el HMR drop las variantes Email
-// de Cumpleaños y Aniversario — el cliente pidió una sola plantilla
-// por evento (WhatsApp).
+// v7 invalida el seed v6 para refrescar las plantillas de seguimiento
+// (Lancôme + YSL) que ahora usan {compra.productos} plural en lugar
+// de {compra.producto} singular — RF: cuando el cliente se lleva
+// más de un producto, la plantilla lista todos sin que la BA tenga
+// que reescribir el mensaje.
 const TEMPLATES = persistent(
-  "__clienteling.templates.v6",
+  "__clienteling.templates.v7",
   () => new Map<TemplateId, Template>(SEED.map((t) => [t.id, t])),
 );
 

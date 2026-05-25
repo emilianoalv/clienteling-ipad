@@ -9,7 +9,7 @@ import { formatDateShort } from "@/lib/format/date";
 import { sampleRepository } from "@/server/repositories/sample.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
 import { productRepository } from "@/server/repositories/product.repository";
-import type { TemplateContext } from "./render-template";
+import { formatBulletList, formatNameList, type TemplateContext } from "./render-template";
 
 /**
  * Dependencias inyectables para testing. En producción cada función
@@ -94,16 +94,27 @@ async function resolveLastPurchase(
   const last = purchases[0];
   if (!last) return {};
 
-  // Primer item como representativo. Para reposición es lo más útil
-  // (la compra suele tener 1-2 items y el principal es el que vale
-  // mencionar). F4 podría agregar `purchaseItemSku` a FollowupTask si
-  // hace falta granularidad.
-  const firstItem = last.items[0];
-  const productName = firstItem ? (await deps.findProductBySku(firstItem.sku))?.name : null;
+  // Resolver TODOS los items de la última compra. La BA quería evitar
+  // tener que reescribir el mensaje cuando el cliente se lleva varios
+  // productos: ahora `{compra.productos}` los lista en frase natural
+  // ("X y Y", "X, Y y Z") y `{compra.productos.lista}` los pone con
+  // bullets verticales para Email. `{compra.producto}` se mantiene
+  // (siempre el primero) para que las plantillas que aún lo usan
+  // sigan funcionando.
+  const names: string[] = [];
+  for (const item of last.items) {
+    const p = await deps.findProductBySku(item.sku);
+    if (p) names.push(p.name);
+  }
 
-  return {
-    "compra.producto": productName ?? undefined,
+  const ctx: TemplateContext = {
     "compra.dia": formatConversationalDate(last.at, now),
     "compra.fecha": formatDateShort(new Date(last.at)),
   };
+  if (names.length > 0) {
+    ctx["compra.producto"] = names[0];
+    ctx["compra.productos"] = formatNameList(names);
+    ctx["compra.productos.lista"] = formatBulletList(names);
+  }
+  return ctx;
 }
