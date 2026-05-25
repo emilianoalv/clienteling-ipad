@@ -12,7 +12,6 @@ import { createAppointment } from "../actions/create-appointment";
 import { APPOINTMENT_KINDS, type NewAppointmentInput } from "../schemas/new-appointment.schema";
 import { AvailabilityGrid } from "./availability-grid";
 import { AppointmentSummaryCard } from "./appointment-summary-card";
-import { ClientInsightsCard } from "./client-insights-card";
 
 export interface NewAppointmentFormProps {
   clients: readonly Client[];
@@ -233,7 +232,6 @@ export function NewAppointmentForm({
           time={time}
           durationMin={durationMin}
         />
-        {client ? <ClientInsightsCard client={client} /> : null}
       </aside>
     </div>
   );
