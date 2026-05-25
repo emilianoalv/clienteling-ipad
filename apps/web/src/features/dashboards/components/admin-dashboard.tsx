@@ -930,7 +930,7 @@ const ROLE_SCOPES: ReadonlyArray<{
 }> = [
   {
     role: "BA",
-    scopes: ["Ver sus clientas", "Crear interacciones", "Recomendar", "Enviar seguimientos"],
+    scopes: ["Ver sus clientes", "Crear interacciones", "Recomendar", "Enviar seguimientos"],
   },
   {
     role: "Gerente",
@@ -1031,7 +1031,7 @@ function OperationalAlertsList({
 
 function TopClientsList({ clients }: { clients: readonly TopClient[] }) {
   if (clients.length === 0) {
-    return <EmptyState message="Aún no hay clientas registradas." />;
+    return <EmptyState message="Aún no hay clientes registrados." />;
   }
   return (
     <ul className="list-none m-0 p-0 divide-y divide-line">

@@ -46,7 +46,7 @@ export function UpcomingFollowupsCard({ clientId, tasks }: UpcomingFollowupsCard
 
       {preview.length === 0 ? (
         <p className="m-0 text-[14.5px] text-ink/60 leading-snug">
-          Sin tareas pendientes para esta clienta.
+          Sin tareas pendientes para este cliente.
         </p>
       ) : (
         <ul className="list-none m-0 p-0 flex flex-col gap-2">

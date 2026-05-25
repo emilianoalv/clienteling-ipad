@@ -106,7 +106,7 @@ export function SampleHistory({
               Muestras entregadas
             </h2>
             <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug max-w-[640px]">
-              Minis físicas que la clienta se llevó. Pasan a{" "}
+              Minis físicas que el cliente se llevó. Pasan a{" "}
               <strong className="text-ink">Convertida</strong> cuando el frasco completo aparece en
               un ticket posterior.
             </p>

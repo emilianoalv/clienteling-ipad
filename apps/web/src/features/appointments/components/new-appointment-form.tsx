@@ -72,7 +72,7 @@ export function NewAppointmentForm({
 
   function onSubmit() {
     setError(null);
-    if (!client) return setError("Selecciona una clienta");
+    if (!client) return setError("Selecciona un cliente");
     if (!date || !time) return setError("Selecciona fecha y hora");
 
     const input: NewAppointmentInput = {

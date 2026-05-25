@@ -1069,7 +1069,7 @@ function TopProductsList({
 
 function TopClientsList({ clients }: { clients: readonly TopClient[] }) {
   if (clients.length === 0) {
-    return <EmptyState message="Aún no hay clientas registradas en la zona." />;
+    return <EmptyState message="Aún no hay clientes registrados en la zona." />;
   }
   return (
     <ul className="list-none m-0 p-0 divide-y divide-line">

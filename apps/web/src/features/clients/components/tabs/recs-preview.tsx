@@ -39,7 +39,7 @@ export function RecsPreview({ recommendations, clientId, productBySku }: RecsPre
             Historial de recomendaciones
           </div>
           <p className="m-0 mt-1 text-[14.5px] text-ink/60 leading-snug">
-            Productos sugeridos a la clienta y su estado de conversión.
+            Productos sugeridos al cliente y su estado de conversión.
           </p>
         </div>
         <Link

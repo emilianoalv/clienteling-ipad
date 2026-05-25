@@ -36,7 +36,7 @@ export function SamplesPreview({ samples, clientId }: SamplesPreviewProps) {
             Historial de muestras
           </div>
           <p className="m-0 mt-1 text-[14.5px] text-ink/60 leading-snug">
-            Productos sampleados a la clienta — entrega, conversión y seguimiento.
+            Productos sampleados al cliente — entrega, conversión y seguimiento.
           </p>
         </div>
         <Link

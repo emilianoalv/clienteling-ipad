@@ -37,10 +37,10 @@ export async function updateBeautyProfile(
 
   const input = parsed.data;
   const existing = await clientRepository.findById(input.clientId as ClientId);
-  if (!existing) return { ok: false, message: "Clienta no encontrada" };
+  if (!existing) return { ok: false, message: "Cliente no encontrado" };
   if (!isStoreInScope(staff, existing.storeId)) {
     // Mirror the silent 404 pattern used elsewhere.
-    return { ok: false, message: "Sin acceso a esta clienta" };
+    return { ok: false, message: "Sin acceso a este cliente" };
   }
 
   await clientRepository.patchProfile(input.clientId as ClientId, {

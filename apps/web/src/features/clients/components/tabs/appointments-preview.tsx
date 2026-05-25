@@ -52,7 +52,7 @@ export function AppointmentsPreview({
             Citas
           </div>
           <p className="m-0 mt-1 text-[14.5px] text-ink/60 leading-snug">
-            Citas atendidas y por venir con esta clienta — diagnóstico, ritual, fragancia, VIP.
+            Citas atendidas y por venir con este cliente — diagnóstico, ritual, fragancia, VIP.
           </p>
         </div>
         <Link

@@ -194,7 +194,7 @@ export function BeautyProfileTab({ client }: BeautyProfileTabProps) {
             Perfil de belleza
           </div>
           <p className="m-0 mt-1 text-[14.5px] text-ink/60 leading-snug">
-            Captura del tipo de piel, tono, rutina e ingredientes que la clienta prefiere o evita.
+            Captura del tipo de piel, tono, rutina e ingredientes que el cliente prefiere o evita.
             Estos datos alimentan el ranking de productos recomendados.
           </p>
         </div>

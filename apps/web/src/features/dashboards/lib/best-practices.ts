@@ -45,7 +45,7 @@ const SUGGESTIONS: Record<BestPracticeMetric, (winner: string, loser: string) =>
   avgTicket: (w, l) =>
     `Revisa el cross-sell que hace el equipo de ${w} y comparte con ${l}.`,
   newClientsPerDay: (w) =>
-    `Pregunta a la gerencia de ${w} qué método usa al onboarding de clientas.`,
+    `Pregunta a la gerencia de ${w} qué método usa al onboarding de clientes.`,
   adoption: (w, l) =>
     `El uso consistente de la app en ${w} debería replicarse en ${l}.`,
 };

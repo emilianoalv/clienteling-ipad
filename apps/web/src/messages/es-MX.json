@@ -16,7 +16,7 @@
   },
   "rail": {
     "home": "Hoy",
-    "clients": "Clientas",
+    "clients": "Clientes",
     "appointments": "Citas",
     "catalog": "Catálogo",
     "samples": "Muestras",
@@ -50,19 +50,19 @@
     }
   },
   "clients": {
-    "title": "Clientas",
+    "title": "Clientes",
     "search": "Buscar por nombre, email o teléfono",
-    "new": "Nueva clienta",
-    "count": "{count, plural, one {1 clienta} other {# clientas}}",
+    "new": "Nuevo cliente",
+    "count": "{count, plural, one {1 cliente} other {# clientes}}",
     "segment": {
-      "all": "Todas",
+      "all": "Todos",
       "vip": "VIP",
       "recurrent": "Recurrente",
-      "new": "Nueva",
+      "new": "Nuevo",
       "at_risk": "En riesgo"
     },
     "empty": {
-      "title": "No encontramos clientas",
+      "title": "No encontramos clientes",
       "description": "Ajusta la búsqueda o el filtro de segmento."
     },
     "column": {
@@ -75,8 +75,8 @@
     }
   },
   "profile": {
-    "breadcrumb": "Clientas",
-    "since": "Clienta desde",
+    "breadcrumb": "Clientes",
+    "since": "Cliente desde",
     "city": "Ciudad",
     "phone": "Teléfono",
     "email": "Correo",
@@ -160,11 +160,11 @@
       "channels": "Canales de comunicación",
       "accept_privacy": "He leído y acepto el aviso de privacidad (versión {version})."
     },
-    "submit": "Crear clienta"
+    "submit": "Crear cliente"
   },
   "event": {
     "birthday": "Cumpleaños",
-    "anniversary": "Aniversario como clienta",
+    "anniversary": "Aniversario como cliente",
     "replenishment": "Posible reposición",
     "today": "hoy",
     "tomorrow": "mañana",
@@ -314,7 +314,7 @@
       "title": "Atribución",
       "ba": "Beauty Advisor",
       "recommendation": "Recomendación",
-      "client": "Clienta",
+      "client": "Cliente",
       "client_tier": "Tier"
     },
     "error": {
@@ -323,7 +323,7 @@
   },
   "purchases": {
     "title": "Compras",
-    "search": "Buscar por clienta, ticket o #ID de compra…",
+    "search": "Buscar por cliente, ticket o #ID de compra…",
     "count": "{count, plural, one {1 ticket} other {# tickets}}",
     "manual": "manual",
     "unknown_client": "Cliente eliminado",
@@ -333,7 +333,7 @@
     },
     "column": {
       "ticket": "Ticket",
-      "client": "Clienta",
+      "client": "Cliente",
       "products": "Producto(s)",
       "date": "Fecha",
       "brand": "Marca",
@@ -438,7 +438,7 @@
       "no_show": "No asistió"
     },
     "field": {
-      "client": "Clienta",
+      "client": "Cliente",
       "ba": "Beauty Advisor",
       "kind": "Tipo",
       "brand": "Marca",
@@ -456,14 +456,14 @@
     "cancelled": "Cita cancelada",
     "completed": "Cita completada",
     "insights": {
-      "title": "Insight de la clienta",
+      "title": "Insight del cliente",
       "visits": "Visitas",
       "avg_ticket": "Ticket prom",
       "ltv": "LTV",
       "tier": "Tier"
     },
     "summary": "Resumen de la cita",
-    "summary_empty": "Selecciona una clienta",
+    "summary_empty": "Selecciona un cliente",
     "saved_eyebrow": "Cita guardada",
     "saved_cta_again": "Otra cita",
     "saved_cta_calendar": "Ver agenda",
@@ -483,7 +483,7 @@
       "filter": "Filtrar",
       "filter_all": "Todas",
       "column": {
-        "client": "Clienta",
+        "client": "Cliente",
         "kind": "Tipo",
         "original": "Fecha original",
         "status": "Estado",
@@ -563,7 +563,7 @@
     },
     "sandbox": {
       "title": "Simulador WhatsApp Business API",
-      "hint": "Modo sandbox. Las métricas de entrega y lectura se simulan localmente y se almacenan en el historial de la clienta. Cambiará a modo live cuando HQ active la integración."
+      "hint": "Modo sandbox. Las métricas de entrega y lectura se simulan localmente y se almacenan en el historial del cliente. Cambiará a modo live cuando HQ active la integración."
     },
     "tab": {
       "composer": "Compositor",

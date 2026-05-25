@@ -38,7 +38,7 @@ export function SegmentsScreen({ clients }: SegmentsScreenProps) {
         <span className="block text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
           Segmentación
         </span>
-        <h2 className="m-0 font-display text-[30px] leading-tight">Estados de clienta</h2>
+        <h2 className="m-0 font-display text-[30px] leading-tight">Estados de cliente</h2>
         <p className="m-0 mt-1 text-[16px] max-w-[620px]">
           Reglas aplicadas sobre LTV, visitas y recencia de compra. La etiqueta se recalcula en cada interacción.
         </p>
@@ -74,7 +74,7 @@ export function SegmentsScreen({ clients }: SegmentsScreenProps) {
                 </li>
               ))}
               {b.clients.length === 0 ? (
-                <li className="text-[15px] text-ink/40 py-2">Sin clientas en este segmento.</li>
+                <li className="text-[15px] text-ink/40 py-2">Sin clientes en este segmento.</li>
               ) : null}
             </ul>
           </Card>

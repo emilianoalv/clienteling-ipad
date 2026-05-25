@@ -77,13 +77,13 @@ export function ClientList({ clients }: ClientListProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nombre, teléfono o email…"
-            aria-label="Buscar clientas"
+            aria-label="Buscar clientes"
             className="h-[52px] w-full rounded-[10px] border border-transparent bg-bone pl-[48px] pr-4 text-[18px] text-ink outline-none placeholder:text-ink/40 focus-visible:border-ink"
           />
         </div>
         <Link href="/ba/clients/new">
           <Button variant="primary" leading={<Icon name="plus" />} className="h-[52px] px-5">
-            Nueva clienta
+            Nuevo cliente
           </Button>
         </Link>
       </article>
@@ -115,7 +115,7 @@ export function ClientList({ clients }: ClientListProps) {
         })}
         <div className="flex-1" />
         <span className="text-xs text-ink/60">
-          {filtered.length} de {enriched.length} clientas
+          {filtered.length} de {enriched.length} clientes
         </span>
         <Button size="sm" leading={<Icon name="download" size={12} />}>
           Exportar
@@ -127,7 +127,7 @@ export function ClientList({ clients }: ClientListProps) {
         <EmptyState
           icon="search"
           title="Sin resultados"
-          description="No hay clientas que coincidan con esta búsqueda o segmento."
+          description="No hay clientes que coincidan con esta búsqueda o segmento."
         />
       ) : (
         <article className="bg-white border border-line rounded-xl overflow-hidden">
@@ -137,7 +137,7 @@ export function ClientList({ clients }: ClientListProps) {
           >
             <span />
             <span className="text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-              Clienta · Email
+              Cliente · Email
             </span>
             <span className="text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60">
               Teléfono

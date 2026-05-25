@@ -7,7 +7,7 @@ import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 
 /**
  * Punto de entrada para "Registrar venta" desde Hoy / acciones rápidas.
- * La BA elige a la clienta primero y luego cae al RegisterSaleForm
+ * La BA elige al cliente primero y luego cae al RegisterSaleForm
  * canónico del perfil — evita duplicar el form en otra ruta.
  */
 export default async function NewSalePage() {
@@ -37,10 +37,10 @@ export default async function NewSalePage() {
           Registrar venta
         </div>
         <h1 className="m-0 mt-1 font-display text-[32px] leading-tight tracking-[-0.01em]">
-          ¿Para qué clienta?
+          ¿Para qué cliente?
         </h1>
         <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug">
-          Busca a la clienta — al elegirla te llevamos al formulario de
+          Busca al cliente — al elegirlo te llevamos al formulario de
           venta con su información cargada.
         </p>
       </header>

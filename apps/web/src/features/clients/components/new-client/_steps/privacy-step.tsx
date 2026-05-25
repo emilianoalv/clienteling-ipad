@@ -30,7 +30,7 @@ export function PrivacyStep({ draft, errors, update, storeName, baName }: Privac
       <StepHeader
         eyebrow="PASO 3 · AVISO DE PRIVACIDAD"
         title="Consentimiento y aviso"
-        subtitle={`Versión vigente · ${PRIVACY_NOTICE_VERSION} · La clienta puede revocar cualquier canal en cualquier momento.`}
+        subtitle={`Versión vigente · ${PRIVACY_NOTICE_VERSION} · El cliente puede revocar cualquier canal en cualquier momento.`}
       />
 
       <PrivacyNotice version={PRIVACY_NOTICE_VERSION} />
@@ -77,7 +77,7 @@ export function PrivacyStep({ draft, errors, update, storeName, baName }: Privac
         <div className="flex-1">
           <div className="text-[16px] font-semibold">He leído y acepto el aviso de privacidad *</div>
           <div className="text-[15.5px] text-ink/60 mt-1">
-            Confirmo que la clienta ha sido informada y otorga su consentimiento expreso para el
+            Confirmo que el cliente ha sido informado y otorga su consentimiento expreso para el
             tratamiento de sus datos personales bajo el aviso versión{" "}
             <strong>{PRIVACY_NOTICE_VERSION}</strong>.
           </div>

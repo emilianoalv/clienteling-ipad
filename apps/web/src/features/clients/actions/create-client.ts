@@ -19,11 +19,11 @@ export interface ActionError {
 
 export async function createClient(raw: NewClientInput): Promise<ActionError | void> {
   const { staff } = await requireSession();
-  if (!can(staff.role, "clients:write")) return { ok: false, message: "Sin permiso para crear clientas" };
+  if (!can(staff.role, "clients:write")) return { ok: false, message: "Sin permiso para crear clientes" };
 
   const storeId = homeStoreFor(staff);
   if (!storeId) {
-    return { ok: false, message: "Tu rol no tiene tienda asignada; no puedes crear clientas directamente." };
+    return { ok: false, message: "Tu rol no tiene tienda asignada; no puedes crear clientes directamente." };
   }
 
   const parsed = newClientSchema.safeParse(raw);

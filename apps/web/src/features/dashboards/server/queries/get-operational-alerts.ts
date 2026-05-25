@@ -133,8 +133,8 @@ export async function getOperationalAlerts(
       id: "ret-at-risk-clients",
       severity: "warning",
       category: "retention",
-      title: "Clientas en riesgo de abandono",
-      description: `${atRiskCount} clientas sin contacto reciente`,
+      title: "Clientes en riesgo de abandono",
+      description: `${atRiskCount} clientes sin contacto reciente`,
       count: atRiskCount,
       createdAt,
     });

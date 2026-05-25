@@ -10,9 +10,9 @@ export interface MessagePreviewProps {
   body: string;
   /** Asunto — solo se usa en Email. */
   subject: string;
-  /** Nombre de la clienta. */
+  /** Nombre del cliente. */
   contactName: string;
-  /** Iniciales de la clienta (para el avatar circular del header de WA). */
+  /** Iniciales del cliente (para el avatar circular del header de WA). */
   contactInitials: string;
   /** Teléfono — se muestra en WA y SMS. */
   contactPhone: string;

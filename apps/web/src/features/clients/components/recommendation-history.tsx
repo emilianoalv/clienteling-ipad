@@ -151,7 +151,7 @@ export function RecommendationHistory({
           </span>
           <p className="m-0 text-[15.5px] font-semibold">Aún no hay recomendaciones</p>
           <p className="m-0 text-[14px] text-ink/55 max-w-[420px]">
-            Sugiere productos a la clienta desde el wizard de Registrar visita para construir tu
+            Sugiere productos al cliente desde el wizard de Registrar visita para construir tu
             historial de cierre verbal.
           </p>
         </article>

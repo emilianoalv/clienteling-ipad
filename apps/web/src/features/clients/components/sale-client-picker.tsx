@@ -30,7 +30,7 @@ export interface SaleClientPickerProps {
 
 /**
  * Picker simple para arrancar el flow de registrar venta desde Hoy.
- * Al seleccionar una clienta navega al form que ya existe en el perfil
+ * Al seleccionar un cliente navega al form que ya existe en el perfil
  * (`/ba/clients/[id]/sale`) — así no duplicamos el RegisterSaleForm y
  * la BA termina en el mismo lugar que si hubiera entrado por el perfil.
  */
@@ -51,7 +51,7 @@ export function SaleClientPicker({ clients }: SaleClientPickerProps) {
   return (
     <div className="flex flex-col gap-3">
       <Input
-        placeholder="Busca a la clienta por nombre, email o teléfono…"
+        placeholder="Busca al cliente por nombre, email o teléfono…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         autoFocus

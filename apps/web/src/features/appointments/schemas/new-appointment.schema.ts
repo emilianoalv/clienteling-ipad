@@ -15,7 +15,7 @@ export const APPOINTMENT_KINDS = [
 ] as const;
 
 export const newAppointmentSchema = z.object({
-  clientId: z.string().min(1, "Selecciona una clienta"),
+  clientId: z.string().min(1, "Selecciona un cliente"),
   baId: z.string().min(1, "Selecciona un Beauty Advisor"),
   brand: z.enum(BRAND_IDS),
   /** Local date YYYY-MM-DD (from <input type="date">). */

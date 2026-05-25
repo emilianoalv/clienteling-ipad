@@ -545,7 +545,7 @@ function CarteraStats({
 }) {
   return (
     <div className="flex flex-col gap-4 justify-center">
-      <Stat label="clientas activas" value={formatCount(activeClients)} />
+      <Stat label="clientes activos" value={formatCount(activeClients)} />
       <Stat
         label="en riesgo"
         value={formatCount(atRiskClients)}
@@ -586,13 +586,13 @@ function Stat({
 function TopClientsList({ clients }: { clients: readonly TopClient[] }) {
   if (clients.length === 0) {
     return (
-      <EmptyState message="Aún no registras clientas. Tu primera visita arranca aquí." />
+      <EmptyState message="Aún no registras clientes. Tu primera visita arranca aquí." />
     );
   }
   return (
     <div>
       <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2">
-        Top 5 clientas por valor
+        Top 5 clientes por valor
       </div>
       <ul className="list-none m-0 p-0 divide-y divide-line">
         {clients.map((c) => {

@@ -805,12 +805,12 @@ function Stat({
 
 function TopClientsList({ clients }: { clients: readonly TopClient[] }) {
   if (clients.length === 0) {
-    return <EmptyState message="Aún no hay clientas registradas en la tienda." />;
+    return <EmptyState message="Aún no hay clientes registrados en la tienda." />;
   }
   return (
     <div>
       <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2">
-        Top 10 clientas
+        Top 10 clientes
       </div>
       <ul className="list-none m-0 p-0 divide-y divide-line">
         {clients.slice(0, 10).map((c) => (

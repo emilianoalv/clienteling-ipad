@@ -62,7 +62,7 @@ export function ReportsScreen({ reports }: ReportsScreenProps) {
           <SectionHeader title="Armar reporte ad-hoc" eyebrow="Constructor rápido" />
           <KvRow
             label="Entidad"
-            value="Clientas · Compras · Recomendaciones · Muestras"
+            value="Clientes · Compras · Recomendaciones · Muestras"
           />
           <KvRow label="Dimensiones" value="Tienda · BA · Marca · Canal" />
           <KvRow label="Métricas" value="LTV · Ticket · Conv. muestra · Opt-in" />

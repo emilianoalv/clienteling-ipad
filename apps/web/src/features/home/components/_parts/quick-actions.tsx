@@ -10,8 +10,8 @@ interface QuickAction {
 }
 
 const ACTIONS: readonly QuickAction[] = [
-  { icon: "plus", label: "Nueva clienta", sub: "Registra una nueva clienta", href: "/ba/clients/new" },
-  { icon: "search", label: "Buscar clienta", sub: "Encuentra una clienta", href: "/ba/clients" },
+  { icon: "plus", label: "Nuevo cliente", sub: "Registra un nuevo cliente", href: "/ba/clients/new" },
+  { icon: "search", label: "Buscar cliente", sub: "Encuentra un cliente", href: "/ba/clients" },
   { icon: "bag", label: "Registrar venta", sub: "Captura una compra", href: "/ba/sale/new" },
   { icon: "calendar", label: "Agendar cita", sub: "Programa una visita", href: "/ba/appointments/new" },
 ];

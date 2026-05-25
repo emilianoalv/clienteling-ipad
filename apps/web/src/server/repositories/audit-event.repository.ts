@@ -11,7 +11,7 @@ const SEED: AuditEvent[] = [
   },
   {
     id: "au-02" as AuditEventId,
-    title: "Nueva clienta",
+    title: "Nuevo cliente",
     subject: "Ximena Cortázar",
     actor: "ba-01 · Liverpool Polanco",
     at: "2025-12-14T14:10:00.000Z",

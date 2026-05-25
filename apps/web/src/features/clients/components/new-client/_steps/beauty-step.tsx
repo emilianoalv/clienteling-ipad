@@ -110,7 +110,7 @@ export function BeautyStep({
       <div className="mb-6">
         <Label>Tono de piel *</Label>
         <p className="m-0 mb-2.5 text-[14px] text-ink/55 leading-snug">
-          Selecciona observando el rostro de la clienta en luz natural.
+          Selecciona observando el rostro del cliente en luz natural.
         </p>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2.5">
           {TONE_SWATCHES.map((label) => {
@@ -170,7 +170,7 @@ export function BeautyStep({
           </span>
         </Label>
         <p className="m-0 mb-2.5 text-[14px] text-ink/55 leading-snug">
-          Lo que la clienta quisiera mejorar. Usa estos chips para entender qué le importa más.
+          Lo que el cliente quisiera mejorar. Usa estos chips para entender qué le importa más.
         </p>
         <div className="flex flex-wrap gap-1.5">
           {COMMON_CONCERNS.map((c) => {

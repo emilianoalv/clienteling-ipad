@@ -180,7 +180,7 @@ export function NewClientWizard({
       <div className="flex items-baseline justify-between gap-4 flex-wrap">
         <div>
           <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-            Nueva clienta
+            Nuevo cliente
           </div>
           <h2 className="m-0 mt-1 font-display text-[28px] leading-none tracking-[-0.01em]">
             Alta en <span className="italic">3 pasos</span>
@@ -267,7 +267,7 @@ export function NewClientWizard({
               loading={isPending}
               trailing={<Icon name="arrow-right" />}
             >
-              Guardar clienta
+              Guardar cliente
             </Button>
           )}
         </div>

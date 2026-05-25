@@ -193,7 +193,7 @@ export function RegisterVisitForm({
             Atender una visita
           </h2>
           <p className="m-0 mt-1.5 text-[15px] text-ink/60 leading-snug">
-            Usa esta vista cuando la clienta vino pero no hubo venta. Se atribuye automáticamente a{" "}
+            Usa esta vista cuando el cliente vino pero no hubo venta. Se atribuye automáticamente a{" "}
             <strong className="text-ink">{baName}</strong>.
           </p>
         </div>
@@ -316,7 +316,7 @@ function StepMotive({
           Motivo de la visita *
         </div>
         <p className="m-0 mb-3 text-[14px] text-ink/55 leading-snug">
-          ¿Por qué vino la clienta hoy? Esto se guarda con la interacción para entender patrones de
+          ¿Por qué vino el cliente hoy? Esto se guarda con la interacción para entender patrones de
           visita.
         </p>
         <div className="flex flex-wrap gap-1.5">
