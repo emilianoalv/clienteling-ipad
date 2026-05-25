@@ -110,9 +110,9 @@ export async function ClientProfile({
               {t("profile.actions.register_sale")}
             </Button>
           </Link>
-          <Link href={`/ba/clients/${client.id}?tab=followup#profile-tabs`}>
-            <Button leading={<Icon name="message" />} className="h-14 w-full">
-              {t("profile.actions.follow_up")}
+          <Link href={`/ba/appointments/new?clientId=${encodeURIComponent(client.id)}`}>
+            <Button leading={<Icon name="calendar" />} className="h-14 w-full">
+              Nueva cita
             </Button>
           </Link>
         </div>
@@ -152,7 +152,7 @@ export async function ClientProfile({
         <UpcomingFollowupsCard clientId={client.id} tasks={followupTasks} />
         <SkinProfileCard client={client} />
         <InterestsCard client={client} />
-        <AppointmentsCard appointments={appointments} clientId={client.id} />
+        <AppointmentsCard appointments={appointments} />
         <UpcomingEventsCard client={client} />
         <AffinitiesCard client={client} />
         <ConsentSummaryCard consents={consents} />

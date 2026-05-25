@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { Appointment, AppointmentStatus } from "@/types/appointment";
 import { Card } from "@/components/patterns";
-import { Button, Icon } from "@/components/primitives";
+import { Icon } from "@/components/primitives";
 
 const ACTIVE_STATUSES: readonly AppointmentStatus[] = ["scheduled", "confirmed", "rescheduled"];
 
@@ -17,11 +17,8 @@ const STATUS_COLOR: Record<AppointmentStatus, string> = {
 
 export async function AppointmentsCard({
   appointments,
-  clientId,
 }: {
   appointments: readonly Appointment[];
-  /** Pre-selects the client when the BA taps "+ Nueva" from this card. */
-  clientId: string;
 }) {
   const t = await getTranslations();
   const cutoff = Date.now() - 86_400_000;
@@ -36,19 +33,10 @@ export async function AppointmentsCard({
 
   return (
     <Card>
-      <div className="flex items-center justify-between mb-2.5">
+      <div className="mb-2.5">
         <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
           {t("profile.card.appointments")}
         </span>
-        <Link href={`/ba/appointments/new?clientId=${encodeURIComponent(clientId)}`}>
-          <Button
-            variant="ghost"
-            leading={<Icon name="plus" size={11} />}
-            className="h-7 px-2.5 text-[15.5px]"
-          >
-            {t("profile.appointments.new")}
-          </Button>
-        </Link>
       </div>
 
       {upcoming.length === 0 ? (
