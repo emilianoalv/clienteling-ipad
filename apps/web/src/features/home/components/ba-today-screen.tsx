@@ -1,4 +1,5 @@
 import type { BaDaySnapshot } from "../services/get-ba-day-snapshot";
+import { AppointmentReminders } from "./_parts/appointment-reminders";
 import { TodayHero } from "./_parts/today-hero";
 import { QuickActions } from "./_parts/quick-actions";
 import { TodayEvents } from "./_parts/today-events";
@@ -34,6 +35,8 @@ export function BaTodayScreen({ baName, storeName, snapshot, now = new Date() }:
         todayApptCount={snapshot.today.length}
         pendingCount={pendingCount}
       />
+
+      <AppointmentReminders today={snapshot.today} />
 
       <QuickActions />
 
