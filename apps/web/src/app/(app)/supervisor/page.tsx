@@ -253,13 +253,15 @@ export default async function SupervisorPage({
         funnelPurchases,
         funnelRepurchases,
         baRanking,
-        baDeltasByBaId,
-        baTargetsByBaId,
-        baSparklineByBaId,
-        baAlertsByBaId,
-        counterAveragesByBrand,
+        // Maps no son serializables por RSC al cruzar Server→Client.
+        // Object.fromEntries convierte Map<K, V> → Record<string, V>.
+        baDeltasByBaId: Object.fromEntries(baDeltasByBaId),
+        baTargetsByBaId: Object.fromEntries(baTargetsByBaId),
+        baSparklineByBaId: Object.fromEntries(baSparklineByBaId),
+        baAlertsByBaId: Object.fromEntries(baAlertsByBaId),
+        counterAveragesByBrand: Object.fromEntries(counterAveragesByBrand),
         storeSnapshots,
-        storeHealthById,
+        storeHealthById: Object.fromEntries(storeHealthById),
         bestPractices,
         multiSeriesTrend,
       }}

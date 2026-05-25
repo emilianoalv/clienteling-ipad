@@ -16,8 +16,7 @@ import type { AuditEvent } from "@/types/audit-event";
 import type { Product } from "@/types/product";
 import type { Template } from "@/types/template";
 import type { User } from "@/types/user";
-import type { Admin, StaffId } from "@/types/staff";
-import type { StoreId } from "@/types/store";
+import type { Admin } from "@/types/staff";
 import { cn } from "@/lib/cn";
 import { formatDateRelative } from "@/lib/format/date";
 import {
@@ -97,15 +96,18 @@ export interface AdminDashboardData {
   funnelRepurchases: number;
   storeRanking: readonly StoreRankingEntry[];
   baRanking: readonly BaRankingEntry[];
-  baDeltasByBaId: ReadonlyMap<StaffId, number>;
-  baTargetsByBaId: ReadonlyMap<StaffId, number>;
-  baSparklineByBaId: ReadonlyMap<StaffId, readonly SparklineBucket[]>;
-  baAlertsByBaId: ReadonlyMap<StaffId, readonly OperationalAlert[]>;
+  // Plain Records (no Map) — Map no es serializable por RSC al pasar
+  // desde Server Component a Client Component. Causaba "TypeError: Error
+  // in input stream" en runtime para Admin/Supervisor.
+  baDeltasByBaId: Readonly<Record<string, number>>;
+  baTargetsByBaId: Readonly<Record<string, number>>;
+  baSparklineByBaId: Readonly<Record<string, readonly SparklineBucket[]>>;
+  baAlertsByBaId: Readonly<Record<string, readonly OperationalAlert[]>>;
   /** Health context for store drill-down — sparkline + alerts per store. */
-  storeSparklineByStoreId: ReadonlyMap<StoreId, readonly SparklineBucket[]>;
-  storeBasByStoreId: ReadonlyMap<StoreId, readonly BaRankingEntry[]>;
-  storeAlertsByStoreId: ReadonlyMap<StoreId, readonly OperationalAlert[]>;
-  storeTargetsByStoreId: ReadonlyMap<StoreId, number>;
+  storeSparklineByStoreId: Readonly<Record<string, readonly SparklineBucket[]>>;
+  storeBasByStoreId: Readonly<Record<string, readonly BaRankingEntry[]>>;
+  storeAlertsByStoreId: Readonly<Record<string, readonly OperationalAlert[]>>;
+  storeTargetsByStoreId: Readonly<Record<string, number>>;
   strategicInsights: readonly StrategicInsight[];
   complianceData: ComplianceData;
   adoptionData: AdoptionData;
@@ -171,20 +173,20 @@ export function AdminDashboard({
   const handleBaClick = (entry: BaRankingEntry) => {
     setBaDrillDown({
       entry,
-      monthlyTarget: data.baTargetsByBaId.get(entry.baId) ?? 0,
-      growthPct: data.baDeltasByBaId.get(entry.baId) ?? 0,
-      sparklineValues: (data.baSparklineByBaId.get(entry.baId) ?? []).map(
+      monthlyTarget: data.baTargetsByBaId[entry.baId] ?? 0,
+      growthPct: data.baDeltasByBaId[entry.baId] ?? 0,
+      sparklineValues: (data.baSparklineByBaId[entry.baId] ?? []).map(
         (b) => b.value,
       ),
-      alerts: data.baAlertsByBaId.get(entry.baId) ?? [],
+      alerts: data.baAlertsByBaId[entry.baId] ?? [],
     });
   };
 
   const handleStoreClick = (entry: StoreRankingEntry) => {
-    const sparkline = data.storeSparklineByStoreId.get(entry.storeId) ?? [];
-    const bas = data.storeBasByStoreId.get(entry.storeId) ?? [];
-    const alerts = data.storeAlertsByStoreId.get(entry.storeId) ?? [];
-    const target = data.storeTargetsByStoreId.get(entry.storeId) ?? 0;
+    const sparkline = data.storeSparklineByStoreId[entry.storeId] ?? [];
+    const bas = data.storeBasByStoreId[entry.storeId] ?? [];
+    const alerts = data.storeAlertsByStoreId[entry.storeId] ?? [];
+    const target = data.storeTargetsByStoreId[entry.storeId] ?? 0;
     setStoreDrillDown({
       storeName: entry.storeName,
       health: {
@@ -567,7 +569,7 @@ function TopStoresTable({
   onSelect,
 }: {
   ranking: readonly StoreRankingEntry[];
-  targets: ReadonlyMap<StoreId, number>;
+  targets: Readonly<Record<string, number>>;
   onSelect: (entry: StoreRankingEntry) => void;
 }) {
   if (ranking.length === 0) {
@@ -580,7 +582,7 @@ function TopStoresTable({
       </div>
       <ul className="list-none m-0 p-0">
         {ranking.map((entry) => {
-          const target = targets.get(entry.storeId) ?? 0;
+          const target = targets[entry.storeId] ?? 0;
           const ratioPct = target > 0 ? Math.round((entry.salesAmount / target) * 100) : null;
           return (
             <li key={entry.storeId}>
@@ -627,7 +629,7 @@ function TopBasTable({
   onSelect,
 }: {
   ranking: readonly BaRankingEntry[];
-  targets: ReadonlyMap<StaffId, number>;
+  targets: Readonly<Record<string, number>>;
   onSelect: (entry: BaRankingEntry) => void;
 }) {
   if (ranking.length === 0) {
@@ -640,7 +642,7 @@ function TopBasTable({
       </div>
       <ul className="list-none m-0 p-0">
         {ranking.map((entry) => {
-          const target = targets.get(entry.baId) ?? 0;
+          const target = targets[entry.baId] ?? 0;
           const ratioPct = target > 0 ? Math.round((entry.salesAmount / target) * 100) : null;
           return (
             <li key={entry.baId}>
@@ -1082,13 +1084,13 @@ function EmptyState({ message }: { message: string }) {
 
 function pickWorstStore(
   ranking: readonly StoreRankingEntry[],
-  targets: ReadonlyMap<StoreId, number>,
+  targets: Readonly<Record<string, number>>,
 ): { name: string; deficit: number } | null {
   if (ranking.length < 2) return null;
   let worst = ranking[0]!;
   let worstRatio = Number.POSITIVE_INFINITY;
   for (const entry of ranking) {
-    const target = targets.get(entry.storeId) ?? 0;
+    const target = targets[entry.storeId] ?? 0;
     if (target <= 0) continue;
     const ratio = entry.salesAmount / target;
     if (ratio < worstRatio) {
@@ -1097,7 +1099,7 @@ function pickWorstStore(
     }
   }
   if (!Number.isFinite(worstRatio)) return null;
-  const target = targets.get(worst.storeId) ?? 0;
+  const target = targets[worst.storeId] ?? 0;
   const deficit = Math.max(0, target - worst.salesAmount);
   return { name: worst.storeName, deficit };
 }

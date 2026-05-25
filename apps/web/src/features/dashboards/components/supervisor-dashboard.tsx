@@ -21,8 +21,7 @@ import {
   formatPercentChange,
   formatPercentDelta,
 } from "@/lib/format/number";
-import type { BrandId } from "@/types/brand";
-import type { StaffId, Supervisor } from "@/types/staff";
+import type { Supervisor } from "@/types/staff";
 import type { StoreId } from "@/types/store";
 import type {
   BaRankingEntry,
@@ -119,13 +118,16 @@ export interface SupervisorDashboardData {
   funnelRepurchases: number;
   // Cross-store + BA
   baRanking: readonly BaRankingEntry[];
-  baDeltasByBaId: ReadonlyMap<StaffId, number>;
-  baTargetsByBaId: ReadonlyMap<StaffId, number>;
-  baSparklineByBaId: ReadonlyMap<StaffId, readonly SparklineBucket[]>;
-  baAlertsByBaId: ReadonlyMap<StaffId, readonly OperationalAlert[]>;
-  counterAveragesByBrand: ReadonlyMap<BrandId, BrandCounterAverages>;
+  // Plain Records (no Map) — Map no es serializable por RSC al pasar
+  // desde Server Component a Client Component. Causaba "TypeError:
+  // Error in input stream" en runtime para Supervisor.
+  baDeltasByBaId: Readonly<Record<string, number>>;
+  baTargetsByBaId: Readonly<Record<string, number>>;
+  baSparklineByBaId: Readonly<Record<string, readonly SparklineBucket[]>>;
+  baAlertsByBaId: Readonly<Record<string, readonly OperationalAlert[]>>;
+  counterAveragesByBrand: Readonly<Record<string, BrandCounterAverages>>;
   storeSnapshots: readonly StoreSnapshot[];
-  storeHealthById: ReadonlyMap<StoreId, StoreHealth>;
+  storeHealthById: Readonly<Record<string, StoreHealth>>;
   bestPractices: readonly BestPracticeInsight[];
   multiSeriesTrend: {
     labels: readonly string[];
@@ -169,11 +171,18 @@ export function SupervisorDashboard({
         : undefined,
   });
 
+  // computeCoachingInsights consume Maps internamente. Las props llegan
+  // como Records (no Map para evitar RSC payload error); reconstruimos
+  // los Maps aquí para preservar la API de la lib sin tocarla.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const insights = computeCoachingInsights({
     ranking: data.baRanking,
-    deltas: data.baDeltasByBaId,
-    counterAveragesByBrand: data.counterAveragesByBrand,
-    targetsByBa: data.baTargetsByBaId,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    deltas: new Map(Object.entries(data.baDeltasByBaId)) as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    counterAveragesByBrand: new Map(Object.entries(data.counterAveragesByBrand)) as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    targetsByBa: new Map(Object.entries(data.baTargetsByBaId)) as any,
   });
 
   const criticalAlerts = data.operationalAlerts
@@ -181,7 +190,7 @@ export function SupervisorDashboard({
     .map(toBannerItem);
 
   const greenStores = data.storeSnapshots.filter(
-    (s) => data.storeHealthById.get(s.storeId)?.grade === "verde",
+    (s) => data.storeHealthById[s.storeId]?.grade === "verde",
   ).length;
   const activeBaZone = data.storeSnapshots.reduce(
     (sum, s) => sum + s.baActive,
@@ -195,17 +204,17 @@ export function SupervisorDashboard({
   const handleBaClick = (entry: BaRankingEntry) => {
     setBaDrillDown({
       entry,
-      monthlyTarget: data.baTargetsByBaId.get(entry.baId) ?? 0,
-      growthPct: data.baDeltasByBaId.get(entry.baId) ?? 0,
-      sparklineValues: (data.baSparklineByBaId.get(entry.baId) ?? []).map(
+      monthlyTarget: data.baTargetsByBaId[entry.baId] ?? 0,
+      growthPct: data.baDeltasByBaId[entry.baId] ?? 0,
+      sparklineValues: (data.baSparklineByBaId[entry.baId] ?? []).map(
         (b) => b.value,
       ),
-      alerts: data.baAlertsByBaId.get(entry.baId) ?? [],
+      alerts: data.baAlertsByBaId[entry.baId] ?? [],
     });
   };
 
   const handleStoreClick = (snapshot: StoreSnapshot) => {
-    const health = data.storeHealthById.get(snapshot.storeId);
+    const health = data.storeHealthById[snapshot.storeId];
     if (!health) return;
     const storeBas = data.baRanking.filter(
       (b) => b.storeId === snapshot.storeId,
@@ -293,7 +302,7 @@ export function SupervisorDashboard({
         <DashBlock title="Semáforo + Store Health Score">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {data.storeSnapshots.map((s) => {
-              const health = data.storeHealthById.get(s.storeId);
+              const health = data.storeHealthById[s.storeId];
               if (!health) return null;
               return (
                 <StoreHealthCard
@@ -592,8 +601,8 @@ function CrossStoreRankingTable({
   onSelect,
 }: {
   ranking: readonly BaRankingEntry[];
-  targets: ReadonlyMap<StaffId, number>;
-  counterAvgByBrand: ReadonlyMap<BrandId, BrandCounterAverages>;
+  targets: Readonly<Record<string, number>>;
+  counterAvgByBrand: Readonly<Record<string, BrandCounterAverages>>;
   onSelect: (entry: BaRankingEntry) => void;
 }) {
   if (ranking.length === 0) {
@@ -614,10 +623,10 @@ function CrossStoreRankingTable({
       </div>
       <ul className="list-none m-0 p-0">
         {ranking.map((entry, i) => {
-          const target = targets.get(entry.baId) ?? 0;
+          const target = targets[entry.baId] ?? 0;
           const ratio = target > 0 ? entry.salesAmount / target : 0;
           const ratioPct = target > 0 ? Math.round(ratio * 100) : null;
-          const brandAvg = counterAvgByBrand.get(entry.brand);
+          const brandAvg = counterAvgByBrand[entry.brand];
           const convGap =
             brandAvg !== undefined
               ? entry.conversionRate - brandAvg.avgConversionRate
