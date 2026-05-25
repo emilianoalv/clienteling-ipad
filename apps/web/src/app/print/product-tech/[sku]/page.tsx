@@ -4,6 +4,7 @@ import { requireSession } from "@/server/auth/session";
 import { productRepository } from "@/server/repositories/product.repository";
 import { productTechRepository } from "@/server/repositories/product-tech.repository";
 import { AutoPrint } from "./auto-print";
+import { PrintControls } from "./print-controls";
 
 const SLOT_LABEL: Record<string, string> = {
   cleanser: "Limpieza",
@@ -195,15 +196,7 @@ export default async function ProductTechPrintPage({
           Documento generado por Clienteling iPad — uso interno de Beauty Advisors. No sustituye la consulta con un especialista.
         </footer>
 
-        <div className="no-print mt-6 flex gap-2 justify-end">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-ink text-white rounded cursor-pointer text-[13.5px] font-semibold"
-          >
-            Imprimir / Guardar como PDF
-          </button>
-        </div>
+        <PrintControls />
       </main>
     </>
   );
