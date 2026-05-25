@@ -76,6 +76,43 @@ export function BeautyStep({
     update("skin", { ...draft.skin, tone });
   }
 
+  // Mutuamente excluyentes: si el BA agrega un ingrediente a "preferidos"
+  // se quita de "a evitar" (y viceversa). No tiene sentido marcar el mismo
+  // ingrediente como deseado y no deseado a la vez. Dos updates seguidos
+  // funcionan porque React 18+ batchea callbacks dentro del mismo handler
+  // y `update` usa setDraft con callback form.
+  function togglePreferred(tag: string) {
+    const has = draft.preferredIngredients.includes(tag);
+    update(
+      "preferredIngredients",
+      has
+        ? draft.preferredIngredients.filter((x) => x !== tag)
+        : [...draft.preferredIngredients, tag],
+    );
+    if (!has && draft.avoidedIngredients.includes(tag)) {
+      update(
+        "avoidedIngredients",
+        draft.avoidedIngredients.filter((x) => x !== tag),
+      );
+    }
+  }
+
+  function toggleAvoided(tag: string) {
+    const has = draft.avoidedIngredients.includes(tag);
+    update(
+      "avoidedIngredients",
+      has
+        ? draft.avoidedIngredients.filter((x) => x !== tag)
+        : [...draft.avoidedIngredients, tag],
+    );
+    if (!has && draft.preferredIngredients.includes(tag)) {
+      update(
+        "preferredIngredients",
+        draft.preferredIngredients.filter((x) => x !== tag),
+      );
+    }
+  }
+
   function setSubtone(subtone: Subtone) {
     // Toggle off if already selected.
     if (draft.skin.subtone === subtone) {
@@ -282,12 +319,7 @@ export function BeautyStep({
                   key={`pref-${tag}`}
                   size="sm"
                   active={draft.preferredIngredients.includes(tag)}
-                  onClick={() =>
-                    update(
-                      "preferredIngredients",
-                      toggleArr(draft.preferredIngredients, tag),
-                    )
-                  }
+                  onClick={() => togglePreferred(tag)}
                 >
                   {tag}
                 </ChipButton>
@@ -304,12 +336,7 @@ export function BeautyStep({
                   key={`avoid-${tag}`}
                   size="sm"
                   active={draft.avoidedIngredients.includes(tag)}
-                  onClick={() =>
-                    update(
-                      "avoidedIngredients",
-                      toggleArr(draft.avoidedIngredients, tag),
-                    )
-                  }
+                  onClick={() => toggleAvoided(tag)}
                 >
                   {tag}
                 </ChipButton>
@@ -338,9 +365,6 @@ export function BeautyStep({
   );
 }
 
-function toggleArr<T>(arr: readonly T[], value: T): T[] {
-  return arr.includes(value) ? arr.filter((x) => x !== value) : [...arr, value];
-}
 
 function Label({ children }: { children: React.ReactNode }) {
   return (

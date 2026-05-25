@@ -606,10 +606,21 @@ function EditMode({
               size="sm"
               active={draft.preferredIngredients.includes(tag)}
               onClick={() =>
-                setDraft((d) => ({
-                  ...d,
-                  preferredIngredients: toggleArr(d.preferredIngredients, tag),
-                }))
+                setDraft((d) => {
+                  const has = d.preferredIngredients.includes(tag);
+                  return {
+                    ...d,
+                    preferredIngredients: has
+                      ? d.preferredIngredients.filter((x) => x !== tag)
+                      : [...d.preferredIngredients, tag],
+                    // Si se agrega como preferido, quitar de "a evitar".
+                    // Marcar el mismo ingrediente en ambos lados no tiene
+                    // sentido para el scorer ni para el cliente.
+                    avoidedIngredients: !has
+                      ? d.avoidedIngredients.filter((x) => x !== tag)
+                      : d.avoidedIngredients,
+                  };
+                })
               }
             >
               {tag}
@@ -627,10 +638,18 @@ function EditMode({
               size="sm"
               active={draft.avoidedIngredients.includes(tag)}
               onClick={() =>
-                setDraft((d) => ({
-                  ...d,
-                  avoidedIngredients: toggleArr(d.avoidedIngredients, tag),
-                }))
+                setDraft((d) => {
+                  const has = d.avoidedIngredients.includes(tag);
+                  return {
+                    ...d,
+                    avoidedIngredients: has
+                      ? d.avoidedIngredients.filter((x) => x !== tag)
+                      : [...d.avoidedIngredients, tag],
+                    preferredIngredients: !has
+                      ? d.preferredIngredients.filter((x) => x !== tag)
+                      : d.preferredIngredients,
+                  };
+                })
               }
             >
               {tag}
