@@ -5,10 +5,9 @@ import { useTranslations } from "next-intl";
 import type { Sample } from "@/types/sample";
 import type { Purchase } from "@/types/purchase";
 import type { SampleInventoryItem } from "@/server/repositories/sample.repository";
-import { Avatar, BrandTag, Button, Chip, Icon, ProgressBar } from "@/components/primitives";
+import { Avatar, BrandTag, Button, Chip, ProgressBar } from "@/components/primitives";
 import { Card, KpiCard, SectionHeader } from "@/components/patterns";
 import { aggregateSampleStats } from "../services/sample-stats";
-import { formatCurrency } from "@/lib/format/format-currency";
 
 export interface SamplesScreenProps {
   samples: readonly Sample[];
@@ -29,21 +28,16 @@ export function SamplesScreen({
   return (
     <div className="grid grid-cols-[1.3fr_1fr] gap-6 items-start">
       <Card variant="luxe" className="flex flex-col gap-4">
-        <header className="flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-              {t("samples.title")}
-            </span>
-            <h2 className="m-0 font-display text-[28px] leading-tight tracking-[-0.005em]">
-              {t("samples.delivered_this_week")}
-            </h2>
-          </div>
-          <Button variant="primary" leading={<Icon name="plus" />} disabled aria-disabled="true">
-            {t("samples.register")}
-          </Button>
+        <header>
+          <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+            {t("samples.title")}
+          </span>
+          <h2 className="m-0 font-display text-[28px] leading-tight tracking-[-0.005em]">
+            {t("samples.delivered_this_week")}
+          </h2>
         </header>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <KpiCard
             label={t("samples.kpi.delivered")}
             value={String(stats.delivered)}
@@ -52,11 +46,6 @@ export function SamplesScreen({
           <KpiCard
             label={t("samples.kpi.conversion_rate")}
             value={`${Math.round(stats.conversionRate * 100)}%`}
-            size="sm"
-          />
-          <KpiCard
-            label={t("samples.kpi.attributable_revenue")}
-            value={formatCurrency(stats.attributableRevenue)}
             size="sm"
           />
         </div>
@@ -133,9 +122,6 @@ export function SamplesScreen({
             );
           })}
         </ul>
-        <Button variant="ghost" leading={<Icon name="plus" />} size="sm">
-          {t("samples.inventory.request_replenishment")}
-        </Button>
       </Card>
     </div>
   );
