@@ -3,6 +3,7 @@
 import { Icon, Input } from "@/components/primitives";
 import {
   COMMON_CONCERNS,
+  INGREDIENT_TAGS,
   INTEREST_GROUPS,
   ROUTINE_LEVELS,
   ROUTINE_TIMINGS,
@@ -261,6 +262,63 @@ export function BeautyStep({
         </div>
       </div>
 
+      {/* Ingredientes preferidos / a evitar */}
+      <div className="mb-6">
+        <Label>
+          Ingredientes <span className="font-normal text-ink/45">· opcional</span>
+        </Label>
+        <p className="m-0 mb-2.5 text-[14px] text-ink/55 leading-snug">
+          Lo que al cliente le gusta o prefiere evitar. Alimenta el ranking suave —
+          las alergias reales van en el campo de abajo.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <article className="bg-bone rounded-[10px] p-3">
+            <div className="text-[15.5px] font-medium text-ink/70 mb-2 inline-flex items-center gap-1.5">
+              <span className="text-ok">✓</span> Preferidos
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {INGREDIENT_TAGS.map((tag) => (
+                <ChipButton
+                  key={`pref-${tag}`}
+                  size="sm"
+                  active={draft.preferredIngredients.includes(tag)}
+                  onClick={() =>
+                    update(
+                      "preferredIngredients",
+                      toggleArr(draft.preferredIngredients, tag),
+                    )
+                  }
+                >
+                  {tag}
+                </ChipButton>
+              ))}
+            </div>
+          </article>
+          <article className="bg-bone rounded-[10px] p-3">
+            <div className="text-[15.5px] font-medium text-ink/70 mb-2 inline-flex items-center gap-1.5">
+              <span className="text-warn">⊘</span> A evitar
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {INGREDIENT_TAGS.map((tag) => (
+                <ChipButton
+                  key={`avoid-${tag}`}
+                  size="sm"
+                  active={draft.avoidedIngredients.includes(tag)}
+                  onClick={() =>
+                    update(
+                      "avoidedIngredients",
+                      toggleArr(draft.avoidedIngredients, tag),
+                    )
+                  }
+                >
+                  {tag}
+                </ChipButton>
+              ))}
+            </div>
+          </article>
+        </div>
+      </div>
+
       {/* Alergias */}
       <article className="bg-bone border border-line rounded-[10px] p-3.5 flex gap-2.5 items-start">
         <span className="text-ink/60 mt-0.5">
@@ -278,6 +336,10 @@ export function BeautyStep({
       </article>
     </>
   );
+}
+
+function toggleArr<T>(arr: readonly T[], value: T): T[] {
+  return arr.includes(value) ? arr.filter((x) => x !== value) : [...arr, value];
 }
 
 function Label({ children }: { children: React.ReactNode }) {

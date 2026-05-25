@@ -29,6 +29,10 @@ export interface Draft {
   routineTiming: RoutineTiming[];
   interests: string[];
   allergiesText: string;
+  /** Soft-positive ingredient tags. Opcional al alta — alimenta el ranking. */
+  preferredIngredients: string[];
+  /** Soft-negative ingredient tags (no son alergias reales). */
+  avoidedIngredients: string[];
   acceptPrivacy: boolean;
   /** dataURL PNG base64 de la firma del cliente. Vacío si no firmó aún. */
   signature: string;

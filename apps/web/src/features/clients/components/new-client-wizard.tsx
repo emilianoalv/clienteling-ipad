@@ -52,6 +52,8 @@ const INITIAL_DRAFT: Draft = {
   routineTiming: ["morning"],
   interests: ["Skincare"],
   allergiesText: "",
+  preferredIngredients: [],
+  avoidedIngredients: [],
   acceptPrivacy: false,
   signature: "",
   channels: { WhatsApp: false, Email: true, SMS: true },
@@ -117,6 +119,12 @@ export function NewClientWizard({
       routineTiming: draft.routineTiming,
       interests: draft.interests,
       allergies: parseAllergies(draft.allergiesText),
+      ...(draft.preferredIngredients.length > 0
+        ? { preferredIngredients: draft.preferredIngredients }
+        : {}),
+      ...(draft.avoidedIngredients.length > 0
+        ? { avoidedIngredients: draft.avoidedIngredients }
+        : {}),
       acceptPrivacy: draft.acceptPrivacy as true,
       signature: draft.signature,
       consents: CHANNELS.map((channel) => ({
