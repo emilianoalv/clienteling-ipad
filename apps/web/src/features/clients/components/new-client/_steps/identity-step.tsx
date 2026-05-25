@@ -9,6 +9,30 @@ import {
 import { ChipButton } from "../_parts/chip-button";
 import { StepHeader } from "../_parts/step-header";
 import type { Draft, FieldErrors } from "../types";
+import type { AgeRange } from "@/types/client";
+
+/** Edad en años cumplidos a la fecha; null si la fecha es inválida o futura. */
+function ageFromBirthday(iso: string): number | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age >= 0 ? age : null;
+}
+
+function ageRangeFromAge(age: number | null): AgeRange | "" {
+  if (age == null) return "";
+  if (age < 18) return "";
+  if (age <= 24) return "18-24";
+  if (age <= 34) return "25-34";
+  if (age <= 44) return "35-44";
+  if (age <= 54) return "45-54";
+  if (age <= 64) return "55-64";
+  return "65+";
+}
 
 export interface IdentityStepProps {
   draft: Draft;
@@ -17,6 +41,13 @@ export interface IdentityStepProps {
 }
 
 export function IdentityStep({ draft, errors, update }: IdentityStepProps) {
+  const derivedAge = ageFromBirthday(draft.birthday);
+  const derivedRange = ageRangeFromAge(derivedAge);
+
+  function onBirthdayChange(iso: string) {
+    update("birthday", iso);
+    update("ageRange", ageRangeFromAge(ageFromBirthday(iso)));
+  }
   return (
     <>
       <StepHeader eyebrow="PASO 1 · IDENTIDAD" title="¿A quién vamos a consentir?" />
@@ -84,7 +115,7 @@ export function IdentityStep({ draft, errors, update }: IdentityStepProps) {
           label="Fecha de nacimiento *"
           type="date"
           value={draft.birthday}
-          onChange={(e) => update("birthday", e.target.value)}
+          onChange={(e) => onBirthdayChange(e.target.value)}
           {...(errors.birthday?.[0] ? { error: errors.birthday[0] } : {})}
         />
 
@@ -101,15 +132,21 @@ export function IdentityStep({ draft, errors, update }: IdentityStepProps) {
       </div>
 
       <div className="mt-4 flex flex-col gap-2">
-        <span className="text-xs font-semibold text-ink/60 tracking-[0.02em]">Rango de edad *</span>
+        <span className="text-xs font-semibold text-ink/60 tracking-[0.02em]">
+          Rango de edad{" "}
+          <span className="font-normal text-ink/45">
+            · calculado automáticamente
+            {derivedAge != null ? ` · ${derivedAge} años` : ""}
+          </span>
+        </span>
         <div className="flex flex-wrap gap-1.5">
           {AGE_RANGES.map((r) => (
-            <ChipButton key={r} active={draft.ageRange === r} onClick={() => update("ageRange", r)}>
+            <ChipButton key={r} active={derivedRange === r} disabled>
               {r}
             </ChipButton>
           ))}
         </div>
-        {errors.ageRange?.[0] ? (
+        {errors.ageRange?.[0] && !derivedRange ? (
           <span className="text-xs text-err">{errors.ageRange[0]}</span>
         ) : null}
       </div>
