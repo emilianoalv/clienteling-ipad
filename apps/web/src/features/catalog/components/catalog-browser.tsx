@@ -136,6 +136,7 @@ export function CatalogBrowser({
           stores={stores}
           tech={techs.get(selected.sku) ?? null}
           allProducts={products}
+          primaryStoreId={primaryStoreId}
         />
       ) : null}
     </div>

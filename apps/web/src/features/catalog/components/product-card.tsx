@@ -4,7 +4,7 @@ import type { KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
 import type { Product } from "@/types/product";
 import type { StoreId } from "@/types/store";
-import { BrandTag, Button, Chip, Icon } from "@/components/primitives";
+import { BrandTag, Chip } from "@/components/primitives";
 import { formatCurrency } from "@/lib/format/format-currency";
 import { ProductThumb } from "./product-thumb";
 
@@ -73,24 +73,14 @@ export function ProductCard({
           ))}
         </div>
       ) : null}
-      <div className="mt-auto flex items-center justify-between">
-        <div>
-          <div className="text-[18px] font-semibold tabular">{formatCurrency(product.price)}</div>
-          <div className="text-[14px] font-medium leading-snug text-ink/60">
-            {t("catalog.card.stock_at", { store: primaryStoreLabel })}{" "}
-            <span className={low ? "font-semibold text-err" : "font-semibold text-ok"}>
-              {stock}
-            </span>
-          </div>
+      <div className="mt-auto">
+        <div className="text-[18px] font-semibold tabular">{formatCurrency(product.price)}</div>
+        <div className="text-[14px] font-medium leading-snug text-ink/60">
+          {t("catalog.card.stock_at", { store: primaryStoreLabel })}{" "}
+          <span className={low ? "font-semibold text-err" : "font-semibold text-ok"}>
+            {stock}
+          </span>
         </div>
-        <Button
-          variant="ghost"
-          iconOnly
-          aria-label={t("catalog.card.add_to_recs")}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Icon name="plus" />
-        </Button>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Product } from "@/types/product";
 import type { ProductTech } from "@/types/product-tech";
-import type { Store } from "@/types/store";
+import type { Store, StoreId } from "@/types/store";
 import { BrandTag, Button, Icon } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import { formatCurrency } from "@/lib/format/format-currency";
@@ -20,9 +20,18 @@ export interface ProductDetailProps {
   tech: ProductTech | null;
   /** All products visible in the catalog scope — resolves `layerWith` SKUs. */
   allProducts: readonly Product[];
+  /** Tienda del BA — se destaca primero en availability para que coincida
+   *  con el stock mostrado en la ProductCard del grid. */
+  primaryStoreId: StoreId;
 }
 
-export function ProductDetail({ product, stores, tech, allProducts }: ProductDetailProps) {
+export function ProductDetail({
+  product,
+  stores,
+  tech,
+  allProducts,
+  primaryStoreId,
+}: ProductDetailProps) {
   const t = useTranslations();
   const [showTech, setShowTech] = useState(false);
   const storeLookup = new Map(stores.map((s) => [s.id, s.name]));
@@ -31,13 +40,20 @@ export function ProductDetail({ product, stores, tech, allProducts }: ProductDet
     [allProducts],
   );
 
+  // Reordenamos para que la tienda del BA salga primero — así el número
+  // que ve en el sidebar coincide exacto con el "Stock en X" del grid.
   const availability = Object.entries(product.stock)
     .map(([id, qty]) => ({
       id,
       label: storeLookup.get(id as Store["id"]) ?? id,
       qty: qty ?? 0,
+      isPrimary: id === primaryStoreId,
     }))
-    .sort((a, b) => a.label.localeCompare(b.label, "es"));
+    .sort((a, b) => {
+      if (a.isPrimary && !b.isPrimary) return -1;
+      if (!a.isPrimary && b.isPrimary) return 1;
+      return a.label.localeCompare(b.label, "es");
+    });
 
   return (
     <Card className="self-start sticky top-4 flex flex-col gap-3">
@@ -90,7 +106,14 @@ export function ProductDetail({ product, stores, tech, allProducts }: ProductDet
             const low = row.qty < LOW_STOCK_THRESHOLD;
             return (
               <li key={row.id} className="flex justify-between text-[16px]">
-                <span>{row.label}</span>
+                <span>
+                  {row.label}
+                  {row.isPrimary ? (
+                    <span className="ml-1.5 text-[12.5px] font-medium text-ink/55">
+                      · tu tienda
+                    </span>
+                  ) : null}
+                </span>
                 <span className={low ? "font-semibold text-err" : "font-semibold text-ok"}>
                   {t("catalog.detail.units", { qty: row.qty })}
                 </span>
@@ -100,17 +123,14 @@ export function ProductDetail({ product, stores, tech, allProducts }: ProductDet
         </ul>
       </div>
 
-      <div className="flex gap-2 mt-2">
+      <div className="mt-2">
         <Button
           variant="ghost"
           leading={<Icon name="pdf" />}
-          className="flex-1"
+          className="w-full"
           onClick={() => setShowTech(true)}
         >
           {t("catalog.detail.fact_sheet")}
-        </Button>
-        <Button variant="primary" leading={<Icon name="plus" />} className="flex-1">
-          {t("catalog.detail.add_to_recs")}
         </Button>
       </div>
 
