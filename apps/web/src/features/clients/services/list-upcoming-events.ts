@@ -11,7 +11,11 @@ const DAY_MS = 86_400_000;
 
 /**
  * Returns life-relevant events for a client over the next `windowDays`:
- * birthday, anniversary, possible replenishment (if `lastPurchase` is known).
+ * cumpleaños y aniversario como clienta.
+ *
+ * Las posibles reposiciones se modelan como FollowupTask (categoría
+ * replenishment) y viven en el inbox de pendientes — no se duplican
+ * aquí para evitar mostrar la misma señal en dos lados.
  *
  * Pure function — testable in isolation.
  */
@@ -31,18 +35,9 @@ export function listUpcomingEvents(client: Client, opts: ListOptions = {}): Life
     const anniv = nextAnniversary(client.since, now);
     if (anniv) {
       const days = daysBetween(now, anniv);
-      if (days <= windowDays && days !== 0) {
+      if (days <= windowDays) {
         events.push(makeEvent("anniversary", anniv, days, "Aniversario como clienta"));
       }
-    }
-  }
-
-  if (client.stats.lastPurchase) {
-    const replen = new Date(client.stats.lastPurchase);
-    replen.setDate(replen.getDate() + 60);
-    const days = daysBetween(now, replen);
-    if (Math.abs(days) <= windowDays) {
-      events.push(makeEvent("replenishment", replen, days, "Posible reposición"));
     }
   }
 

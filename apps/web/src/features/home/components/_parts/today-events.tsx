@@ -24,26 +24,18 @@ const STYLES: Record<LifeEventKind, EventStyle> = {
     tint: "text-[#9C7E36]",
     glyph: "★",
   },
-  replenishment: {
-    bg: "bg-[rgba(31,122,90,0.10)]",
-    border: "border-[rgba(31,122,90,0.30)]",
-    tint: "text-ok",
-    glyph: "⟳",
-  },
 };
 
 /**
  * Mapea el tipo de evento a la acción que la BA quiere hacer cuando le
- * da click:
- *   birthday/anniversary → abrir composer con plantilla (felicitar).
- *   replenishment        → registrar venta (la reposición es venta).
+ * da click: ambos kinds abren el composer con la plantilla apropiada y
+ * los años calculados pre-cargados via `?intent=…`.
  *
  * Eliminamos el detour al perfil del cliente — la BA ya sabe quién es,
- * lo que necesita es el formulario para resolver.
+ * lo que necesita es el mensaje listo para enviar.
  */
 function hrefFor(clientId: ClientId, kind: LifeEventKind): string {
-  if (kind === "replenishment") return `/ba/clients/${clientId}/sale`;
-  return `/ba/clients/${clientId}/message/new`;
+  return `/ba/clients/${clientId}/message/new?intent=${kind}`;
 }
 
 export interface TodayEventsProps {
@@ -57,7 +49,7 @@ export interface TodayEventsProps {
 export function TodayEvents({ entries }: TodayEventsProps) {
   if (entries.length === 0) return null;
   const birthdays = entries.filter((e) => e.event.kind === "birthday").length;
-  const replenishments = entries.filter((e) => e.event.kind === "replenishment").length;
+  const anniversaries = entries.filter((e) => e.event.kind === "anniversary").length;
 
   return (
     <article className="bg-white border border-line rounded-xl p-5 shadow-[0_1px_2px_rgba(14,14,15,0.03)]">
@@ -71,7 +63,7 @@ export function TodayEvents({ entries }: TodayEventsProps) {
           </div>
         </div>
         <span className="inline-flex items-center h-[22px] px-2.5 rounded-full bg-bone text-[15px] font-medium text-ink/70">
-          {birthdays} cumple · {replenishments} reposiciones
+          {birthdays} cumple · {anniversaries} aniv.
         </span>
       </header>
       <ul className="list-none m-0 p-0 grid grid-cols-1 md:grid-cols-2 gap-2.5">

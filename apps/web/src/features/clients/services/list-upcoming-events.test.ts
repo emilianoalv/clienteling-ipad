@@ -45,13 +45,15 @@ describe("listUpcomingEvents", () => {
     expect(events.find((e) => e.kind === "birthday")).toBeUndefined();
   });
 
-  it("suggests replenishment 60 days after last purchase", () => {
+  it("no devuelve replenishment — esa señal vive en FollowupTask ahora", () => {
     const now = new Date(Date.UTC(2026, 4, 12));
     const events = listUpcomingEvents(
       client({ lastPurchase: "2026-03-13T00:00:00.000Z" }),
       { windowDays: 60, now },
     );
-    expect(events.some((e) => e.kind === "replenishment")).toBe(true);
+    // El kind "replenishment" se removió del enum LifeEventKind; aquí
+    // solo nos aseguramos de que no se cuele alguno con cualquier label.
+    expect(events.every((e) => e.kind === "birthday" || e.kind === "anniversary")).toBe(true);
   });
 
   it("sorts events by daysUntil ascending", () => {

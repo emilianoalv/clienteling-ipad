@@ -6,13 +6,11 @@ import { listUpcomingEvents } from "../../services/list-upcoming-events";
 const EVENT_GLYPH = {
   birthday: "🎂",
   anniversary: "★",
-  replenishment: "⟳",
 } as const;
 
 const EVENT_KEY = {
   birthday: "birthday",
   anniversary: "anniversary",
-  replenishment: "replenishment",
 } as const;
 
 export async function UpcomingEventsCard({ client }: { client: Client }) {
