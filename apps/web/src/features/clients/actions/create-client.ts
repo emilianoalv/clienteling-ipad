@@ -80,6 +80,9 @@ export async function createClient(raw: NewClientInput): Promise<ActionError | v
       status: c.status,
       source: "in-store",
       version: PRIVACY_NOTICE_VERSION,
+      // Misma firma para los 3 consents — respalda el acto único de
+      // aceptación del aviso de privacidad. LFPDPPP RNF-04.
+      signature: input.signature,
     });
   }
 

@@ -129,6 +129,12 @@ export const newClientSchema = z.object({
   acceptPrivacy: z.literal(true, {
     errorMap: () => ({ message: "Debe aceptar el aviso de privacidad" }),
   }),
+  /**
+   * Firma del cliente capturada en iPad — dataURL PNG base64. Requerida
+   * cuando acceptPrivacy === true. La validación práctica vive en la UI
+   * (el SignaturePad no permite continuar sin trazo); aquí es defensiva.
+   */
+  signature: z.string().min(1, "Firma del cliente requerida"),
 });
 
 export type NewClientInput = z.infer<typeof newClientSchema>;

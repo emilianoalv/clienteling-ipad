@@ -1,6 +1,7 @@
 "use client";
 
 import { Icon, Toggle } from "@/components/primitives";
+import { SignaturePad } from "@/components/feedback";
 import { CHANNELS } from "../../../schemas/new-client.schema";
 import { PrivacyNotice } from "../_parts/privacy-notice";
 import { StepHeader } from "../_parts/step-header";
@@ -71,7 +72,12 @@ export function PrivacyStep({ draft, errors, update, storeName, baName }: Privac
         <input
           type="checkbox"
           checked={draft.acceptPrivacy}
-          onChange={(e) => update("acceptPrivacy", e.target.checked)}
+          onChange={(e) => {
+            update("acceptPrivacy", e.target.checked);
+            // Si la BA desmarca el accept, también borramos la firma —
+            // no tiene sentido conservarla sin consentimiento.
+            if (!e.target.checked && draft.signature) update("signature", "");
+          }}
           className="mt-0.5 w-[18px] h-[18px] accent-ink"
         />
         <div className="flex-1">
@@ -85,6 +91,25 @@ export function PrivacyStep({ draft, errors, update, storeName, baName }: Privac
       </label>
       {errors.acceptPrivacy?.[0] ? (
         <span className="block mt-1.5 text-xs text-err">{errors.acceptPrivacy[0]}</span>
+      ) : null}
+
+      {draft.acceptPrivacy ? (
+        <div className="mt-4">
+          <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-2">
+            Firma del cliente *
+          </div>
+          <p className="m-0 mb-2 text-[14px] text-ink/55 leading-snug">
+            Pasa el iPad al cliente para que firme con el dedo o Apple Pencil. La firma se guarda
+            junto al registro de consentimiento como evidencia LFPDPPP.
+          </p>
+          <SignaturePad
+            ariaLabel="Firma del cliente sobre el aviso de privacidad"
+            onChange={(value) => update("signature", value ?? "")}
+          />
+          {errors.signature?.[0] ? (
+            <span className="block mt-1.5 text-xs text-err">{errors.signature[0]}</span>
+          ) : null}
+        </div>
       ) : null}
 
       <div className="mt-5 p-4 bg-bone rounded-xl">

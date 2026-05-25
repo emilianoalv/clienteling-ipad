@@ -32,7 +32,7 @@ const STEP_FIELDS: Record<Step, ReadonlyArray<keyof NewClientInput>> = {
     "brands",
   ],
   1: ["skin", "routine", "routineTiming", "interests"],
-  2: ["acceptPrivacy", "consents"],
+  2: ["acceptPrivacy", "consents", "signature"],
 };
 
 const INITIAL_DRAFT: Draft = {
@@ -53,6 +53,7 @@ const INITIAL_DRAFT: Draft = {
   interests: ["Skincare"],
   allergiesText: "",
   acceptPrivacy: false,
+  signature: "",
   channels: { WhatsApp: false, Email: true, SMS: true },
 };
 
@@ -117,6 +118,7 @@ export function NewClientWizard({
       interests: draft.interests,
       allergies: parseAllergies(draft.allergiesText),
       acceptPrivacy: draft.acceptPrivacy as true,
+      signature: draft.signature,
       consents: CHANNELS.map((channel) => ({
         channel,
         status: draft.channels[channel] ? ("granted" as const) : ("revoked" as const),

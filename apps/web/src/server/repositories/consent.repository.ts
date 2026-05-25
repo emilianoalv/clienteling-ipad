@@ -15,6 +15,12 @@ export interface ConsentRepository {
     status: ConsentStatus;
     source: ConsentSource;
     version: string;
+    /**
+     * Firma manuscrita del cliente (dataURL PNG). Se respalda el acto
+     * único de aceptar el aviso de privacidad — los 3 consents del
+     * wizard (WA/Email/SMS) comparten la misma firma.
+     */
+    signature?: string;
   }): Promise<Consent>;
 }
 

@@ -15,4 +15,11 @@ export interface Consent {
   at: string;
   version: string;
   source: ConsentSource;
+  /**
+   * Firma manuscrita del cliente capturada en iPad (dataURL PNG base64).
+   * Solo se rellena en el primer Consent de cada cliente (cuando firma
+   * el aviso de privacidad en el wizard de alta). Los Consent posteriores
+   * — revocaciones, re-opt-in por canal — no requieren firma.
+   */
+  signature?: string;
 }

@@ -30,5 +30,7 @@ export interface Draft {
   interests: string[];
   allergiesText: string;
   acceptPrivacy: boolean;
+  /** dataURL PNG base64 de la firma del cliente. Vacío si no firmó aún. */
+  signature: string;
   channels: Record<"WhatsApp" | "Email" | "SMS", boolean>;
 }
