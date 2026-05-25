@@ -18,6 +18,18 @@ export interface User {
   id: UserId;
   name: string;
   role: Role;
+  /**
+   * Email único — credencial primaria de login. En demo se usa el dominio
+   * real de cada marca (@lancome.com.mx / @ysl.com.mx) o @loreal.com.mx
+   * para staff corporativo.
+   */
+  email: string;
+  /**
+   * Hash bcrypt de la password (10 rounds). Generado por
+   * `scripts/generate-password-hashes.mjs`. Las passwords plain de demo
+   * viven en `docs/credenciales-demo.md`.
+   */
+  passwordHash: string;
   /** BA / Gerente: assigned store. Empty for Supervisor / Admin. */
   storeId?: StoreId;
   /** Supervisor: list of stores in zone. */

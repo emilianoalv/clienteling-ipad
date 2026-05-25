@@ -14,6 +14,8 @@ const user = (overrides: Partial<User>): User => ({
   id: "u" as unknown as UserId,
   name: "User",
   role: "BA",
+  email: "u@demo.test",
+  passwordHash: "$2b$10$test",
   ...overrides,
 });
 

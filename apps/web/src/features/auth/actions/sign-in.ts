@@ -1,39 +1,56 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createSession } from "@/server/auth/session";
 import { homeFor } from "@/config/routes";
 import { userRepository } from "@/server/repositories/user.repository";
-import type { Role, StaffId } from "@/types/staff";
+import type { StaffId } from "@/types/staff";
 
 const inputSchema = z.object({
-  role: z.enum(["BA", "Gerente", "Supervisor", "Admin"]),
-  pin: z.string().regex(/^\d{6}$/),
+  email: z.string().trim().email("Correo inválido").max(180),
+  password: z.string().min(1, "Ingresa tu contraseña").max(120),
 });
 
 export type SignInResult =
   | { ok: true }
-  | { ok: false; reason: "wrong_pin"; attemptsLeft: number }
-  | { ok: false; reason: "locked"; minutesLeft: number }
-  | { ok: false; reason: "invalid_input" };
+  | { ok: false; reason: "invalid_credentials" }
+  | { ok: false; reason: "invalid_input"; message?: string };
 
 /**
- * Demo sign-in that accepts any 6-digit PIN and logs in as the first seeded
- * user with the chosen role. Real lockout + PIN verification lives in F4.
+ * Login real simulado (Sprint 1.2). Busca usuario por email + valida
+ * password con bcrypt contra el hash del seed. Cada usuario tiene su
+ * propia credencial — ya no hay selector de roles ni PIN compartido.
  *
- * Looking up by role (instead of using a hardcoded `demo-{role}` id) means the
- * staff returned by `requireSession()` has real `storeId` / `storeIds` from
- * the user seed, which is what powers multi-store scope.
+ * Las credenciales viven en código (seed `user.repository.ts`) por
+ * ahora; cuando Sprint 2 conecte Postgres, lo único que cambia aquí
+ * es el lookup — el resto del flujo se mantiene idéntico.
+ *
+ * Por seguridad básica: mensaje genérico "Correo o contraseña
+ * incorrectos" tanto si el email no existe como si la password falla
+ * (evita enumeración de cuentas válidas).
  */
-export async function signInAction(input: { role: Role; pin: string }): Promise<SignInResult> {
+export async function signInAction(input: {
+  email: string;
+  password: string;
+}): Promise<SignInResult> {
   const parsed = inputSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, reason: "invalid_input" };
+  if (!parsed.success) {
+    return {
+      ok: false,
+      reason: "invalid_input",
+      message: parsed.error.issues[0]?.message,
+    };
+  }
 
-  const user = await userRepository.findFirstByRole(parsed.data.role);
-  if (!user) return { ok: false, reason: "invalid_input" };
+  const user = await userRepository.findByEmail(parsed.data.email);
+  if (!user) return { ok: false, reason: "invalid_credentials" };
 
-  await createSession(user.id as unknown as StaffId, parsed.data.role);
+  const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
+  if (!valid) return { ok: false, reason: "invalid_credentials" };
 
-  redirect(homeFor(parsed.data.role));
+  await createSession(user.id as unknown as StaffId, user.role);
+
+  redirect(homeFor(user.role));
 }
