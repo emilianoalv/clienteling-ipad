@@ -5,7 +5,7 @@ import type {
   FollowupTask,
   FollowupTaskId,
 } from "@/types/followup-task";
-import type { Product, ProductId, Sku } from "@/types/product";
+import type { Product, Sku } from "@/types/product";
 import type { Purchase, PurchaseId } from "@/types/purchase";
 import type { Sample, SampleId } from "@/types/sample";
 import type { StaffId } from "@/types/staff";
@@ -64,15 +64,19 @@ function purchase(opts: Partial<Purchase> = {}): Purchase {
 
 function product(opts: Partial<Product> = {}): Product {
   return {
-    id: "pr-1" as ProductId,
     sku: "LC-GEN-30" as Sku,
     brand: "Lancôme",
     line: "Génifique",
     name: "Génifique Sérum 30ml",
+    size: "30ml",
     price: 1990,
+    stock: {},
     attrs: {},
+    howTo: "",
+    selling: [],
+    lifecycleDays: 90,
     ...opts,
-  } as Product;
+  };
 }
 
 function makeDeps(opts: {

@@ -9,6 +9,11 @@ import type { Template, TemplateId } from "@/types/template";
 // según el cliente). Las plantillas heredadas (Post-visita, Lanzamiento,
 // Muestra) se conservan porque siguen activas en flujos específicos
 // (Post-visita para 3m/6m check, Muestra para sample-feedback).
+//
+// Tokens dot-notation ({muestra.producto}, {compra.dia}, etc.) los
+// resuelve `resolveTaskContext` cuando el composer abre desde una task.
+// Si no hay contexto (cliente nuevo, sin compras), la plantilla deja el
+// token literal — la BA lo edita antes de enviar. (Opción A acordada.)
 const SEED: Template[] = [
   // ── Lancôme ─────────────────────────────────────────────────────────
   {
@@ -26,8 +31,8 @@ const SEED: Template[] = [
     channel: "WhatsApp",
     category: "Seguimiento",
     body:
-      "{nombre}, paso a saludarte desde Lancôme. ¿Cómo te ha ido con la rutina? Si quieres ajustar algo o tienes dudas, aquí estoy para ti. — {ba}",
-    tokens: ["{nombre}", "{ba}"],
+      "{nombre}, paso a saludarte desde Lancôme. ¿Cómo te ha ido con {compra.producto} desde que lo llevaste {compra.dia}? Si quieres ajustar algo o tienes dudas, aquí estoy para ti. — {ba}",
+    tokens: ["{nombre}", "{compra.producto}", "{compra.dia}", "{ba}"],
   },
   {
     id: "tpl-birthday-lancome-wa" as TemplateId,
@@ -62,8 +67,8 @@ const SEED: Template[] = [
     channel: "WhatsApp",
     category: "Reposición",
     body:
-      "Hola {nombre}, ¿cómo vas con tu {producto}? Si te está por acabar, te reservo uno nuevo. — {ba}",
-    tokens: ["{nombre}", "{producto}", "{ba}"],
+      "Hola {nombre}, ¿cómo vas con tu {compra.producto}? Te lo llevaste {compra.dia} — si te está por acabar, te reservo uno nuevo. — {ba}",
+    tokens: ["{nombre}", "{compra.producto}", "{compra.dia}", "{ba}"],
   },
 
   // ── YSL Beauty ───────────────────────────────────────────────────────
@@ -82,8 +87,8 @@ const SEED: Template[] = [
     channel: "WhatsApp",
     category: "Muestra",
     body:
-      "{nombre}, ¿cómo te sentiste con la muestra de {producto}? Me encantaría escuchar tu experiencia. — {ba}, YSL Beauty",
-    tokens: ["{nombre}", "{producto}", "{ba}"],
+      "{nombre}, ¿cómo te sentiste con la muestra de {muestra.producto} que te llevaste {muestra.dia}? Me encantaría escuchar tu experiencia. — {ba}, YSL Beauty",
+    tokens: ["{nombre}", "{muestra.producto}", "{muestra.dia}", "{ba}"],
   },
   {
     id: "tpl-seguimiento-ysl" as TemplateId,
@@ -91,8 +96,8 @@ const SEED: Template[] = [
     channel: "WhatsApp",
     category: "Seguimiento",
     body:
-      "{nombre}, soy {ba} de YSL Beauty. Quería darte seguimiento y ver cómo te está sentando lo que elegiste. Cuéntame cuando puedas.",
-    tokens: ["{nombre}", "{ba}"],
+      "{nombre}, soy {ba} de YSL Beauty. Quería darte seguimiento — ¿cómo te ha estado sentando {compra.producto}? Cuéntame cuando puedas.",
+    tokens: ["{nombre}", "{compra.producto}", "{ba}"],
   },
   {
     id: "tpl-birthday-ysl-wa" as TemplateId,
@@ -127,16 +132,16 @@ const SEED: Template[] = [
     channel: "WhatsApp",
     category: "Reposición",
     body:
-      "{nombre}, ¿cómo vas con tu {producto}? Si está por terminar, te lo aparto y lo recoges cuando puedas. — {ba}, YSL Beauty",
-    tokens: ["{nombre}", "{producto}", "{ba}"],
+      "{nombre}, ¿cómo vas con tu {compra.producto}? Lo elegiste {compra.dia} — si está por terminar, te lo aparto y lo recoges cuando puedas. — {ba}, YSL Beauty",
+    tokens: ["{nombre}", "{compra.producto}", "{compra.dia}", "{ba}"],
   },
 ];
 
 import { persistent } from "./_persist";
-// v2 invalida el seed previo (5 plantillas) para que el HMR cargue las
-// 13 plantillas obligatorias acordadas con el cliente.
+// v3 invalida el seed v2 para que el HMR cargue las plantillas con
+// tokens dot-notation enriquecidos por resolveTaskContext.
 const TEMPLATES = persistent(
-  "__clienteling.templates.v2",
+  "__clienteling.templates.v3",
   () => new Map<TemplateId, Template>(SEED.map((t) => [t.id, t])),
 );
 
