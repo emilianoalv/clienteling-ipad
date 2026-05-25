@@ -208,6 +208,7 @@ export interface UserRepository {
   findById(id: UserId): Promise<User | null>;
   findFirstByRole(role: User["role"]): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
+  create(user: User): Promise<User>;
 }
 
 export const userRepository: UserRepository = {
@@ -229,5 +230,9 @@ export const userRepository: UserRepository = {
       if (user.email.toLowerCase() === normalized) return user;
     }
     return null;
+  },
+  async create(user) {
+    USERS.set(user.id, user);
+    return user;
   },
 };

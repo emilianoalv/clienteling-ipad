@@ -23,10 +23,25 @@ export function ReportsScreen({ reports }: ReportsScreenProps) {
             </span>
             <h2 className="m-0 font-display text-[28px] leading-tight">Biblioteca ejecutiva</h2>
           </div>
-          <Button variant="primary" leading={<Icon name="plus" size={12} />}>
+          <Button
+            variant="primary"
+            leading={<Icon name="plus" size={12} />}
+            disabled
+            title="Disponible en F4"
+          >
             Programar reporte
           </Button>
         </header>
+
+        <div className="inline-flex items-start gap-2 px-4 py-3 bg-warn/[0.08] text-warn rounded-md text-[14px] font-medium border border-warn/25 leading-snug">
+          <Icon name="warning" size={14} className="mt-0.5 shrink-0" />
+          <span>
+            Esta vista cataloga reportes programados — feature de F4. Para descargas inmediatas
+            (clientes, agenda, ventas por BA) usa los exports XLSX/CSV de los dashboards de cada
+            rol (Gerente, Supervisor, Admin) o el botón &ldquo;Exportar&rdquo; en el listado de
+            clientes.
+          </span>
+        </div>
 
         <ul className="list-none m-0 p-0">
           {reports.map((r) => (
@@ -46,10 +61,17 @@ export function ReportsScreen({ reports }: ReportsScreenProps) {
                 {r.freq}
               </span>
               <span className="font-mono text-[15px] uppercase text-ink/60">{r.fmt}</span>
-              <Button variant="default" size="sm" iconOnly aria-label="Descargar">
+              <Button
+                variant="default"
+                size="sm"
+                iconOnly
+                aria-label="Descargar"
+                disabled
+                title="Disponible en F4"
+              >
                 <Icon name="download" size={12} />
               </Button>
-              <Button variant="default" size="sm">
+              <Button variant="default" size="sm" disabled title="Disponible en F4">
                 Abrir
               </Button>
             </li>
@@ -68,7 +90,7 @@ export function ReportsScreen({ reports }: ReportsScreenProps) {
           <KvRow label="Métricas" value="LTV · Ticket · Conv. muestra · Opt-in" />
           <KvRow label="Período" value="Semana · Mes · Trimestre · Año" />
           <KvRow label="Formato" value="PDF ejecutivo · Excel · CSV" dashed={false} />
-          <Button variant="primary" className="w-full mt-3">
+          <Button variant="primary" className="w-full mt-3" disabled title="Disponible en F4">
             Generar
           </Button>
         </Card>

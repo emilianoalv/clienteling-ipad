@@ -1,5 +1,6 @@
 import "server-only";
-import type { Integration, IntegrationKey } from "@/types/integration";
+import type { Integration, IntegrationKey, IntegrationStatus } from "@/types/integration";
+import { persistent } from "./_persist";
 
 const SEED: Integration[] = [
   {
@@ -32,12 +33,29 @@ const SEED: Integration[] = [
   },
 ];
 
+const INTEGRATIONS = persistent(
+  "__clienteling.integrations.v1",
+  () => new Map<IntegrationKey, Integration>(SEED.map((i) => [i.key, i])),
+);
+
 export interface IntegrationRepository {
   list(): Promise<Integration[]>;
+  setStatus(key: IntegrationKey, status: IntegrationStatus): Promise<Integration | null>;
 }
 
 export const integrationRepository: IntegrationRepository = {
   async list() {
-    return [...SEED];
+    return Array.from(INTEGRATIONS.values());
+  },
+  async setStatus(key, status) {
+    const existing = INTEGRATIONS.get(key);
+    if (!existing) return null;
+    const updated: Integration = {
+      ...existing,
+      status,
+      lastEvent: `Status → ${status} · ${new Date().toISOString().slice(0, 10)}`,
+    };
+    INTEGRATIONS.set(key, updated);
+    return updated;
   },
 };

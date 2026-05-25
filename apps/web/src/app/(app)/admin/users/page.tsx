@@ -12,7 +12,7 @@ export default async function AdminUsersPage() {
   return (
     <section className="flex flex-col gap-4">
       <SectionHeader title={t("admin.users.title")} eyebrow={t("rail.users")} />
-      <UsersScreen users={users} storeLookup={storeLookup} />
+      <UsersScreen users={users} storeLookup={storeLookup} stores={stores} />
     </section>
   );
 }
