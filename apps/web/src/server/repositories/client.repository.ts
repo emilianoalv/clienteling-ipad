@@ -49,6 +49,8 @@ export interface ClientRepository {
   create(input: Omit<Client, "id">): Promise<Client>;
   patchStats(id: ClientId, stats: ClientStats): Promise<void>;
   patchProfile(id: ClientId, patch: ClientProfilePatch): Promise<Client | null>;
+  /** Borrado físico — paso final del cascade ARCO. */
+  delete(id: ClientId): Promise<boolean>;
 }
 
 const CLIENTS = persistent(
@@ -87,6 +89,10 @@ export const clientRepository: ClientRepository = {
     const current = CLIENTS.get(id);
     if (!current) return;
     CLIENTS.set(id, { ...current, stats });
+  },
+
+  async delete(id) {
+    return CLIENTS.delete(id);
   },
 
   async patchProfile(id, patch) {

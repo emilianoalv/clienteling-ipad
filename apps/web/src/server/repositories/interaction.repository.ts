@@ -28,6 +28,8 @@ export interface InteractionRepository {
   list(filter?: InteractionListFilter): Promise<Interaction[]>;
   listByClient(clientId: ClientId): Promise<Interaction[]>;
   create(input: Omit<Interaction, "id">): Promise<Interaction>;
+  /** ARCO cascade — borra todas las interacciones de un cliente. */
+  deleteByClient(clientId: ClientId): Promise<number>;
 }
 
 const INTERACTIONS: Interaction[] = persistent("__clienteling.interactions.v2", () => [
@@ -59,5 +61,16 @@ export const interactionRepository: InteractionRepository = {
     const interaction: Interaction = { ...input, id };
     INTERACTIONS.unshift(interaction);
     return interaction;
+  },
+
+  async deleteByClient(clientId) {
+    let removed = 0;
+    for (let i = INTERACTIONS.length - 1; i >= 0; i--) {
+      if (INTERACTIONS[i]!.clientId === clientId) {
+        INTERACTIONS.splice(i, 1);
+        removed++;
+      }
+    }
+    return removed;
   },
 };

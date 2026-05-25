@@ -21,6 +21,8 @@ export interface CommunicationRepository {
   list(filter?: CommunicationListFilter): Promise<Communication[]>;
   listByClient(clientId: ClientId): Promise<Communication[]>;
   create(input: Omit<Communication, "id">): Promise<Communication>;
+  /** ARCO cascade — borra todas las comunicaciones de un cliente. */
+  deleteByClient(clientId: ClientId): Promise<number>;
 }
 
 const COMMUNICATIONS: Communication[] = persistent("__clienteling.communications.v3", () => [...SEED_COMMUNICATIONS]);
@@ -48,5 +50,16 @@ export const communicationRepository: CommunicationRepository = {
     const comm: Communication = { ...input, id };
     COMMUNICATIONS.unshift(comm);
     return comm;
+  },
+
+  async deleteByClient(clientId) {
+    let removed = 0;
+    for (let i = COMMUNICATIONS.length - 1; i >= 0; i--) {
+      if (COMMUNICATIONS[i]!.clientId === clientId) {
+        COMMUNICATIONS.splice(i, 1);
+        removed++;
+      }
+    }
+    return removed;
   },
 };

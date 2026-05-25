@@ -22,6 +22,8 @@ export interface ConsentRepository {
      */
     signature?: string;
   }): Promise<Consent>;
+  /** ARCO cascade — borra todos los consents de un cliente. */
+  deleteByClient(clientId: ClientId): Promise<number>;
 }
 
 const CONSENTS: Consent[] = persistent("__clienteling.consents", () => [...SEED_CONSENTS]);
@@ -41,5 +43,16 @@ export const consentRepository: ConsentRepository = {
     if (idx >= 0) CONSENTS[idx] = consent;
     else CONSENTS.push(consent);
     return consent;
+  },
+
+  async deleteByClient(clientId) {
+    let removed = 0;
+    for (let i = CONSENTS.length - 1; i >= 0; i--) {
+      if (CONSENTS[i]!.clientId === clientId) {
+        CONSENTS.splice(i, 1);
+        removed++;
+      }
+    }
+    return removed;
   },
 };

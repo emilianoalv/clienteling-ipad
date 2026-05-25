@@ -241,6 +241,8 @@ export interface AppointmentRepository {
   findById(id: AppointmentId): Promise<Appointment | null>;
   create(input: Omit<Appointment, "id">): Promise<Appointment>;
   patch(id: AppointmentId, patch: Partial<Omit<Appointment, "id">>): Promise<Appointment | null>;
+  /** ARCO cascade — borra todas las citas de un cliente. */
+  deleteByClient(clientId: ClientId): Promise<number>;
 }
 
 export const appointmentRepository: AppointmentRepository = {
@@ -282,6 +284,17 @@ export const appointmentRepository: AppointmentRepository = {
     const next: Appointment = { ...current, ...patch };
     APPOINTMENTS[idx] = next;
     return next;
+  },
+
+  async deleteByClient(clientId) {
+    let removed = 0;
+    for (let i = APPOINTMENTS.length - 1; i >= 0; i--) {
+      if (APPOINTMENTS[i]!.clientId === clientId) {
+        APPOINTMENTS.splice(i, 1);
+        removed++;
+      }
+    }
+    return removed;
   },
 };
 

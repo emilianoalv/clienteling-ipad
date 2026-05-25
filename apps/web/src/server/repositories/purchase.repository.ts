@@ -24,6 +24,8 @@ export interface PurchaseRepository {
   listByClient(clientId: ClientId): Promise<Purchase[]>;
   findById(id: PurchaseId): Promise<Purchase | null>;
   create(input: Omit<Purchase, "id">): Promise<Purchase>;
+  /** ARCO cascade — borra todas las compras de un cliente. */
+  deleteByClient(clientId: ClientId): Promise<number>;
 }
 
 const PURCHASES: Purchase[] = persistent("__clienteling.purchases.v3", () => [...SEED_PURCHASES]);
@@ -54,5 +56,16 @@ export const purchaseRepository: PurchaseRepository = {
     const purchase: Purchase = { ...input, id };
     PURCHASES.unshift(purchase);
     return purchase;
+  },
+
+  async deleteByClient(clientId) {
+    let removed = 0;
+    for (let i = PURCHASES.length - 1; i >= 0; i--) {
+      if (PURCHASES[i]!.clientId === clientId) {
+        PURCHASES.splice(i, 1);
+        removed++;
+      }
+    }
+    return removed;
   },
 };

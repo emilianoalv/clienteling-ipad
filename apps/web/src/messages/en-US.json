@@ -121,7 +121,17 @@
       "eyebrow": "ARCO rights",
       "title": "Right to be forgotten",
       "description": "Request full removal of personal data. Requires double confirmation and creates an auditable ticket.",
-      "cta": "Start request"
+      "cta": "Start request",
+      "modal": {
+        "title": "Erase client data",
+        "warning": "This action permanently removes the client {name} along with every purchase, appointment, sample, recommendation, task and message. It cannot be undone. An auditable ticket is kept in the log.",
+        "confirm_label": "Type {name} to confirm.",
+        "confirm_placeholder": "Full client name",
+        "cancel": "Cancel",
+        "confirm": "Erase permanently",
+        "submitting": "Erasing…",
+        "error_mismatch": "Name does not match the client."
+      }
     },
     "appointments": {
       "new": "New",

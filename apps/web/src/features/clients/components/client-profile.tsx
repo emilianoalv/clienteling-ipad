@@ -156,7 +156,7 @@ export async function ClientProfile({
         <UpcomingEventsCard client={client} />
         <AffinitiesCard client={client} />
         <ConsentSummaryCard consents={consents} />
-        <ArcoRightsCard />
+        <ArcoRightsCard clientId={client.id} clientName={client.name} />
       </aside>
     </div>
   );

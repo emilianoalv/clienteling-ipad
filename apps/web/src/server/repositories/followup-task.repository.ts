@@ -188,6 +188,8 @@ export interface FollowupTaskRepository {
   ): Promise<FollowupTask>;
   complete(id: FollowupTaskId, result: string): Promise<FollowupTask | null>;
   cancel(id: FollowupTaskId): Promise<FollowupTask | null>;
+  /** ARCO cascade — borra todas las tareas de un cliente. */
+  deleteByClient(clientId: ClientId): Promise<number>;
 }
 
 const TASKS: FollowupTask[] = persistent("__clienteling.followupTasks.v3", () => [...SEED]);
@@ -257,5 +259,16 @@ export const followupTaskRepository: FollowupTaskRepository = {
     };
     TASKS[idx] = next;
     return next;
+  },
+
+  async deleteByClient(clientId) {
+    let removed = 0;
+    for (let i = TASKS.length - 1; i >= 0; i--) {
+      if (TASKS[i]!.clientId === clientId) {
+        TASKS.splice(i, 1);
+        removed++;
+      }
+    }
+    return removed;
   },
 };

@@ -32,6 +32,8 @@ export interface SampleRepository {
   listInventory(filter?: { brands?: readonly BrandId[] }): Promise<SampleInventoryItem[]>;
   create(input: Omit<Sample, "id">): Promise<Sample>;
   markConverted(id: SampleId, purchaseId: PurchaseId): Promise<Sample | null>;
+  /** ARCO cascade — borra todas las muestras dadas a un cliente. */
+  deleteByClient(clientId: ClientId): Promise<number>;
 }
 
 const SAMPLES: Sample[] = persistent("__clienteling.samples.v2", () => [...SEED_SAMPLES]);
@@ -99,5 +101,16 @@ export const sampleRepository: SampleRepository = {
     const next: Sample = { ...current, converted: true, purchaseId };
     SAMPLES[idx] = next;
     return next;
+  },
+
+  async deleteByClient(clientId) {
+    let removed = 0;
+    for (let i = SAMPLES.length - 1; i >= 0; i--) {
+      if (SAMPLES[i]!.clientId === clientId) {
+        SAMPLES.splice(i, 1);
+        removed++;
+      }
+    }
+    return removed;
   },
 };

@@ -1,5 +1,7 @@
 import "server-only";
 import type { AuditEvent, AuditEventId } from "@/types/audit-event";
+import { generateId } from "@/lib/id/generate-id";
+import { persistent } from "./_persist";
 
 const SEED: AuditEvent[] = [
   {
@@ -46,12 +48,25 @@ const SEED: AuditEvent[] = [
   },
 ];
 
+const EVENTS: AuditEvent[] = persistent("__clienteling.auditEvents.v1", () => [...SEED]);
+
 export interface AuditEventRepository {
   list(): Promise<AuditEvent[]>;
+  create(input: Omit<AuditEvent, "id" | "at">): Promise<AuditEvent>;
 }
 
 export const auditEventRepository: AuditEventRepository = {
   async list() {
-    return [...SEED].sort((a, b) => b.at.localeCompare(a.at));
+    return [...EVENTS].sort((a, b) => b.at.localeCompare(a.at));
+  },
+
+  async create(input) {
+    const event: AuditEvent = {
+      ...input,
+      id: generateId("au") as AuditEventId,
+      at: new Date().toISOString(),
+    };
+    EVENTS.unshift(event);
+    return event;
   },
 };

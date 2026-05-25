@@ -121,7 +121,17 @@
       "eyebrow": "Derechos ARCO",
       "title": "Derecho al olvido",
       "description": "Solicita la eliminación completa de datos personales. Requiere doble confirmación y genera ticket auditable.",
-      "cta": "Iniciar solicitud"
+      "cta": "Iniciar solicitud",
+      "modal": {
+        "title": "Eliminar datos del cliente",
+        "warning": "Esta acción borra de forma permanente el cliente {name} junto con todas sus compras, citas, muestras, recomendaciones, tareas y comunicaciones. No se puede deshacer. Quedará un registro auditable en el log.",
+        "confirm_label": "Escribe {name} para confirmar.",
+        "confirm_placeholder": "Nombre completo del cliente",
+        "cancel": "Cancelar",
+        "confirm": "Eliminar permanentemente",
+        "submitting": "Eliminando…",
+        "error_mismatch": "El nombre no coincide con el del cliente."
+      }
     },
     "appointments": {
       "new": "Nueva",

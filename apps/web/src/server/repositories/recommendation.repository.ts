@@ -29,6 +29,8 @@ export interface RecommendationRepository {
     id: RecommendationId,
     patch: Partial<Omit<Recommendation, "id">>,
   ): Promise<Recommendation | null>;
+  /** ARCO cascade — borra todas las recomendaciones de un cliente. */
+  deleteByClient(clientId: ClientId): Promise<number>;
 }
 
 const RECS: Recommendation[] = persistent("__clienteling.recommendations.v3", () => [...SEED_RECOMMENDATIONS]);
@@ -66,5 +68,16 @@ export const recommendationRepository: RecommendationRepository = {
     const next: Recommendation = { ...current, ...patch };
     RECS[idx] = next;
     return next;
+  },
+
+  async deleteByClient(clientId) {
+    let removed = 0;
+    for (let i = RECS.length - 1; i >= 0; i--) {
+      if (RECS[i]!.clientId === clientId) {
+        RECS.splice(i, 1);
+        removed++;
+      }
+    }
+    return removed;
   },
 };
