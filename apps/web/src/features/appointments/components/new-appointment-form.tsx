@@ -30,6 +30,16 @@ export interface NewAppointmentFormProps {
    * disponible para corregir si fue accidental.
    */
   defaultClientId?: string;
+  /**
+   * Notas pre-cargadas desde una tarea de seguimiento. La BA puede
+   * editarlas antes de guardar.
+   */
+  defaultNotes?: string;
+  /**
+   * ID de la tarea de seguimiento que originó esta navegación. Si viene,
+   * el action cerrará la task como hecha tras crear la cita.
+   */
+  originatingTaskId?: string;
 }
 
 export function NewAppointmentForm({
@@ -39,6 +49,8 @@ export function NewAppointmentForm({
   existingAppointments,
   brandScope,
   defaultClientId,
+  defaultNotes,
+  originatingTaskId,
 }: NewAppointmentFormProps) {
   const t = useTranslations();
   const allowedBrands = brandScope.length > 0 ? brandScope : (["Lancôme"] as const);
@@ -56,7 +68,7 @@ export function NewAppointmentForm({
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [durationMin, setDurationMin] = useState(45);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(defaultNotes ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -84,6 +96,7 @@ export function NewAppointmentForm({
       durationMin,
       kind,
       ...(notes ? { notes } : {}),
+      ...(originatingTaskId ? { originatingTaskId } : {}),
     };
     startTransition(async () => {
       const result = await createAppointment(input);

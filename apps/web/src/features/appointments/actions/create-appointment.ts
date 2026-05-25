@@ -6,9 +6,11 @@ import { requireSession } from "@/server/auth/session";
 import { homeStoreFor } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
+import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { hasConflict } from "../services/has-conflict";
 import { newAppointmentSchema, type NewAppointmentInput } from "../schemas/new-appointment.schema";
 import type { ClientId } from "@/types/client";
+import type { FollowupTaskId } from "@/types/followup-task";
 import type { StaffId } from "@/types/staff";
 
 export interface CreateAppointmentError {
@@ -50,6 +52,21 @@ export async function createAppointment(
     status: "scheduled",
     ...(input.notes !== undefined && { notes: input.notes }),
   });
+
+  // Cierre del ciclo: si esta cita nació de una tarea de seguimiento
+  // (chip "Cita" en /ba/followup), marcamos la task como hecha con un
+  // result auto-generado. Best-effort — si la task no existe o ya está
+  // hecha, no rompemos la creación de la cita.
+  if (input.originatingTaskId) {
+    const dateLabel = `${input.date} ${input.time}`;
+    await followupTaskRepository
+      .complete(
+        input.originatingTaskId as FollowupTaskId,
+        `Cita agendada para ${dateLabel}.`,
+      )
+      .catch(() => null);
+    revalidatePath("/ba/followup");
+  }
 
   revalidatePath("/ba/appointments");
   redirect(`/ba/appointments?saved=${created.id}`);

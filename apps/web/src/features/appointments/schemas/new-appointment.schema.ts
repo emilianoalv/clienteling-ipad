@@ -25,6 +25,12 @@ export const newAppointmentSchema = z.object({
   durationMin: z.number().int().positive().max(240).default(45),
   kind: z.enum(APPOINTMENT_KINDS),
   notes: z.string().max(500).optional(),
+  /**
+   * Tarea de seguimiento que originó esta cita. Cuando viene, la action
+   * cierra la task como "done" automáticamente tras crear la cita — la
+   * BA no necesita un paso extra.
+   */
+  originatingTaskId: z.string().optional(),
 });
 
 export type NewAppointmentInput = z.infer<typeof newAppointmentSchema>;

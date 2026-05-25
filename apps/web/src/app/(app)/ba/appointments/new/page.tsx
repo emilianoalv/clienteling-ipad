@@ -11,7 +11,7 @@ import type { StaffId } from "@/types/staff";
 export default async function NewAppointmentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ clientId?: string }>;
+  searchParams: Promise<{ clientId?: string; taskId?: string; notes?: string }>;
 }) {
   const t = await getTranslations();
   const { staff } = await requireSession();
@@ -28,6 +28,17 @@ export default async function NewAppointmentPage({
   const defaultClientId =
     params.clientId && clients.some((c) => c.id === params.clientId)
       ? params.clientId
+      : undefined;
+
+  // Notas pre-cargadas desde una tarea ("Agendar cita con Regina para…").
+  // El cap defensivo evita query strings gigantes que rompan el render.
+  const defaultNotes =
+    typeof params.notes === "string" && params.notes.length <= 500
+      ? params.notes
+      : undefined;
+  const originatingTaskId =
+    typeof params.taskId === "string" && params.taskId.length > 0
+      ? params.taskId
       : undefined;
 
   const baOptions: ReadonlyArray<{ id: StaffId; label: string }> = [
@@ -55,6 +66,8 @@ export default async function NewAppointmentPage({
         existingAppointments={appointments}
         brandScope={brands ?? []}
         {...(defaultClientId ? { defaultClientId } : {})}
+        {...(defaultNotes ? { defaultNotes } : {})}
+        {...(originatingTaskId ? { originatingTaskId } : {})}
       />
     </section>
   );

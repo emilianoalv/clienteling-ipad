@@ -323,14 +323,25 @@ function TaskRow({
           </span>
           {task.status === "pending" && !marking ? (
             <>
-              <Link
-                href={`/ba/clients/${task.clientId}/message/new?taskId=${task.id}`}
-                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-ink text-[14px] font-semibold no-underline hover:bg-bone transition-colors"
-                title="Abre el composer en pantalla completa con la tarea pre-cargada"
-              >
-                <Icon name="whatsapp" size={12} />
-                Responder
-              </Link>
+              {task.type === "appointment" ? (
+                <Link
+                  href={`/ba/appointments/new?clientId=${task.clientId}&taskId=${task.id}&notes=${encodeURIComponent(task.description)}`}
+                  className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md bg-ink text-paper text-[14px] font-semibold no-underline hover:bg-ink/90 transition-colors"
+                  title="Abre el form de nueva cita con cliente y notas pre-cargadas; cierra la tarea automáticamente"
+                >
+                  <Icon name="calendar" size={12} />
+                  Agendar cita
+                </Link>
+              ) : (
+                <Link
+                  href={`/ba/clients/${task.clientId}/message/new?taskId=${task.id}`}
+                  className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-ink text-[14px] font-semibold no-underline hover:bg-bone transition-colors"
+                  title="Abre el composer en pantalla completa con la tarea pre-cargada"
+                >
+                  <Icon name="whatsapp" size={12} />
+                  Responder
+                </Link>
+              )}
               <Button size="sm" variant="ghost" onClick={onCancel} disabled={isPending}>
                 Cancelar
               </Button>
