@@ -79,6 +79,24 @@ const SEED: Template[] = [
       "{nombre}, ¿cómo te ha ido con la muestra de {muestra.producto} que te llevaste {muestra.dia}? Cualquier impresión que tengas me encantaría escucharla. — {ba}, Lancôme",
     tokens: ["{nombre}", "{muestra.producto}", "{muestra.dia}", "{ba}"],
   },
+  {
+    id: "tpl-aniv-lancome-wa" as TemplateId,
+    brand: "Lancôme",
+    channel: "WhatsApp",
+    category: "Aniversario",
+    body:
+      "{nombre}, hoy se cumplen {evento.anos} años desde que decidiste formar parte de Lancôme. Te esperamos en {tienda} con un detalle especial para celebrarlo contigo. — {ba}",
+    tokens: ["{nombre}", "{evento.anos}", "{tienda}", "{ba}"],
+  },
+  {
+    id: "tpl-aniv-lancome-email" as TemplateId,
+    brand: "Lancôme",
+    channel: "Email",
+    category: "Aniversario",
+    body:
+      "Hola {nombre}, hoy celebramos {evento.anos} años contigo en Lancôme. Pásate por {tienda} este mes — preparamos un detalle de aniversario hecho a tu medida.",
+    tokens: ["{nombre}", "{evento.anos}", "{tienda}"],
+  },
 
   // ── YSL Beauty ───────────────────────────────────────────────────────
   {
@@ -144,14 +162,32 @@ const SEED: Template[] = [
       "{nombre}, ¿cómo vas con tu {compra.producto}? Lo elegiste {compra.dia} — si está por terminar, te lo aparto y lo recoges cuando puedas. — {ba}, YSL Beauty",
     tokens: ["{nombre}", "{compra.producto}", "{compra.dia}", "{ba}"],
   },
+  {
+    id: "tpl-aniv-ysl-wa" as TemplateId,
+    brand: "YSL",
+    channel: "WhatsApp",
+    category: "Aniversario",
+    body:
+      "{nombre}, hoy son {evento.anos} años desde que llegaste a YSL Beauty. Ven a {tienda} — tenemos algo único preparado para celebrarlo. — {ba}",
+    tokens: ["{nombre}", "{evento.anos}", "{tienda}", "{ba}"],
+  },
+  {
+    id: "tpl-aniv-ysl-email" as TemplateId,
+    brand: "YSL",
+    channel: "Email",
+    category: "Aniversario",
+    body:
+      "{nombre}, hoy YSL Beauty celebra contigo {evento.anos} años de complicidad. Este mes te tenemos una experiencia exclusiva en {tienda}. Cuando quieras, agenda tu visita.",
+    tokens: ["{nombre}", "{evento.anos}", "{tienda}"],
+  },
 ];
 
 import { persistent } from "./_persist";
-// v4 invalida el seed v3 para que el HMR cargue la plantilla Muestra
-// Lancôme (faltaba — solo YSL tenía Muestra y el matching fallaba
-// para tasks sample-feedback de clientas Lancôme).
+// v5 invalida el seed v4 para que el HMR cargue las 4 plantillas
+// Aniversario (Lancôme/YSL × WhatsApp/Email) con el nuevo token
+// {evento.anos}.
 const TEMPLATES = persistent(
-  "__clienteling.templates.v4",
+  "__clienteling.templates.v5",
   () => new Map<TemplateId, Template>(SEED.map((t) => [t.id, t])),
 );
 

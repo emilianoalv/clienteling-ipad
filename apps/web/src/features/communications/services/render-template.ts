@@ -16,6 +16,7 @@ export interface TemplateContext {
   "compra.producto"?: string;
   "compra.dia"?: string;
   "compra.fecha"?: string;
+  "evento.anos"?: string;
 }
 
 const TOKEN_KEY: Record<TemplateToken, keyof TemplateContext> = {
@@ -29,6 +30,7 @@ const TOKEN_KEY: Record<TemplateToken, keyof TemplateContext> = {
   "{compra.producto}": "compra.producto",
   "{compra.dia}": "compra.dia",
   "{compra.fecha}": "compra.fecha",
+  "{evento.anos}": "evento.anos",
 };
 
 /**

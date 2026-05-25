@@ -19,7 +19,8 @@ export type TemplateCategory =
 /**
  * Tokens reconocidos en los bodies de plantillas. Los simples son los
  * heredados; los dot-notation traen contexto resuelto por
- * `resolveTaskContext` para que el mensaje suene natural en español:
+ * `resolveTaskContext` (para tasks) o por la propia página del composer
+ * (para intents de evento) para que el mensaje suene natural en español:
  *
  *   {muestra.producto} → "Iris Absolu Eau de Parfum"
  *   {muestra.dia}      → "el lunes" / "la semana pasada"
@@ -27,6 +28,8 @@ export type TemplateCategory =
  *   {compra.dia}       → "ayer" / "hace 2 semanas"
  *   {compra.fecha}     → "15 abr" (formato corto, para Email donde
  *                        el tono conversacional no es prioritario)
+ *   {evento.anos}      → "3" — años cumplidos del aniversario como
+ *                        clienta. Solo se usa en plantillas Aniversario.
  */
 export type TemplateToken =
   | "{nombre}"
@@ -38,7 +41,8 @@ export type TemplateToken =
   | "{muestra.dia}"
   | "{compra.producto}"
   | "{compra.dia}"
-  | "{compra.fecha}";
+  | "{compra.fecha}"
+  | "{evento.anos}";
 
 export interface Template {
   id: TemplateId;
