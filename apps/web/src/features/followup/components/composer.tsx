@@ -15,8 +15,8 @@ import { renderTemplate, type TemplateContext } from "@/features/communications"
 import { sendCommunication } from "@/features/communications";
 import { completeFollowupTask } from "@/features/clients/actions/complete-followup-task";
 import { buildMessageUrl } from "@/lib/messaging/build-message-url";
+import { MessagePreview } from "./message-preview";
 import { TemplateList } from "./template-list";
-import { WhatsappPreview } from "./whatsapp-preview";
 
 const CHANNELS: ReadonlyArray<Channel> = ["WhatsApp", "Email", "SMS"];
 
@@ -473,10 +473,20 @@ export function Composer({
       </Card>
 
       {layout === "full" ? (
-        <WhatsappPreview
+        <MessagePreview
+          channel={channel}
           body={body || t("followup.preview.fallback")}
-          contactName={`${staffName.split(" ")[0] ?? staffName} · ${template?.brand ?? "Lancôme"}`}
-          contactInitials={(staffName[0] ?? "B").toUpperCase()}
+          subject={
+            template
+              ? `${template.category} · ${template.brand}`
+              : `Mensaje · ${client.brands[0] ?? "Lancôme"}`
+          }
+          contactName={client.name}
+          contactInitials={(client.name[0] ?? "C").toUpperCase()}
+          contactPhone={client.phone}
+          contactEmail={client.email}
+          fromName={staffName.split(" ")[0] ?? staffName}
+          fromBrand={template?.brand ?? client.brands[0] ?? "Lancôme"}
         />
       ) : null}
 
