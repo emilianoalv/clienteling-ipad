@@ -64,12 +64,13 @@ export function CompatibilityPicker({
     [client, products, techs],
   );
 
-  const productLookup = useMemo(
-    () => new Map<string, Product>(products.map((p) => [p.sku as unknown as string, p])),
-    [products],
-  );
+  const productLookup = useMemo<Readonly<Record<string, Product>>>(() => {
+    const out: Record<string, Product> = {};
+    for (const p of products) out[p.sku as unknown as string] = p;
+    return out;
+  }, [products]);
   const techProduct = techSku
-    ? productLookup.get(techSku as unknown as string) ?? null
+    ? productLookup[techSku as unknown as string] ?? null
     : null;
   const techData = techSku && techs ? techs.get(techSku) ?? null : null;
 

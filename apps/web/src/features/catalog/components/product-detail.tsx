@@ -35,10 +35,11 @@ export function ProductDetail({
   const t = useTranslations();
   const [showTech, setShowTech] = useState(false);
   const storeLookup = new Map(stores.map((s) => [s.id, s.name]));
-  const productLookup = useMemo(
-    () => new Map<string, Product>(allProducts.map((p) => [p.sku as unknown as string, p])),
-    [allProducts],
-  );
+  const productLookup = useMemo<Readonly<Record<string, Product>>>(() => {
+    const out: Record<string, Product> = {};
+    for (const p of allProducts) out[p.sku as unknown as string] = p;
+    return out;
+  }, [allProducts]);
 
   // Reordenamos para que la tienda del BA salga primero — así el número
   // que ve en el sidebar coincide exacto con el "Stock en X" del grid.

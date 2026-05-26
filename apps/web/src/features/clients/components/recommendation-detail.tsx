@@ -41,9 +41,9 @@ export function RecommendationDetail({
 }: RecommendationDetailProps) {
   const [techSku, setTechSku] = useState<Sku | null>(null);
 
-  const productLookup = new Map<string, Product>(
-    Object.entries(productBySku).map(([sku, product]) => [sku, product]),
-  );
+  // productBySku ya es Record — lo pasamos directo al modal sin convertir
+  // a Map (que rompe el boundary RSC).
+  const productLookup = productBySku;
   const techProduct = techSku ? productBySku[techSku as unknown as string] ?? null : null;
   const techData = techSku ? techs.get(techSku) ?? null : null;
 

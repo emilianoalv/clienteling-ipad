@@ -35,8 +35,12 @@ export interface SampleDetailProps {
   fullProductTech: ProductTech | null;
   baName: string;
   storeName: string;
-  /** Map of catalog products keyed by SKU — needed by the ficha técnica modal layering. */
-  productLookup: ReadonlyMap<string, Product>;
+  /**
+   * Catalog products keyed by SKU — needed by la ficha técnica modal para
+   * resolver `layerWith`. Record, no Map: los Maps rompen el boundary RSC
+   * cuando este componente cliente lo recibe desde la page server.
+   */
+  productLookup: Readonly<Record<string, Product>>;
 }
 
 export function SampleDetail({

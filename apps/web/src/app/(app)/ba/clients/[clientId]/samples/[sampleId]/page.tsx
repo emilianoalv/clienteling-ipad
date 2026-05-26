@@ -35,10 +35,10 @@ export default async function SampleDetailPage({
     products.find((p) => p.sampleSku && (p.sampleSku as unknown as string) === (sample.sku as unknown as string)) ?? null;
   const fullProductTech = fullProduct ? techs.get(fullProduct.sku) ?? null : null;
 
-  // Map needed by the ficha modal for layerWith resolution.
-  const productLookup = new Map<string, Product>(
-    products.map((p) => [p.sku as unknown as string, p]),
-  );
+  // Record (no Map) — los Maps no cruzan el boundary RSC al componente
+  // cliente <SampleDetail>; lo aprendimos en el bug del admin-dashboard.
+  const productLookup: Record<string, Product> = {};
+  for (const p of products) productLookup[p.sku as unknown as string] = p;
 
   return (
     <section className="flex flex-col gap-4">

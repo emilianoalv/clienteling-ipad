@@ -22,8 +22,12 @@ export interface FichaTecnicaModalProps {
   open: boolean;
   product: Product;
   tech: ProductTech | null;
-  /** All products in scope — used to resolve `layerWith` SKUs to names. */
-  productLookup: ReadonlyMap<string, Product>;
+  /**
+   * All products in scope — used to resolve `layerWith` SKUs to names.
+   * Record en lugar de Map: los Maps no son serializables a través del
+   * boundary RSC (Server → Client), tira "Error in input stream".
+   */
+  productLookup: Readonly<Record<string, Product>>;
   onClose: () => void;
 }
 
@@ -174,7 +178,7 @@ export function FichaTecnicaModal({
               <Section title="Combina bien con">
                 <ul className="m-0 p-0 list-none flex flex-col gap-1.5">
                   {tech.layerWith.map((sku) => {
-                    const layer = productLookup.get(sku);
+                    const layer = productLookup[sku as unknown as string];
                     if (!layer) return null;
                     return (
                       <li key={sku} className="text-[16px] leading-snug">
