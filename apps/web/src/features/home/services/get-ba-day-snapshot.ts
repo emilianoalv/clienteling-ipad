@@ -8,7 +8,7 @@ import { appointmentRepository } from "@/server/repositories/appointment.reposit
 import { clientRepository } from "@/server/repositories/client.repository";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { listUpcomingEvents } from "@/features/clients/services/list-upcoming-events";
-import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
+import { assignedBaScopeFor, brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 import { ensureBirthdayTasks } from "./ensure-birthday-tasks";
 
 export interface AgendaItem {
@@ -58,7 +58,11 @@ export async function getBaDaySnapshot(staff: Staff, now = new Date()): Promise<
       from: startTomorrow,
       to: startDayAfter,
     }),
-    clientRepository.list({ brands, storeIds }),
+    clientRepository.list({
+      brands,
+      storeIds,
+      assignedBaId: assignedBaScopeFor(staff),
+    }),
   ]);
 
   // Lazy ensure: cada vez que la BA abre Hoy, materializamos tareas de

@@ -9,7 +9,7 @@ import {
 } from "@/features/appointments";
 import { listClients } from "@/features/clients";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
+import { assignedBaScopeFor, brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 
 type Tab = "calendar" | "management";
 
@@ -28,7 +28,7 @@ export default async function AppointmentsPage({
   const brands = brandScopeFor(staff);
   const [appointments, clients] = await Promise.all([
     listAppointments({ brands, storeIds }),
-    listClients({ brands, storeIds }),
+    listClients({ brands, storeIds, assignedBaId: assignedBaScopeFor(staff) }),
   ]);
   const clientLookup = Object.fromEntries(clients.map((c) => [c.id, c.name]));
   const savedAppointment = savedId ? appointments.find((a) => a.id === savedId) : undefined;

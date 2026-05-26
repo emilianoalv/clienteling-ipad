@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { listClients } from "@/features/clients";
 import { TaskInbox } from "@/features/clients/components/task-inbox";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
+import { assignedBaScopeFor, brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 
 /**
@@ -18,7 +18,11 @@ export default async function FollowupPage() {
   const storeIds = storeScopeFor(staff);
   const brands = brandScopeFor(staff);
 
-  const clients = await listClients({ brands, storeIds });
+  const clients = await listClients({
+    brands,
+    storeIds,
+    assignedBaId: assignedBaScopeFor(staff),
+  });
   if (clients.length === 0) notFound();
 
   const clientLookup = Object.fromEntries(clients.map((c) => [c.id, c.name])) as Record<

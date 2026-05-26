@@ -5,7 +5,7 @@ import { SectionHeader } from "@/components/patterns";
 import { NewAppointmentForm, listAppointments } from "@/features/appointments";
 import { listClients } from "@/features/clients";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
+import { assignedBaScopeFor, brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 import type { StaffId } from "@/types/staff";
 
 export default async function NewAppointmentPage({
@@ -18,7 +18,7 @@ export default async function NewAppointmentPage({
   const storeIds = storeScopeFor(staff);
   const brands = brandScopeFor(staff);
   const [clients, appointments, params] = await Promise.all([
-    listClients({ brands, storeIds }),
+    listClients({ brands, storeIds, assignedBaId: assignedBaScopeFor(staff) }),
     listAppointments({ brands, storeIds }),
     searchParams,
   ]);

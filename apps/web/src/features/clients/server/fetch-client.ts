@@ -13,7 +13,7 @@ import { communicationRepository } from "@/server/repositories/communication.rep
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { productRepository } from "@/server/repositories/product.repository";
 import { userRepository } from "@/server/repositories/user.repository";
-import { brandScopeFor, isStoreInScope } from "@/server/auth/scope";
+import { brandScopeFor, isClientOwnedBy, isStoreInScope } from "@/server/auth/scope";
 import type { Product, Sku } from "@/types/product";
 
 /**
@@ -29,6 +29,8 @@ export async function fetchClient(id: string, staff: Staff): Promise<Client> {
   const client = await clientRepository.findById(id as ClientId);
   if (!client) notFound();
   if (!isStoreInScope(staff, client.storeId)) notFound();
+  // Ownership check para BA: si el cliente no la tiene asignada, 404 silencioso.
+  if (!isClientOwnedBy(staff, client.assignedBaIds)) notFound();
   return client;
 }
 
@@ -39,6 +41,7 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
   const initial = await clientRepository.findById(clientId);
   if (!initial) notFound();
   if (!isStoreInScope(staff, initial.storeId)) notFound();
+  if (!isClientOwnedBy(staff, initial.assignedBaIds)) notFound();
 
   const brands = brandScopeFor(staff);
   const [

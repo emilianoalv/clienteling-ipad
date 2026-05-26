@@ -29,6 +29,8 @@ function makeClient(overrides: Partial<Client["stats"]> & { lastPurchase?: strin
     affinities: [],
     interests: [],
     routine: "Básica",
+    createdByBaId: "us-ba-test" as never,
+    assignedBaIds: [],
   };
 }
 

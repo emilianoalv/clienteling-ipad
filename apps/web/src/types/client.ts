@@ -1,6 +1,7 @@
 import type { BrandId } from "./brand";
 import type { Branded } from "./branded";
 import type { Locale } from "./locale";
+import type { StaffId } from "./staff";
 import type { StoreId } from "./store";
 
 export type ClientId = Branded<string, "Client">;
@@ -98,4 +99,19 @@ export interface Client {
   avoidedIngredients?: readonly string[];
   gender?: Gender;
   ageRange?: AgeRange;
+  /**
+   * BA que registró al cliente por primera vez. Inmutable — sirve para
+   * trazabilidad y como prioridad cuando la clienta vuelve y otra BA la
+   * busca.
+   */
+  createdByBaId: StaffId;
+  /**
+   * BAs que han atendido a esta clienta. Incluye al menos a quien la
+   * registró. Cuando otra BA encuentra a la clienta vía el buscador y
+   * confirma "es esta", su id se agrega aquí. Una BA solo ve clientes
+   * cuyo `assignedBaIds` la incluye (RBAC nivel cliente, encima del
+   * scope de tienda + marca). Otros roles (Gerente/Supervisor/Admin)
+   * ignoran este campo y ven todo según su scope.
+   */
+  assignedBaIds: readonly StaffId[];
 }

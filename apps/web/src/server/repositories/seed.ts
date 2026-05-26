@@ -67,6 +67,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Sérum antiedad", "Fragancia oriental"],
     interests: ["Skincare", "Fragancia"],
     routine: "Profesional",
+    createdByBaId: BA_POL_LCM_1,
+    assignedBaIds: [BA_POL_LCM_1, BA_POL_YSL_1],
   },
   {
     id: "cl-ofelia" as ClientId,
@@ -88,6 +90,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Hydrating Boost"],
     interests: ["Skincare"],
     routine: "Avanzada",
+    createdByBaId: BA_POL_LCM_2,
+    assignedBaIds: [BA_POL_LCM_2],
   },
   {
     id: "cl-lorena" as ClientId,
@@ -109,6 +113,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: [],
     interests: ["Skincare"],
     routine: "Básica",
+    createdByBaId: BA_POL_LCM_1,
+    assignedBaIds: [BA_POL_LCM_1],
   },
   {
     id: "cl-adriana" as ClientId,
@@ -130,6 +136,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Libre", "All Hours"],
     interests: ["Maquillaje", "Fragancia"],
     routine: "Intermedia",
+    createdByBaId: BA_POL_YSL_2,
+    assignedBaIds: [BA_POL_YSL_2],
   },
   {
     id: "cl-beatriz" as ClientId,
@@ -151,6 +159,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Génifique", "Touche Éclat"],
     interests: ["Skincare", "Maquillaje", "Fragancia"],
     routine: "Intermedia",
+    createdByBaId: BA_POL_YSL_1,
+    assignedBaIds: [BA_POL_YSL_1, BA_POL_LCM_1],
   },
 
   // ── Perisur (st-per) — 5 clientas ─────────────────────────────────────────
@@ -174,6 +184,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Absolue", "Y Eau de Parfum"],
     interests: ["Skincare", "Fragancia"],
     routine: "Profesional",
+    createdByBaId: BA_PER_LCM_1,
+    assignedBaIds: [BA_PER_LCM_1, BA_PER_YSL_1],
   },
   {
     id: "cl-elena" as ClientId,
@@ -195,6 +207,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Génifique"],
     interests: ["Skincare"],
     routine: "Avanzada",
+    createdByBaId: BA_PER_LCM_2,
+    assignedBaIds: [BA_PER_LCM_2],
   },
   {
     id: "cl-gabriela" as ClientId,
@@ -216,6 +230,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Libre", "All Hours"],
     interests: ["Maquillaje", "Fragancia"],
     routine: "Avanzada",
+    createdByBaId: BA_PER_YSL_1,
+    assignedBaIds: [BA_PER_YSL_1, BA_PER_YSL_2],
   },
   {
     id: "cl-ines" as ClientId,
@@ -237,6 +253,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: [],
     interests: ["Maquillaje"],
     routine: "Básica",
+    createdByBaId: BA_PER_YSL_2,
+    assignedBaIds: [BA_PER_YSL_2],
   },
   {
     id: "cl-julieta" as ClientId,
@@ -258,6 +276,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Hydrating Boost"],
     interests: ["Skincare", "Maquillaje"],
     routine: "Intermedia",
+    createdByBaId: BA_PER_YSL_1,
+    assignedBaIds: [BA_PER_YSL_1, BA_PER_LCM_1],
   },
 
   // ── Santa Fe (st-stf) — 5 clientas ────────────────────────────────────────
@@ -281,6 +301,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Absolue Soft Cream", "Black Opium"],
     interests: ["Skincare", "Maquillaje", "Fragancia"],
     routine: "Profesional",
+    createdByBaId: BA_STF_LCM_1,
+    assignedBaIds: [BA_STF_LCM_1, BA_STF_YSL_2],
   },
   {
     id: "cl-marina" as ClientId,
@@ -302,6 +324,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Absolue", "Génifique"],
     interests: ["Skincare", "Maquillaje"],
     routine: "Avanzada",
+    createdByBaId: BA_STF_LCM_2,
+    assignedBaIds: [BA_STF_LCM_2],
   },
   {
     id: "cl-nadia" as ClientId,
@@ -323,6 +347,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["All Hours", "Touche Éclat"],
     interests: ["Maquillaje"],
     routine: "Intermedia",
+    createdByBaId: BA_STF_YSL_1,
+    assignedBaIds: [BA_STF_YSL_1],
   },
   {
     id: "cl-pamela" as ClientId,
@@ -344,6 +370,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: [],
     interests: ["Skincare"],
     routine: "Básica",
+    createdByBaId: BA_STF_LCM_1,
+    assignedBaIds: [BA_STF_LCM_1],
   },
   {
     id: "cl-rocio" as ClientId,
@@ -365,6 +393,8 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Libre"],
     interests: ["Fragancia"],
     routine: "Intermedia",
+    createdByBaId: BA_STF_YSL_2,
+    assignedBaIds: [BA_STF_YSL_2, BA_STF_YSL_1],
   },
 ];
 

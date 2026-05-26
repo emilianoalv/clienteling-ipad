@@ -1,6 +1,6 @@
 import "server-only";
 import type { BrandId } from "@/types/brand";
-import type { Staff } from "@/types/staff";
+import type { Staff, StaffId } from "@/types/staff";
 import type { StoreId } from "@/types/store";
 
 /**
@@ -44,6 +44,31 @@ export function brandScopeFor(staff: Staff): readonly BrandId[] | undefined {
     case "Admin":
       return staff.brands;
   }
+}
+
+/**
+ * Computes el filtro de ownership por BA. Solo BA tiene ownership — los
+ * otros roles ven todos los clientes de su scope (tienda + marca).
+ *
+ * Devuelve:
+ * - `staff.id` para BA → repo filtra clientes con assignedBaIds.includes(id)
+ * - `undefined` para Gerente / Supervisor / Admin → no filtra por BA
+ */
+export function assignedBaScopeFor(staff: Staff): StaffId | undefined {
+  return staff.role === "BA" ? staff.id : undefined;
+}
+
+/**
+ * Returns true if the BA owns this client (su id está en assignedBaIds).
+ * Para otros roles devuelve true siempre (ven todos los clientes de su scope).
+ * Usa junto con `isStoreInScope` en `fetch*` para decisión 404 silenciosa.
+ */
+export function isClientOwnedBy(
+  staff: Staff,
+  clientAssignedBaIds: readonly StaffId[],
+): boolean {
+  if (staff.role !== "BA") return true;
+  return clientAssignedBaIds.includes(staff.id);
 }
 
 /**

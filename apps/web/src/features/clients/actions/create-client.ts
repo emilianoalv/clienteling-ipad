@@ -71,6 +71,11 @@ export async function createClient(raw: NewClientInput): Promise<ActionError | v
       : {}),
     gender: input.gender,
     ageRange: input.ageRange,
+    // Ownership: el cliente nace asignado al BA que lo registra. Si más
+    // tarde otra BA (otra marca) lo atiende, se agrega al array vía
+    // clientRepository.linkBa() — no se sobrescribe.
+    createdByBaId: staff.id,
+    assignedBaIds: [staff.id],
   });
 
   for (const c of input.consents) {

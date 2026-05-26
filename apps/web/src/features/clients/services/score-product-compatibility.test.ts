@@ -29,6 +29,8 @@ function makeClient(overrides: Partial<Client> = {}): Client {
     affinities: [],
     interests: ["Skincare"],
     routine: "Básica",
+    createdByBaId: "us-ba-test" as never,
+    assignedBaIds: [],
     ...overrides,
   };
 }

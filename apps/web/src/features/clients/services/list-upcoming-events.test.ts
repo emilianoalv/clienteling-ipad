@@ -29,6 +29,8 @@ function client(overrides: Partial<Pick<Client, "birthday" | "since">> & { lastP
     affinities: [],
     interests: [],
     routine: "Básica",
+    createdByBaId: "us-ba-test" as never,
+    assignedBaIds: [],
   };
 }
 

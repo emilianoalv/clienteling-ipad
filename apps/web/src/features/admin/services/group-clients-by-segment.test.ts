@@ -34,6 +34,8 @@ function client(overrides: {
     affinities: [],
     interests: [],
     routine: "Básica",
+    createdByBaId: "us-ba-test" as never,
+    assignedBaIds: [],
   };
 }
 
