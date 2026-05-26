@@ -1,11 +1,14 @@
 import { getTranslations } from "next-intl/server";
-import type { Client } from "@/types/client";
 import { Card } from "@/components/patterns";
 import { Icon } from "@/components/primitives";
 
-export async function AffinitiesCard({ client }: { client: Client }) {
+export interface AffinitiesCardProps {
+  /** Lista derivada en el servidor por `deriveAffinities`. */
+  affinities: readonly string[];
+}
+
+export async function AffinitiesCard({ affinities }: AffinitiesCardProps) {
   const t = await getTranslations();
-  const affinities = client.affinities;
 
   return (
     <Card>

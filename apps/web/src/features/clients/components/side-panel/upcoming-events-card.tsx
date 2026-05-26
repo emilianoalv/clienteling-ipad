@@ -17,6 +17,12 @@ export async function UpcomingEventsCard({ client }: { client: Client }) {
   const t = await getTranslations();
   const events = listUpcomingEvents(client, { windowDays: 60 }).slice(0, 4);
 
+  // Si no hay eventos próximos no renderizamos el card — el side panel
+  // del perfil ya tiene mucha información y un "Sin eventos próximos"
+  // permanente agrega ruido sin aportar. El card reaparece solo cuando
+  // hay algo accionable (cumpleaños o aniversario en los próximos 60 días).
+  if (events.length === 0) return null;
+
   return (
     <Card>
       <SectionHeader title={t("profile.card.upcoming_events")} />

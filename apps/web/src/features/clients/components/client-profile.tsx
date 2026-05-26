@@ -39,6 +39,8 @@ export interface ClientProfileProps {
   baLookup: Record<string, string>;
   /** SKU → Product. Used by recs/samples previews to render real names. */
   productBySku: Record<string, Product>;
+  /** Afinidades derivadas server-side (perfil + historial de compras). */
+  derivedAffinities: readonly string[];
 }
 
 export async function ClientProfile({
@@ -53,6 +55,7 @@ export async function ClientProfile({
   followupTasks,
   baLookup,
   productBySku,
+  derivedAffinities,
 }: ClientProfileProps) {
   const t = await getTranslations();
   const segment = segmentClient(client);
@@ -154,7 +157,7 @@ export async function ClientProfile({
         <InterestsCard client={client} />
         <AppointmentsCard appointments={appointments} />
         <UpcomingEventsCard client={client} />
-        <AffinitiesCard client={client} />
+        <AffinitiesCard affinities={derivedAffinities} />
         <ConsentSummaryCard consents={consents} />
         <ArcoRightsCard clientId={client.id} clientName={client.name} />
       </aside>
