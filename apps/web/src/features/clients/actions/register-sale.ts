@@ -138,13 +138,19 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
   // la categoría que corresponde a cada hito.
   //   · 3 meses → check-in temprano ("¿cómo te está yendo?")
   //   · 6 meses → reposición estimada ("¿necesitas un nuevo frasco?")
-  // La BA puede borrar o adelantar cualquiera desde el inbox. Resolvemos
-  // el nombre del primer producto del ticket para que la descripción se
-  // sienta natural; si el SKU no está en catálogo, fallback al SKU.
-  const firstItem = input.items[0];
-  if (firstItem) {
-    const firstProduct = await productRepository.findBySku(firstItem.sku as Sku);
-    const productName = firstProduct?.line ?? firstItem.sku;
+  // La BA puede borrar o adelantar cualquiera desde el inbox.
+  //
+  // Resolvemos los nombres de TODOS los productos del ticket para que la
+  // descripción los liste en frase natural ("Génifique y Hydra Zen"). Antes
+  // solo se mencionaba el primero, lo que obligaba a la BA a reescribir el
+  // mensaje al disparar la tarea cuando había multi-producto.
+  if (input.items.length > 0) {
+    const names: string[] = [];
+    for (const item of input.items) {
+      const product = await productRepository.findBySku(item.sku as Sku);
+      names.push(product?.line ?? item.sku);
+    }
+    const productList = formatProductList(names);
     const firstName = client.name.split(/\s+/)[0] ?? client.name;
     const purchaseDate = new Date(at);
 
@@ -155,7 +161,7 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
       baId: staff.id,
       type: "whatsapp",
       category: "3-month-check",
-      description: `Check-in con ${firstName}: ¿cómo le está yendo con ${productName}?`,
+      description: `Check-in con ${firstName}: ¿cómo le está yendo con ${productList}?`,
       dueAt: threeMonthsAt.toISOString(),
       sourceInteractionId: interaction.id,
     });
@@ -167,7 +173,7 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
       baId: staff.id,
       type: "whatsapp",
       category: "replenishment",
-      description: `Reposición estimada de ${productName} para ${firstName}`,
+      description: `Reposición estimada de ${productList} para ${firstName}`,
       dueAt: sixMonthsAt.toISOString(),
       sourceInteractionId: interaction.id,
     });
@@ -177,4 +183,16 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
 
   revalidatePath(`/ba/clients/${clientId}`);
   redirect(`/ba/clients/${clientId}?sale=${purchase.id}`);
+}
+
+/**
+ * Lista nombres en frase natural española: "X", "X y Y", "X, Y y Z".
+ * Inline aquí para no depender del helper de features/communications
+ * (boundaries: clients/actions no debe importar de otro feature).
+ */
+function formatProductList(names: readonly string[]): string {
+  if (names.length === 0) return "";
+  if (names.length === 1) return names[0]!;
+  if (names.length === 2) return `${names[0]} y ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
 }
