@@ -42,15 +42,14 @@ export function SamplesPreview({ samples, clientId }: SamplesPreviewProps) {
             Historial de muestras
           </div>
           <p className="m-0 mt-1 text-[14.5px] text-ink/60 leading-snug">
-            {samples.length} {samples.length === 1 ? "muestra entregada" : "muestras entregadas"}{" "}
-            · agrupadas por visita. Toca cualquiera para ver el detalle.
+            Productos sampleados al cliente — entrega, conversión y seguimiento.
           </p>
         </div>
         <Link
           href={`/ba/clients/${clientId}/samples`}
           className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-[14px] font-semibold text-ink no-underline transition-colors hover:bg-bone"
         >
-          Ver con filtros
+          Ver todo
           <Icon name="arrow-right" size={13} />
         </Link>
       </header>
