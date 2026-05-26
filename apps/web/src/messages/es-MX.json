@@ -498,7 +498,8 @@
         "original": "Fecha original",
         "status": "Estado",
         "new_date": "Nueva fecha",
-        "reason": "Motivo"
+        "reason": "Motivo",
+        "notes": "Comentario"
       },
       "empty": "Sin citas en este filtro.",
       "tab_calendar": "Calendario"

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Button, Icon } from "@/components/primitives";
 import { SectionHeader } from "@/components/patterns";
 import {
   AppointmentCalendar,
@@ -8,8 +7,11 @@ import {
   listAppointments,
 } from "@/features/appointments";
 import { listClients } from "@/features/clients";
+import { ExportButton } from "@/features/dashboards/components/_shared/export-button";
+import { exportAgendaReport } from "@/features/dashboards/server/actions";
 import { requireSession } from "@/server/auth/session";
 import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
+import type { DashboardFilters } from "@/features/dashboards/server/types";
 
 type Tab = "calendar" | "management";
 
@@ -41,9 +43,28 @@ export default async function ManagerAppointmentsPage({
   ]);
   const clientLookup = Object.fromEntries(clients.map((c) => [c.id, c.name]));
 
+  // Filtros mínimos para el ExportButton — Cubre RF-46 (exportar agenda).
+  const today = new Date();
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const exportFilters: DashboardFilters = {
+    period: { from: firstOfMonth, to: today },
+    ...(storeIds ? { storeIds } : {}),
+    ...(brands ? { brands } : {}),
+  };
+
   return (
     <section className="flex flex-col gap-4">
-      <SectionHeader title={t("calendar.title")} eyebrow="Mi tienda" />
+      <SectionHeader
+        title={t("calendar.title")}
+        eyebrow="Mi tienda"
+        right={
+          <ExportButton
+            filters={exportFilters}
+            onExport={exportAgendaReport}
+            label="Exportar agenda"
+          />
+        }
+      />
 
       <nav
         aria-label="Appointments tabs"
@@ -89,6 +110,3 @@ function TabLink({
     </Link>
   );
 }
-
-void Button;
-void Icon;

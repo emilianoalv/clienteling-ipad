@@ -160,7 +160,7 @@ export function TeamScreen({ team, clientsByBa, selectedBaId }: TeamScreenProps)
                 {filteredClients.map((c) => (
                   <li key={c.id} className="border-b border-line last:border-b-0">
                     <Link
-                      href={`/ba/clients/${c.id}`}
+                      href={`/gerente/clients/${c.id}`}
                       className="grid grid-cols-[40px_minmax(0,1fr)_120px_120px_auto] items-center gap-3.5 py-3 px-1 text-ink no-underline hover:bg-bone/40 rounded-md"
                     >
                       <Avatar initials={initials(c.name)} size={36} />

@@ -490,7 +490,8 @@
         "original": "Original date",
         "status": "Status",
         "new_date": "New date",
-        "reason": "Reason"
+        "reason": "Reason",
+        "notes": "Notes"
       },
       "empty": "No appointments in this filter.",
       "tab_calendar": "Calendar"

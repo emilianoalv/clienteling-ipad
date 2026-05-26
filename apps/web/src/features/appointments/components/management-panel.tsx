@@ -145,13 +145,14 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
 
       {/* History table */}
       <Card variant="flat" className="p-0 overflow-hidden">
-        <div className="grid grid-cols-[1.6fr_1.2fr_0.9fr_0.9fr_1fr_1.6fr] gap-3 px-5 py-3 bg-bone border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+        <div className="grid grid-cols-[1.5fr_1.1fr_0.9fr_0.9fr_1fr_1.2fr_1.4fr] gap-3 px-5 py-3 bg-bone border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60">
           <span>{t("appointment.management.column.client")}</span>
           <span>{t("appointment.management.column.kind")}</span>
           <span>{t("appointment.management.column.original")}</span>
           <span>{t("appointment.management.column.status")}</span>
           <span>{t("appointment.management.column.new_date")}</span>
           <span>{t("appointment.management.column.reason")}</span>
+          <span>{t("appointment.management.column.notes")}</span>
         </div>
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-[16px] font-medium text-ink/60">
@@ -168,7 +169,7 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
                 <li key={a.id} className="border-b border-line last:border-b-0">
                   <Link
                     href={`/ba/clients/${a.clientId}/appointments/${a.id}`}
-                    className="grid grid-cols-[1.6fr_1.2fr_0.9fr_0.9fr_1fr_1.6fr] gap-3 px-5 py-3 items-center text-ink no-underline transition-colors hover:bg-bone/50"
+                    className="grid grid-cols-[1.5fr_1.1fr_0.9fr_0.9fr_1fr_1.2fr_1.4fr] gap-3 px-5 py-3 items-center text-ink no-underline transition-colors hover:bg-bone/50"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Avatar initials={initials(clientName)} size={32} tone={tone} />
@@ -202,7 +203,12 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
                       )}
                     </div>
                     <div className="text-[16px] font-medium leading-snug text-ink/60 truncate">
-                      {a.cancelReason ?? a.notes ?? "—"}
+                      {a.cancelReason ?? (
+                        <span className="text-ink/40">—</span>
+                      )}
+                    </div>
+                    <div className="text-[16px] font-medium leading-snug text-ink/60 truncate">
+                      {a.notes ?? <span className="text-ink/40">—</span>}
                     </div>
                   </Link>
                 </li>
