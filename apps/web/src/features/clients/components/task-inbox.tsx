@@ -233,38 +233,36 @@ export function TaskInbox({
       ) : null}
       {mode === "global" ? <CreateTaskGlobalRow clientLookup={clientLookup} /> : null}
 
-      {/* Buscador de cliente — solo en modo global. En el tab del perfil
-          ya estás en un solo cliente, agregar input ahí sería ruido. */}
-      {mode === "global" ? (
-        <div className="relative max-w-[420px]">
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar cliente por nombre…"
-            aria-label="Buscar cliente"
-            className="pl-9"
-          />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40">
-            <Icon name="search" size={16} />
-          </span>
-          {query ? (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              aria-label="Limpiar búsqueda"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md inline-flex items-center justify-center text-ink/55 hover:bg-ink/[0.04] cursor-pointer"
-            >
-              <Icon name="x" size={14} />
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-
-      {/* Filtros — fila 1: bucket temporal; fila 2: categoría (Cita,
-          Cumpleaños, Reposición, etc.). Solo aparecen las categorías con
-          ≥1 tarea en el bucket, para que la fila no se sienta amontonada. */}
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-center gap-2 flex-wrap">
+      {/* Búsqueda + buckets — mismo estilo que Catálogo (Card flat con
+          input grande + segmented control en pills al lado). En modo
+          client-scoped no hay buscador (el contexto ya es un solo
+          cliente), pero los buckets siguen en el Card para consistencia. */}
+      <Card variant="flat" className="flex items-center gap-2.5 flex-wrap">
+        {mode === "global" ? (
+          <div className="relative flex-1 min-w-[220px]">
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar cliente por nombre…"
+              aria-label="Buscar cliente"
+              className="pl-9"
+            />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40">
+              <Icon name="search" size={16} />
+            </span>
+            {query ? (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label="Limpiar búsqueda"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md inline-flex items-center justify-center text-ink/55 hover:bg-ink/[0.04] cursor-pointer"
+              >
+                <Icon name="x" size={14} />
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+        <div className="inline-flex bg-bone rounded-pill p-[3px] border border-line">
           {BUCKETS.map((b) => {
             const active = bucket === b.id;
             return (
@@ -273,10 +271,10 @@ export function TaskInbox({
                 type="button"
                 onClick={() => setBucket(b.id)}
                 aria-pressed={active}
-                className={`inline-flex items-center gap-2 h-9 px-3.5 rounded-full border text-[14px] font-semibold cursor-pointer transition-colors ${
+                className={`inline-flex items-center gap-1.5 h-7 px-3.5 rounded-pill border-0 text-[16px] font-medium cursor-pointer transition-colors ${
                   active
-                    ? "bg-ink text-paper border-ink"
-                    : "bg-white text-ink border-line hover:bg-bone"
+                    ? "bg-white text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+                    : "bg-transparent text-ink/60"
                 }`}
               >
                 <span>{b.label}</span>
@@ -285,6 +283,13 @@ export function TaskInbox({
             );
           })}
         </div>
+      </Card>
+
+      {/* Filtro por categoría — segunda fila. Solo aparecen las
+          categorías con ≥1 tarea en el bucket para evitar saturar. */}
+      <div className="flex flex-col gap-2.5">
+        {/* placeholder vacío — buckets ahora viven en el Card de arriba */}
+        <div className="hidden" />
         {visibleCategories.length > 0 ? (
           <div className="flex items-center gap-1.5 flex-wrap">
             <button

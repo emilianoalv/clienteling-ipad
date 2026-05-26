@@ -96,9 +96,10 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
         />
       </div>
 
-      {/* Search + filter chips */}
-      <Card variant="flat" className="flex flex-col gap-3 py-3">
-        <div className="relative max-w-[420px]">
+      {/* Search + filter chips — mismo estilo que Catálogo (Card flat con
+          input grande + segmented control en pills al lado). */}
+      <Card variant="flat" className="flex items-center gap-2.5 flex-wrap">
+        <div className="relative flex-1 min-w-[220px]">
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -120,10 +121,7 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
             </button>
           ) : null}
         </div>
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-            {t("appointment.management.filter")}
-          </span>
+        <div className="inline-flex bg-bone rounded-pill p-[3px] border border-line">
           {FILTER_STATUSES.map((s) => {
             const active = filter === s;
             return (
@@ -132,10 +130,10 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
                 type="button"
                 onClick={() => setFilter(s)}
                 aria-pressed={active}
-                className={`h-7 px-3 rounded-pill border text-[15px] font-semibold cursor-pointer transition-colors ${
+                className={`h-7 px-3.5 rounded-pill border-0 text-[16px] font-medium cursor-pointer transition-colors ${
                   active
-                    ? "bg-ink text-paper border-ink"
-                    : "bg-bone text-ink border-line hover:border-ink/30"
+                    ? "bg-white text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+                    : "bg-transparent text-ink/60"
                 }`}
               >
                 {t(FILTER_LABEL_KEY[s] as Parameters<typeof t>[0])}
