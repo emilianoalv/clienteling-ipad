@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Appointment, AppointmentStatus } from "@/types/appointment";
-import { Avatar, type AvatarTone, BrandTag } from "@/components/primitives";
+import { Avatar, type AvatarTone, BrandTag, Icon, Input } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import { aggregateAppointmentStats } from "../services/appointment-stats";
 
@@ -43,14 +44,21 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
   const t = useTranslations();
   const stats = useMemo(() => aggregateAppointmentStats(appointments), [appointments]);
   const [filter, setFilter] = useState<AppointmentStatus | "all">("all");
+  const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
-    if (filter === "all") return appointments;
-    if (filter === "scheduled") {
-      return appointments.filter((a) => a.status === "scheduled" || a.status === "confirmed");
-    }
-    return appointments.filter((a) => a.status === filter);
-  }, [appointments, filter]);
+    const needle = query.trim().toLowerCase();
+    const byStatus =
+      filter === "all"
+        ? appointments
+        : filter === "scheduled"
+          ? appointments.filter((a) => a.status === "scheduled" || a.status === "confirmed")
+          : appointments.filter((a) => a.status === filter);
+    if (!needle) return byStatus;
+    return byStatus.filter((a) =>
+      (clientLookup[a.clientId] ?? "").toLowerCase().includes(needle),
+    );
+  }, [appointments, filter, query, clientLookup]);
 
   const ratePct = (rate: number) => Math.round(rate * 100);
 
@@ -88,29 +96,53 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
         />
       </div>
 
-      {/* Filter chips */}
-      <Card variant="flat" className="flex items-center gap-2.5 flex-wrap py-3">
-        <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
-          {t("appointment.management.filter")}
-        </span>
-        {FILTER_STATUSES.map((s) => {
-          const active = filter === s;
-          return (
+      {/* Search + filter chips */}
+      <Card variant="flat" className="flex flex-col gap-3 py-3">
+        <div className="relative max-w-[420px]">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar cliente por nombre…"
+            aria-label="Buscar cliente"
+            className="pl-9"
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40">
+            <Icon name="search" size={16} />
+          </span>
+          {query ? (
             <button
-              key={s}
               type="button"
-              onClick={() => setFilter(s)}
-              aria-pressed={active}
-              className={`h-7 px-3 rounded-pill border text-[15px] font-semibold cursor-pointer transition-colors ${
-                active
-                  ? "bg-ink text-paper border-ink"
-                  : "bg-bone text-ink border-line hover:border-ink/30"
-              }`}
+              onClick={() => setQuery("")}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md inline-flex items-center justify-center text-ink/55 hover:bg-ink/[0.04] cursor-pointer"
             >
-              {t(FILTER_LABEL_KEY[s] as Parameters<typeof t>[0])}
+              <Icon name="x" size={14} />
             </button>
-          );
-        })}
+          ) : null}
+        </div>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="text-[15px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+            {t("appointment.management.filter")}
+          </span>
+          {FILTER_STATUSES.map((s) => {
+            const active = filter === s;
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setFilter(s)}
+                aria-pressed={active}
+                className={`h-7 px-3 rounded-pill border text-[15px] font-semibold cursor-pointer transition-colors ${
+                  active
+                    ? "bg-ink text-paper border-ink"
+                    : "bg-bone text-ink border-line hover:border-ink/30"
+                }`}
+              >
+                {t(FILTER_LABEL_KEY[s] as Parameters<typeof t>[0])}
+              </button>
+            );
+          })}
+        </div>
       </Card>
 
       {/* History table */}
@@ -125,7 +157,9 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
         </div>
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-[16px] font-medium text-ink/60">
-            {t("appointment.management.empty")}
+            {query
+              ? `Sin coincidencias para "${query}"`
+              : t("appointment.management.empty")}
           </div>
         ) : (
           <ul className="list-none m-0 p-0">
@@ -133,44 +167,46 @@ export function ManagementPanel({ appointments, clientLookup }: ManagementPanelP
               const tone: AvatarTone = brandToTone(a.brand);
               const clientName = clientLookup[a.clientId] ?? "—";
               return (
-                <li
-                  key={a.id}
-                  className="grid grid-cols-[1.6fr_1.2fr_0.9fr_0.9fr_1fr_1.6fr] gap-3 px-5 py-3 border-b border-line last:border-b-0 items-center"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Avatar initials={initials(clientName)} size={32} tone={tone} />
-                    <div className="min-w-0">
-                      <div className="text-[16px] font-semibold leading-tight truncate">
-                        {clientName}
-                      </div>
-                      <BrandTag brand={a.brand} alwaysShow />
-                    </div>
-                  </div>
-                  <div className="text-[16px] font-medium leading-snug">
-                    {t(`appointment.kind.${a.kind}`)}
-                  </div>
-                  <div className="text-[16px] font-medium tabular">
-                    <span>{formatDate(a.at)}</span>
-                    <span className="text-ink/60"> · {formatTime(a.at)}</span>
-                  </div>
-                  <span
-                    className={`inline-flex w-fit h-6 px-2.5 items-center rounded-pill border text-[15px] font-semibold ${STATUS_TONE[a.status]}`}
+                <li key={a.id} className="border-b border-line last:border-b-0">
+                  <Link
+                    href={`/ba/clients/${a.clientId}/appointments/${a.id}`}
+                    className="grid grid-cols-[1.6fr_1.2fr_0.9fr_0.9fr_1fr_1.6fr] gap-3 px-5 py-3 items-center text-ink no-underline transition-colors hover:bg-bone/50"
                   >
-                    {t(`appointment.status.${a.status}`)}
-                  </span>
-                  <div className="text-[16px] font-medium tabular">
-                    {a.rescheduledAt ? (
-                      <>
-                        <span>{formatDate(a.rescheduledAt)}</span>
-                        <span className="text-ink/60"> · {formatTime(a.rescheduledAt)}</span>
-                      </>
-                    ) : (
-                      <span className="text-ink/40">—</span>
-                    )}
-                  </div>
-                  <div className="text-[16px] font-medium leading-snug text-ink/60 truncate">
-                    {a.cancelReason ?? a.notes ?? "—"}
-                  </div>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Avatar initials={initials(clientName)} size={32} tone={tone} />
+                      <div className="min-w-0">
+                        <div className="text-[16px] font-semibold leading-tight truncate">
+                          {clientName}
+                        </div>
+                        <BrandTag brand={a.brand} alwaysShow />
+                      </div>
+                    </div>
+                    <div className="text-[16px] font-medium leading-snug">
+                      {t(`appointment.kind.${a.kind}`)}
+                    </div>
+                    <div className="text-[16px] font-medium tabular">
+                      <span>{formatDate(a.at)}</span>
+                      <span className="text-ink/60"> · {formatTime(a.at)}</span>
+                    </div>
+                    <span
+                      className={`inline-flex w-fit h-6 px-2.5 items-center rounded-pill border text-[15px] font-semibold ${STATUS_TONE[a.status]}`}
+                    >
+                      {t(`appointment.status.${a.status}`)}
+                    </span>
+                    <div className="text-[16px] font-medium tabular">
+                      {a.rescheduledAt ? (
+                        <>
+                          <span>{formatDate(a.rescheduledAt)}</span>
+                          <span className="text-ink/60"> · {formatTime(a.rescheduledAt)}</span>
+                        </>
+                      ) : (
+                        <span className="text-ink/40">—</span>
+                      )}
+                    </div>
+                    <div className="text-[16px] font-medium leading-snug text-ink/60 truncate">
+                      {a.cancelReason ?? a.notes ?? "—"}
+                    </div>
+                  </Link>
                 </li>
               );
             })}
