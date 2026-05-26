@@ -41,6 +41,8 @@ export interface SampleDetailProps {
    * cuando este componente cliente lo recibe desde la page server.
    */
   productLookup: Readonly<Record<string, Product>>;
+  /** Prefijo para el link "Ver compra". Default `/ba/clients`. */
+  basePath?: string;
 }
 
 export function SampleDetail({
@@ -51,6 +53,7 @@ export function SampleDetail({
   baName,
   storeName,
   productLookup,
+  basePath = "/ba/clients",
 }: SampleDetailProps) {
   const [showTech, setShowTech] = useState(false);
   const days = daysSince(sample.givenAt);
@@ -104,7 +107,7 @@ export function SampleDetail({
               label="Ticket asociado"
               value={
                 <Link
-                  href={`/ba/clients/${client.id}/purchases/${sample.purchaseId}`}
+                  href={`${basePath}/${client.id}/purchases/${sample.purchaseId}`}
                   className="text-ink underline underline-offset-2 hover:text-ink/80"
                 >
                   Ver compra →

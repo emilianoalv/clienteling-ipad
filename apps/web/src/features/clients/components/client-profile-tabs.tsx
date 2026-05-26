@@ -62,12 +62,18 @@ export interface ClientProfileTabsProps {
    * consultan el perfil sin operar (Gerente/Supervisor/Admin).
    */
   readOnly?: boolean;
+  /**
+   * Prefijo para deep-links de las previews (Ver todo, fila individual).
+   * Default `/ba/clients`. Gerente pasa `/gerente/clients`.
+   */
+  basePath?: string;
 }
 
 export function ClientProfileTabs(props: ClientProfileTabsProps) {
   const t = useTranslations();
   const searchParams = useSearchParams();
   const [tab, setTab] = useState<TabId>("purchases");
+  const basePath = props.basePath ?? "/ba/clients";
 
   // Allow deep-links like ?tab=followup (used by the Seguimiento action strip button).
   useEffect(() => {
@@ -114,23 +120,33 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
 
       <Card variant="flat" className="min-h-[220px]" role="tabpanel">
         {tab === "purchases" && (
-          <PurchasesPreview purchases={props.purchases} clientId={props.clientId} />
+          <PurchasesPreview
+            purchases={props.purchases}
+            clientId={props.clientId}
+            basePath={basePath}
+          />
         )}
         {tab === "recs" && (
           <RecsPreview
             recommendations={props.recommendations}
             clientId={props.clientId}
             productBySku={props.productBySku}
+            basePath={basePath}
           />
         )}
         {tab === "samples" && (
-          <SamplesPreview samples={props.samples} clientId={props.clientId} />
+          <SamplesPreview
+            samples={props.samples}
+            clientId={props.clientId}
+            basePath={basePath}
+          />
         )}
         {tab === "appointments" && (
           <AppointmentsPreview
             appointments={props.appointments}
             clientId={props.clientId}
             baLookup={props.baLookup}
+            basePath={basePath}
           />
         )}
         {tab === "beauty" && (

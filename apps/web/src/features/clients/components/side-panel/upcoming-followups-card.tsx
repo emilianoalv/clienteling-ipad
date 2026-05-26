@@ -20,6 +20,8 @@ const PREVIEW_COUNT = 3;
 export interface UpcomingFollowupsCardProps {
   clientId: ClientId;
   tasks: readonly FollowupTask[];
+  /** Prefijo de ruta para el link "Ver todos". Default `/ba/clients`. */
+  basePath?: string;
 }
 
 /**
@@ -27,7 +29,11 @@ export interface UpcomingFollowupsCardProps {
  * for this client, ordered by due date. Links to the full Seguimientos
  * tab when there's more.
  */
-export function UpcomingFollowupsCard({ clientId, tasks }: UpcomingFollowupsCardProps) {
+export function UpcomingFollowupsCard({
+  clientId,
+  tasks,
+  basePath = "/ba/clients",
+}: UpcomingFollowupsCardProps) {
   const pending = tasks
     .filter((t) => t.status === "pending")
     .sort((a, b) => a.dueAt.localeCompare(b.dueAt));
@@ -82,7 +88,7 @@ export function UpcomingFollowupsCard({ clientId, tasks }: UpcomingFollowupsCard
       {pending.length > PREVIEW_COUNT ? (
         <div className="mt-2.5">
           <Link
-            href={`/ba/clients/${clientId}?tab=followup`}
+            href={`${basePath}/${clientId}?tab=followup`}
             className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-ink hover:text-ink/80 no-underline"
           >
             Ver todos

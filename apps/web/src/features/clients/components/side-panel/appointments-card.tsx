@@ -17,8 +17,11 @@ const STATUS_COLOR: Record<AppointmentStatus, string> = {
 
 export async function AppointmentsCard({
   appointments,
+  basePath = "/ba/clients",
 }: {
   appointments: readonly Appointment[];
+  /** Prefijo de ruta para deep-links. Default `/ba/clients`. */
+  basePath?: string;
 }) {
   const t = await getTranslations();
   const cutoff = Date.now() - 86_400_000;
@@ -48,7 +51,7 @@ export async function AppointmentsCard({
           {upcoming.slice(0, 3).map((a) => (
             <li key={a.id}>
               <Link
-                href={`/ba/clients/${a.clientId}/appointments/${a.id}`}
+                href={`${basePath}/${a.clientId}/appointments/${a.id}`}
                 className="flex items-center gap-2.5 px-2.5 py-2 rounded-md bg-bone hover:bg-bone/70 text-ink no-underline transition-colors"
               >
                 <div className="min-w-[56px]">
@@ -93,7 +96,7 @@ export async function AppointmentsCard({
             {past.map((a) => (
               <li key={a.id}>
                 <Link
-                  href={`/ba/clients/${a.clientId}/appointments/${a.id}`}
+                  href={`${basePath}/${a.clientId}/appointments/${a.id}`}
                   className="flex items-center gap-2 py-1 text-[15.5px] text-ink no-underline hover:text-ink/70 transition-colors"
                 >
                   <Icon name="check" size={11} />

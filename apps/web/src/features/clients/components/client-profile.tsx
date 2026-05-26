@@ -46,6 +46,21 @@ export interface ClientProfileProps {
    * operan sobre el cliente como BA.
    */
   readOnly?: boolean;
+  /**
+   * Prefijo de rutas para los deep-links del perfil (Ver todo, fila
+   * individual, tab=followup, etc.). Default `/ba/clients` para que
+   * BA siga funcionando igual. Gerente pasa `/gerente/clients` así los
+   * links navegan a las rutas espejo de su scope sin caer en el
+   * middleware-redirect de `/ba`.
+   */
+  basePath?: string;
+  /**
+   * Override del breadcrumb superior. Default: "Clientes" → `/ba/clients`.
+   * Gerente lo cambia a "Equipo" → `/gerente/team` (porque ahí es de
+   * donde vino) para que el back nav sea coherente con la navegación.
+   */
+  backHref?: string;
+  backLabel?: string;
 }
 
 export async function ClientProfile({
@@ -61,6 +76,9 @@ export async function ClientProfile({
   baLookup,
   productBySku,
   readOnly = false,
+  basePath = "/ba/clients",
+  backHref,
+  backLabel,
 }: ClientProfileProps) {
   const t = await getTranslations();
   const segment = segmentClient(client);
@@ -73,8 +91,8 @@ export async function ClientProfile({
           aria-label="Breadcrumb"
           className="inline-flex items-center gap-1.5 text-xs font-medium leading-none text-ink/60"
         >
-          <Link href="/ba/clients" className="hover:text-ink">
-            {t("profile.breadcrumb")}
+          <Link href={backHref ?? "/ba/clients"} className="hover:text-ink">
+            {backLabel ?? t("profile.breadcrumb")}
           </Link>
           <Icon name="chevron-right" size={14} />
           <span aria-current="page">{client.name}</span>
@@ -157,15 +175,16 @@ export async function ClientProfile({
           clientName={client.name}
           clientId={client.id}
           readOnly={readOnly}
+          basePath={basePath}
         />
       </main>
 
       <aside className="flex flex-col gap-4">
         <LuxeCircleCard client={client} segment={segment} />
-        <UpcomingFollowupsCard clientId={client.id} tasks={followupTasks} />
+        <UpcomingFollowupsCard clientId={client.id} tasks={followupTasks} basePath={basePath} />
         <SkinProfileCard client={client} />
         <InterestsCard client={client} />
-        <AppointmentsCard appointments={appointments} />
+        <AppointmentsCard appointments={appointments} basePath={basePath} />
         <UpcomingEventsCard client={client} />
         <ConsentSummaryCard consents={consents} />
         {/* ARCO (derecho al olvido) — acción sensible que dispara borrado

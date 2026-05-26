@@ -45,6 +45,8 @@ export interface RecommendationHistoryProps {
   clientName: string;
   recommendations: readonly Recommendation[];
   productBySku: Record<string, Product>;
+  /** Prefijo para el link de cada fila al detalle. Default `/ba/clients`. */
+  basePath?: string;
 }
 
 export function RecommendationHistory({
@@ -52,6 +54,7 @@ export function RecommendationHistory({
   clientName,
   recommendations,
   productBySku,
+  basePath = "/ba/clients",
 }: RecommendationHistoryProps) {
   const [range, setRange] = useState<RangeFilter>("12m");
   const [status, setStatus] = useState<StatusFilter>("all");
@@ -158,7 +161,13 @@ export function RecommendationHistory({
       ) : (
         <article className="bg-white border border-line rounded-xl divide-y divide-line">
           {filtered.map((r) => (
-            <RecRow key={r.id} rec={r} clientId={clientId} productBySku={productBySku} />
+            <RecRow
+              key={r.id}
+              rec={r}
+              clientId={clientId}
+              productBySku={productBySku}
+              basePath={basePath}
+            />
           ))}
         </article>
       )}
@@ -239,10 +248,12 @@ function RecRow({
   rec,
   clientId,
   productBySku,
+  basePath,
 }: {
   rec: Recommendation;
   clientId: string;
   productBySku: Record<string, Product>;
+  basePath: string;
 }) {
   const daysSince = daysBetween(rec.at);
   // Título prominente: nombre del primer producto. Si hay más, "+ N más".
@@ -254,7 +265,7 @@ function RecRow({
 
   return (
     <Link
-      href={`/ba/clients/${clientId}/recommendations/${rec.id}`}
+      href={`${basePath}/${clientId}/recommendations/${rec.id}`}
       className="block p-5 text-ink no-underline transition-colors hover:bg-bone/40"
     >
       <div className="grid grid-cols-[40px_minmax(0,1fr)_auto] gap-3.5 items-start">

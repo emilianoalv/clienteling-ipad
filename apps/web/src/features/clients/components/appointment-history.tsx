@@ -39,6 +39,8 @@ export interface AppointmentHistoryProps {
   clientName: string;
   appointments: readonly Appointment[];
   baLookup: Record<string, string>;
+  /** Prefijo para el link de cada fila al detalle. Default `/ba/clients`. */
+  basePath?: string;
 }
 
 export function AppointmentHistory({
@@ -46,6 +48,7 @@ export function AppointmentHistory({
   clientName,
   appointments,
   baLookup,
+  basePath = "/ba/clients",
 }: AppointmentHistoryProps) {
   const t = useTranslations();
   const [range, setRange] = useState<RangeFilter>("12m");
@@ -149,6 +152,7 @@ export function AppointmentHistory({
               baLookup={baLookup}
               kindLabel={t(`appointment.kind.${a.kind}`)}
               statusLabel={t(`appointment.status.${a.status}`)}
+              basePath={basePath}
             />
           ))}
         </article>
@@ -225,19 +229,21 @@ function AppointmentRow({
   baLookup,
   kindLabel,
   statusLabel,
+  basePath,
 }: {
   appointment: Appointment;
   clientId: string;
   baLookup: Record<string, string>;
   kindLabel: string;
   statusLabel: string;
+  basePath: string;
 }) {
   const baName = baLookup[appointment.baId as unknown as string] ?? "—";
   const initial = kindLabel[0]?.toUpperCase() ?? "•";
 
   return (
     <Link
-      href={`/ba/clients/${clientId}/appointments/${appointment.id}`}
+      href={`${basePath}/${clientId}/appointments/${appointment.id}`}
       className="block p-5 text-ink no-underline transition-colors hover:bg-bone/40"
     >
       <div className="grid grid-cols-[44px_minmax(0,1fr)_auto] gap-3.5 items-center">

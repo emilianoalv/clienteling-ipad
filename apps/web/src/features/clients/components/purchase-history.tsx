@@ -39,6 +39,8 @@ export interface PurchaseHistoryProps {
   purchases: readonly Purchase[];
   /** SKU → Product map for displaying item details inline. */
   productBySku: Record<string, Product>;
+  /** Prefijo para el link de cada fila al detalle. Default `/ba/clients`. */
+  basePath?: string;
 }
 
 export function PurchaseHistory({
@@ -47,6 +49,7 @@ export function PurchaseHistory({
   baName,
   purchases,
   productBySku,
+  basePath = "/ba/clients",
 }: PurchaseHistoryProps) {
   const [range, setRange] = useState<RangeFilter>("12m");
 
@@ -144,6 +147,7 @@ export function PurchaseHistory({
               clientId={clientId}
               baName={baName}
               productBySku={productBySku}
+              basePath={basePath}
             />
           ))}
         </article>
@@ -168,9 +172,10 @@ interface PurchaseRowProps {
   clientId: string;
   baName: string;
   productBySku: Record<string, Product>;
+  basePath: string;
 }
 
-function PurchaseRow({ purchase, clientId, baName, productBySku }: PurchaseRowProps) {
+function PurchaseRow({ purchase, clientId, baName, productBySku, basePath }: PurchaseRowProps) {
   const ticketLabel = purchase.ticketRef ?? `MAN-${purchase.id.toUpperCase().slice(-8)}`;
   const paymentLabel: Record<Purchase["payment"], string> = {
     card: "Tarjeta",
@@ -181,7 +186,7 @@ function PurchaseRow({ purchase, clientId, baName, productBySku }: PurchaseRowPr
 
   return (
     <Link
-      href={`/ba/clients/${clientId}/purchases/${purchase.id}`}
+      href={`${basePath}/${clientId}/purchases/${purchase.id}`}
       className="block p-5 text-ink no-underline transition-colors hover:bg-bone/40"
     >
       {/* Header row */}

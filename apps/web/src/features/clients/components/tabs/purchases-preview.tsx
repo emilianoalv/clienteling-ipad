@@ -10,6 +10,8 @@ import { formatDate } from "@/lib/format/format-date";
 export interface PurchasesPreviewProps {
   purchases: readonly Purchase[];
   clientId: string;
+  /** Prefijo de ruta para deep-links. Default `/ba/clients`. */
+  basePath?: string;
 }
 
 const PREVIEW_COUNT = 4;
@@ -19,7 +21,11 @@ const PREVIEW_COUNT = 4;
  * Each row is a clickable link to the purchase detail page. The full history
  * lives at `/ba/clients/[id]/purchases`.
  */
-export function PurchasesPreview({ purchases, clientId }: PurchasesPreviewProps) {
+export function PurchasesPreview({
+  purchases,
+  clientId,
+  basePath = "/ba/clients",
+}: PurchasesPreviewProps) {
   const t = useTranslations();
   if (purchases.length === 0) {
     return (
@@ -41,7 +47,7 @@ export function PurchasesPreview({ purchases, clientId }: PurchasesPreviewProps)
           </p>
         </div>
         <Link
-          href={`/ba/clients/${clientId}/purchases`}
+          href={`${basePath}/${clientId}/purchases`}
           className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-[14px] font-semibold text-ink no-underline transition-colors hover:bg-bone"
         >
           Ver todo
@@ -56,7 +62,7 @@ export function PurchasesPreview({ purchases, clientId }: PurchasesPreviewProps)
           return (
             <li key={p.id} className="border-b border-line last:border-b-0">
               <Link
-                href={`/ba/clients/${clientId}/purchases/${p.id}`}
+                href={`${basePath}/${clientId}/purchases/${p.id}`}
                 className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
               >
                 <span

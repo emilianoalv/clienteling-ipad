@@ -36,6 +36,12 @@ export interface AppointmentDetailProps {
   appointment: Appointment;
   baName: string;
   storeName: string;
+  /**
+   * Solo lectura: oculta la sección "Acciones" (Confirmar / Marcar como
+   * completada / Reagendar / Cancelar). Para roles que consultan citas
+   * sin operar sobre ellas (Gerente / Supervisor / Admin).
+   */
+  readOnly?: boolean;
 }
 
 export function AppointmentDetail({
@@ -43,6 +49,7 @@ export function AppointmentDetail({
   appointment,
   baName,
   storeName,
+  readOnly = false,
 }: AppointmentDetailProps) {
   const t = useTranslations();
   const [mode, setMode] = useState<Mode>("view");
@@ -160,7 +167,7 @@ export function AppointmentDetail({
         ) : null}
 
         {/* Acciones (solo si no es final) */}
-        {!isFinal && !notice ? (
+        {!isFinal && !notice && !readOnly ? (
           <section className="border-t border-line pt-5">
             <div className="text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/55 mb-3">
               Acciones

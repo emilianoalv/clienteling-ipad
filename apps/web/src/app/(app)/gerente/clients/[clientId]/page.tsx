@@ -16,5 +16,13 @@ export default async function GerenteClientProfilePage({
   const { clientId } = await params;
   const { staff } = await requireSession();
   const data = await fetchClientWithHistory(clientId, staff);
-  return <ClientProfile {...data} readOnly />;
+  return (
+    <ClientProfile
+      {...data}
+      readOnly
+      basePath="/gerente/clients"
+      backHref="/gerente/team"
+      backLabel="Equipo"
+    />
+  );
 }

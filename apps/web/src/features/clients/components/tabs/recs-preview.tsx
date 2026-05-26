@@ -12,6 +12,8 @@ export interface RecsPreviewProps {
   clientId: string;
   /** SKU → Product. Used to render real product names instead of raw SKUs. */
   productBySku: Record<string, Product>;
+  /** Prefijo de ruta para deep-links. Default `/ba/clients`. */
+  basePath?: string;
 }
 
 const PREVIEW_COUNT = 4;
@@ -21,7 +23,12 @@ const PREVIEW_COUNT = 4;
  * Each row is a clickable link to the recommendation detail page. The full
  * history lives at `/ba/clients/[id]/recommendations`.
  */
-export function RecsPreview({ recommendations, clientId, productBySku }: RecsPreviewProps) {
+export function RecsPreview({
+  recommendations,
+  clientId,
+  productBySku,
+  basePath = "/ba/clients",
+}: RecsPreviewProps) {
   const t = useTranslations();
   if (recommendations.length === 0) {
     return (
@@ -43,7 +50,7 @@ export function RecsPreview({ recommendations, clientId, productBySku }: RecsPre
           </p>
         </div>
         <Link
-          href={`/ba/clients/${clientId}/recommendations`}
+          href={`${basePath}/${clientId}/recommendations`}
           className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-[14px] font-semibold text-ink no-underline transition-colors hover:bg-bone"
         >
           Ver todo
@@ -55,7 +62,7 @@ export function RecsPreview({ recommendations, clientId, productBySku }: RecsPre
         {recommendations.slice(0, PREVIEW_COUNT).map((r) => (
           <li key={r.id} className="border-b border-line last:border-b-0">
             <Link
-              href={`/ba/clients/${clientId}/recommendations/${r.id}`}
+              href={`${basePath}/${clientId}/recommendations/${r.id}`}
               className="grid grid-cols-[40px_minmax(0,1fr)_auto_auto] items-start gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
             >
               <span

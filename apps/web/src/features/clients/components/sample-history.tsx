@@ -45,6 +45,8 @@ export interface SampleHistoryProps {
   samples: readonly Sample[];
   /** Map from sample SKU to its full product, when the sample maps to a catalog item. */
   productBySampleSku: Record<string, Product>;
+  /** Prefijo para el link de cada fila al detalle. Default `/ba/clients`. */
+  basePath?: string;
 }
 
 export function SampleHistory({
@@ -52,6 +54,7 @@ export function SampleHistory({
   clientName,
   samples,
   productBySampleSku,
+  basePath = "/ba/clients",
 }: SampleHistoryProps) {
   const [range, setRange] = useState<RangeFilter>("12m");
   const [status, setStatus] = useState<StatusFilter>("all");
@@ -171,6 +174,7 @@ export function SampleHistory({
               sample={s}
               clientId={clientId}
               productBySampleSku={productBySampleSku}
+              basePath={basePath}
             />
           ))}
         </article>
@@ -281,10 +285,12 @@ function SampleRow({
   sample,
   clientId,
   productBySampleSku,
+  basePath,
 }: {
   sample: Sample;
   clientId: string;
   productBySampleSku: Record<string, Product>;
+  basePath: string;
 }) {
   const fullProduct = productBySampleSku[sample.sku as unknown as string];
   const days = daysBetween(sample.givenAt);
@@ -292,7 +298,7 @@ function SampleRow({
 
   return (
     <Link
-      href={`/ba/clients/${clientId}/samples/${sample.id}`}
+      href={`${basePath}/${clientId}/samples/${sample.id}`}
       className="block p-5 text-ink no-underline transition-colors hover:bg-bone/40"
     >
       <div className="grid grid-cols-[44px_minmax(0,1fr)_auto] gap-3.5 items-center">

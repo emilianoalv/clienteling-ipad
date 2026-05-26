@@ -10,6 +10,8 @@ import { formatDate } from "@/lib/format/format-date";
 export interface SamplesPreviewProps {
   samples: readonly Sample[];
   clientId: string;
+  /** Prefijo de ruta para deep-links. Default `/ba/clients`. */
+  basePath?: string;
 }
 
 /**
@@ -21,7 +23,11 @@ export interface SamplesPreviewProps {
  * agrega KPIs (% conversión, días promedio) y filtros por periodo /
  * estado — útiles para análisis profundo pero ruidosos para el tab.
  */
-export function SamplesPreview({ samples, clientId }: SamplesPreviewProps) {
+export function SamplesPreview({
+  samples,
+  clientId,
+  basePath = "/ba/clients",
+}: SamplesPreviewProps) {
   const t = useTranslations();
 
   const groups = useMemo(() => groupByDay(samples), [samples]);
@@ -46,7 +52,7 @@ export function SamplesPreview({ samples, clientId }: SamplesPreviewProps) {
           </p>
         </div>
         <Link
-          href={`/ba/clients/${clientId}/samples`}
+          href={`${basePath}/${clientId}/samples`}
           className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-[14px] font-semibold text-ink no-underline transition-colors hover:bg-bone"
         >
           Ver todo
@@ -73,7 +79,7 @@ export function SamplesPreview({ samples, clientId }: SamplesPreviewProps) {
               {group.samples.map((s) => (
                 <li key={s.id} className="border-b border-line last:border-b-0">
                   <Link
-                    href={`/ba/clients/${clientId}/samples/${s.id}`}
+                    href={`${basePath}/${clientId}/samples/${s.id}`}
                     className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3.5 py-3 px-4 text-ink no-underline transition-colors hover:bg-bone/40"
                   >
                     <span

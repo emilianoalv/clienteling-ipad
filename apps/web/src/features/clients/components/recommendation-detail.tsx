@@ -29,6 +29,8 @@ export interface RecommendationDetailProps {
   storeName: string;
   productBySku: Record<string, Product>;
   techs: ReadonlyMap<Sku, ProductTech>;
+  /** Prefijo para el link "Ver ticket asociado". Default `/ba/clients`. */
+  basePath?: string;
 }
 
 export function RecommendationDetail({
@@ -38,6 +40,7 @@ export function RecommendationDetail({
   storeName,
   productBySku,
   techs,
+  basePath = "/ba/clients",
 }: RecommendationDetailProps) {
   const [techSku, setTechSku] = useState<Sku | null>(null);
 
@@ -114,7 +117,7 @@ export function RecommendationDetail({
         {recommendation.purchaseId ? (
           <section className="border-t border-line pt-5">
             <Link
-              href={`/ba/clients/${client.id}/purchases/${recommendation.purchaseId}`}
+              href={`${basePath}/${client.id}/purchases/${recommendation.purchaseId}`}
               className="flex items-center gap-3 px-5 py-4 rounded-xl bg-ok/[0.08] border border-ok/25 text-ink no-underline transition-colors hover:bg-ok/[0.12]"
             >
               <span

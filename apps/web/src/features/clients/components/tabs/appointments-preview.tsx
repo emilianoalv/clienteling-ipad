@@ -11,6 +11,8 @@ export interface AppointmentsPreviewProps {
   clientId: string;
   /** Map of StaffId → BA display name. */
   baLookup: Record<string, string>;
+  /** Prefijo de ruta para deep-links. Default `/ba/clients`. */
+  basePath?: string;
 }
 
 const PREVIEW_COUNT = 4;
@@ -24,6 +26,7 @@ export function AppointmentsPreview({
   appointments,
   clientId,
   baLookup,
+  basePath = "/ba/clients",
 }: AppointmentsPreviewProps) {
   const t = useTranslations();
 
@@ -56,7 +59,7 @@ export function AppointmentsPreview({
           </p>
         </div>
         <Link
-          href={`/ba/clients/${clientId}/appointments`}
+          href={`${basePath}/${clientId}/appointments`}
           className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-[14px] font-semibold text-ink no-underline transition-colors hover:bg-bone"
         >
           Ver todo
@@ -70,7 +73,7 @@ export function AppointmentsPreview({
           return (
             <li key={a.id} className="border-b border-line last:border-b-0">
               <Link
-                href={`/ba/clients/${clientId}/appointments/${a.id}`}
+                href={`${basePath}/${clientId}/appointments/${a.id}`}
                 className="grid grid-cols-[40px_minmax(0,1fr)_auto_auto] items-center gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
               >
                 <span
