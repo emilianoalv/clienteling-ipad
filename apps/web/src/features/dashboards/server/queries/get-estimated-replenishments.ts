@@ -5,7 +5,9 @@ import type { Staff } from "@/types/staff";
 import { addDays, startOfDay } from "@/lib/date/week";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { productRepository } from "@/server/repositories/product.repository";
+import { productTechRepository } from "@/server/repositories/product-tech.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
+import { estimateReplenishmentDays } from "@/features/clients/services/estimate-replenishment-days";
 import { mergeScope } from "../utils/scope-merge";
 import type { DashboardFilters } from "../types";
 
@@ -62,8 +64,10 @@ export async function getEstimatedReplenishments(
     clientById.set(c.id as unknown as string, { id: c.id, name: c.name });
   }
 
-  // For each (clientId, sku) keep the most-recent purchase timestamp.
-  const lastBySkuAndClient = new Map<string, { at: Date }>();
+  // For each (clientId, sku) keep the most-recent purchase + total qty
+  // bought in ese ticket. La qty es lo más informativo: si compró 2,
+  // dura el doble.
+  const lastBySkuAndClient = new Map<string, { at: Date; qty: number }>();
   for (const p of purchases) {
     if (filters.baId && p.baId !== filters.baId) continue;
     if (!clientById.has(p.clientId as unknown as string)) continue;
@@ -72,24 +76,28 @@ export async function getEstimatedReplenishments(
       const key = `${p.clientId}::${item.sku}`;
       const current = lastBySkuAndClient.get(key);
       if (!current || at > current.at) {
-        lastBySkuAndClient.set(key, { at });
+        lastBySkuAndClient.set(key, { at, qty: item.qty });
       }
     }
   }
 
-  const skuToProduct = new Map<string, { name: string; lifecycleDays: number }>();
+  const skuToProduct = new Map<
+    string,
+    { name: string; product: Awaited<ReturnType<typeof productRepository.findBySku>> }
+  >();
   const allSkus = new Set<string>();
   for (const key of lastBySkuAndClient.keys()) {
     const [, sku] = key.split("::");
     allSkus.add(sku!);
   }
+  const techs = await productTechRepository.list();
   await Promise.all(
     Array.from(allSkus).map(async (sku) => {
       const product = await productRepository.findBySku(sku as Sku);
       if (product) {
         skuToProduct.set(sku, {
           name: `${product.line} ${product.size}`.trim(),
-          lifecycleDays: product.lifecycleDays,
+          product,
         });
       }
     }),
@@ -98,9 +106,14 @@ export async function getEstimatedReplenishments(
   const result: EstimatedReplenishment[] = [];
   for (const [key, info] of lastBySkuAndClient) {
     const [clientId, sku] = key.split("::");
-    const product = skuToProduct.get(sku!);
-    if (!product) continue; // SKU not in product repo → skip silently
-    const estimatedDate = addDays(info.at, product.lifecycleDays);
+    const entry = skuToProduct.get(sku!);
+    if (!entry || !entry.product) continue; // SKU not in product repo → skip
+    const days = estimateReplenishmentDays({
+      product: entry.product,
+      qty: info.qty,
+      tech: techs.get(sku as Sku) ?? null,
+    });
+    const estimatedDate = addDays(info.at, days);
     if (estimatedDate < anchorDay || estimatedDate >= windowEnd) continue;
 
     const client = clientById.get(clientId!);
@@ -115,7 +128,7 @@ export async function getEstimatedReplenishments(
       estimatedDate,
       daysAway,
       sku: sku!,
-      productName: product.name,
+      productName: entry.name,
       lastPurchaseDate: info.at,
     });
   }
