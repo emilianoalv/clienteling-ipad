@@ -130,6 +130,9 @@ export function TaskInbox({
   // bucket — los conteos del bucket no cambian con la categoría pero los
   // conteos de categoría sí reflejan el bucket activo.
   const [categoryFilter, setCategoryFilter] = useState<FollowupCategory | "all">("all");
+  // Búsqueda libre por nombre del cliente. Solo aplica en modo global —
+  // en client-scoped (tab del perfil) el contexto ya es un solo cliente.
+  const [query, setQuery] = useState("");
 
   // Tasks tras filtrar por bucket — base para tipo + UI.
   const inBucket = useMemo(() => {
@@ -183,13 +186,17 @@ export function TaskInbox({
     return FOLLOWUP_CATEGORIES.filter((c) => (categoryCounts.get(c.id) ?? 0) > 0);
   }, [categoryCounts]);
 
-  const filtered = useMemo(
-    () =>
+  const filtered = useMemo(() => {
+    const byCategory =
       categoryFilter === "all"
         ? inBucket
-        : inBucket.filter((t) => t.category === categoryFilter),
-    [inBucket, categoryFilter],
-  );
+        : inBucket.filter((t) => t.category === categoryFilter);
+    const needle = query.trim().toLowerCase();
+    if (!needle || mode !== "global") return byCategory;
+    return byCategory.filter((t) =>
+      (clientLookup[t.clientId] ?? "").toLowerCase().includes(needle),
+    );
+  }, [inBucket, categoryFilter, query, mode, clientLookup]);
 
   // Si cambia el bucket y la categoría seleccionada quedó sin tareas,
   // limpiamos a "all" para no dejar al usuario en un estado vacío sin
@@ -225,6 +232,33 @@ export function TaskInbox({
         <CreateTaskRow clientId={clientId} />
       ) : null}
       {mode === "global" ? <CreateTaskGlobalRow clientLookup={clientLookup} /> : null}
+
+      {/* Buscador de cliente — solo en modo global. En el tab del perfil
+          ya estás en un solo cliente, agregar input ahí sería ruido. */}
+      {mode === "global" ? (
+        <div className="relative max-w-[420px]">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar cliente por nombre…"
+            aria-label="Buscar cliente"
+            className="pl-9"
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40">
+            <Icon name="search" size={16} />
+          </span>
+          {query ? (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md inline-flex items-center justify-center text-ink/55 hover:bg-ink/[0.04] cursor-pointer"
+            >
+              <Icon name="x" size={14} />
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* Filtros — fila 1: bucket temporal; fila 2: categoría (Cita,
           Cumpleaños, Reposición, etc.). Solo aparecen las categorías con
@@ -294,9 +328,11 @@ export function TaskInbox({
       {filtered.length === 0 ? (
         <Card variant="flat" className="text-center py-10">
           <p className="m-0 text-[15px] text-ink/60">
-            {bucket === "done"
-              ? "No hay tareas completadas todavía."
-              : "Sin tareas en este filtro. ¡Buen trabajo!"}
+            {query && mode === "global"
+              ? `Sin coincidencias para "${query}".`
+              : bucket === "done"
+                ? "No hay tareas completadas todavía."
+                : "Sin tareas en este filtro. ¡Buen trabajo!"}
           </p>
         </Card>
       ) : (
