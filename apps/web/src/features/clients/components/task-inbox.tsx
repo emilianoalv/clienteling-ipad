@@ -137,6 +137,8 @@ export function TaskInbox({
   // "Nueva tarea" del header pueda abrirlo y el CreateTaskGlobalRow renderice
   // el form en su lugar (antes el botón vivía aislado debajo del filtro).
   const [creatingGlobal, setCreatingGlobal] = useState(false);
+  // Mismo patrón para el modo client-scoped (tab del perfil del cliente).
+  const [creatingScoped, setCreatingScoped] = useState(false);
 
   // Tasks tras filtrar por bucket — base para tipo + UI.
   const inBucket = useMemo(() => {
@@ -238,9 +240,61 @@ export function TaskInbox({
         </header>
       ) : null}
 
+      {/* Header del tab — mini eyebrow + título + descripción a la izquierda,
+          filtros bucket en pills al centro-derecha, botón "+ Nueva tarea" al
+          final. Solo en modo client-scoped (el global tiene su propio header
+          arriba con texto distinto). */}
+      {mode === "client-scoped" ? (
+        <header className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="min-w-0 max-w-[420px]">
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+              Seguimientos
+            </div>
+            <p className="m-0 mt-1 text-[14.5px] text-ink/60 leading-snug">
+              Acciones que prometiste hacer después de una visita. Una vez
+              ejecutadas, registra el resultado para mantener el historial.
+            </p>
+          </div>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="inline-flex bg-bone rounded-pill p-[3px] border border-line">
+              {BUCKETS.map((b) => {
+                const active = bucket === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => setBucket(b.id)}
+                    aria-pressed={active}
+                    className={`inline-flex items-center gap-1.5 h-7 px-3.5 rounded-pill border-0 text-[14.5px] font-medium cursor-pointer transition-colors ${
+                      active
+                        ? "bg-white text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+                        : "bg-transparent text-ink/60"
+                    }`}
+                  >
+                    <span>{b.label}</span>
+                    <span className="opacity-70 font-medium tabular">· {counts[b.id]}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <Button
+              variant="primary"
+              leading={<Icon name="plus" size={14} />}
+              onClick={() => setCreatingScoped(true)}
+            >
+              Nueva tarea
+            </Button>
+          </div>
+        </header>
+      ) : null}
+
       {/* Create rows — variante según el modo */}
       {mode === "client-scoped" && clientId ? (
-        <CreateTaskRow clientId={clientId} />
+        <CreateTaskRow
+          clientId={clientId}
+          creating={creatingScoped}
+          onChangeCreating={setCreatingScoped}
+        />
       ) : null}
       {mode === "global" ? (
         <CreateTaskGlobalRow
@@ -250,12 +304,10 @@ export function TaskInbox({
         />
       ) : null}
 
-      {/* Búsqueda + buckets — mismo estilo que Catálogo (Card flat con
-          input grande + segmented control en pills al lado). En modo
-          client-scoped no hay buscador (el contexto ya es un solo
-          cliente), pero los buckets siguen en el Card para consistencia. */}
-      <Card variant="flat" className="flex items-center gap-2.5 flex-wrap">
-        {mode === "global" ? (
+      {/* Búsqueda + buckets — solo en modo global. En client-scoped los
+          buckets ya viven en el header de arriba con el botón "Nueva tarea". */}
+      {mode === "global" ? (
+        <Card variant="flat" className="flex items-center gap-2.5 flex-wrap">
           <div className="relative flex-1 min-w-[220px]">
             <Input
               value={query}
@@ -278,29 +330,29 @@ export function TaskInbox({
               </button>
             ) : null}
           </div>
-        ) : null}
-        <div className="inline-flex bg-bone rounded-pill p-[3px] border border-line">
-          {BUCKETS.map((b) => {
-            const active = bucket === b.id;
-            return (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => setBucket(b.id)}
-                aria-pressed={active}
-                className={`inline-flex items-center gap-1.5 h-7 px-3.5 rounded-pill border-0 text-[16px] font-medium cursor-pointer transition-colors ${
-                  active
-                    ? "bg-white text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
-                    : "bg-transparent text-ink/60"
-                }`}
-              >
-                <span>{b.label}</span>
-                <span className="opacity-70 font-medium tabular">· {counts[b.id]}</span>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
+          <div className="inline-flex bg-bone rounded-pill p-[3px] border border-line">
+            {BUCKETS.map((b) => {
+              const active = bucket === b.id;
+              return (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setBucket(b.id)}
+                  aria-pressed={active}
+                  className={`inline-flex items-center gap-1.5 h-7 px-3.5 rounded-pill border-0 text-[16px] font-medium cursor-pointer transition-colors ${
+                    active
+                      ? "bg-white text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+                      : "bg-transparent text-ink/60"
+                  }`}
+                >
+                  <span>{b.label}</span>
+                  <span className="opacity-70 font-medium tabular">· {counts[b.id]}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+      ) : null}
 
       {/* Filtro por categoría — segunda fila. Solo aparecen las
           categorías con ≥1 tarea en el bucket para evitar saturar. */}
@@ -710,8 +762,16 @@ function CreateTaskGlobalRow({
 
 // ── Create form (solo client-scoped) ──────────────────────────────────────
 
-function CreateTaskRow({ clientId }: { clientId: ClientId }) {
-  const [creating, setCreating] = useState(false);
+function CreateTaskRow({
+  clientId,
+  creating,
+  onChangeCreating,
+}: {
+  clientId: ClientId;
+  creating: boolean;
+  onChangeCreating: (next: boolean) => void;
+}) {
+  const setCreating = onChangeCreating;
   const [type, setType] = useState<FollowupType>("call");
   const [category, setCategory] = useState<FollowupCategory>("general");
   const [description, setDescription] = useState("");
@@ -744,24 +804,9 @@ function CreateTaskRow({ clientId }: { clientId: ClientId }) {
     });
   }
 
-  if (!creating) {
-    return (
-      <div className="flex items-center justify-between gap-3">
-        <p className="m-0 text-[14.5px] text-ink/60 leading-snug">
-          Acciones que prometiste hacer después de una visita. Una vez ejecutadas, registra el
-          resultado para mantener el historial.
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          leading={<Icon name="plus" size={12} />}
-          onClick={() => setCreating(true)}
-        >
-          Nueva tarea
-        </Button>
-      </div>
-    );
-  }
+  // Cuando creating=false no renderiza nada — el header del TaskInbox
+  // tiene el botón "+ Nueva tarea" y la descripción de la sección.
+  if (!creating) return null;
 
   return (
     <article className="bg-bone border border-line rounded-lg p-4 flex flex-col gap-3">
