@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Button, Icon, SegmentedControl, type SegmentedOption } from "@/components/primitives";
 import { addDays, addMonths, isoWeekNumber, startOfIsoWeek } from "@/lib/date/week";
@@ -75,11 +74,10 @@ export function AppointmentCalendar({ appointments, clientLookup }: AppointmentC
               <Icon name="chevron-right" />
             </Button>
           </div>
-          <Link href="/ba/appointments/new">
-            <Button variant="primary" leading={<Icon name="plus" />}>
-              {t("calendar.new")}
-            </Button>
-          </Link>
+          {/* "+ Nueva cita" vive ahora SOLO en el header de la page
+              (ver app/(app)/ba/appointments/page.tsx). Antes estaba duplicado
+              aquí — el del header es más visible en ambos tabs (Calendario
+              y Reagendadas/canceladas), así que ese es el que mantenemos. */}
         </div>
       </header>
 

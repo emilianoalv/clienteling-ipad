@@ -133,6 +133,10 @@ export function TaskInbox({
   // Búsqueda libre por nombre del cliente. Solo aplica en modo global —
   // en client-scoped (tab del perfil) el contexto ya es un solo cliente.
   const [query, setQuery] = useState("");
+  // Estado del form de crear tarea — levantado al padre para que el botón
+  // "Nueva tarea" del header pueda abrirlo y el CreateTaskGlobalRow renderice
+  // el form en su lugar (antes el botón vivía aislado debajo del filtro).
+  const [creatingGlobal, setCreatingGlobal] = useState(false);
 
   // Tasks tras filtrar por bucket — base para tipo + UI.
   const inBucket = useMemo(() => {
@@ -224,6 +228,13 @@ export function TaskInbox({
               venta o aquí mismo con el botón &ldquo;Nueva tarea&rdquo;.
             </p>
           </div>
+          <Button
+            variant="primary"
+            leading={<Icon name="plus" size={14} />}
+            onClick={() => setCreatingGlobal(true)}
+          >
+            Nueva tarea
+          </Button>
         </header>
       ) : null}
 
@@ -231,7 +242,13 @@ export function TaskInbox({
       {mode === "client-scoped" && clientId ? (
         <CreateTaskRow clientId={clientId} />
       ) : null}
-      {mode === "global" ? <CreateTaskGlobalRow clientLookup={clientLookup} /> : null}
+      {mode === "global" ? (
+        <CreateTaskGlobalRow
+          clientLookup={clientLookup}
+          creating={creatingGlobal}
+          onChangeCreating={setCreatingGlobal}
+        />
+      ) : null}
 
       {/* Búsqueda + buckets — mismo estilo que Catálogo (Card flat con
           input grande + segmented control en pills al lado). En modo
@@ -518,10 +535,14 @@ function TaskRow({
 
 function CreateTaskGlobalRow({
   clientLookup,
+  creating,
+  onChangeCreating,
 }: {
   clientLookup: Readonly<Record<string, string>>;
+  creating: boolean;
+  onChangeCreating: (next: boolean) => void;
 }) {
-  const [creating, setCreating] = useState(false);
+  const setCreating = onChangeCreating;
   const [clientQuery, setClientQuery] = useState("");
   const [type, setType] = useState<FollowupType>("call");
   const [category, setCategory] = useState<FollowupCategory>("general");
@@ -573,20 +594,9 @@ function CreateTaskGlobalRow({
     });
   }
 
-  if (!creating) {
-    return (
-      <div className="flex items-center justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          leading={<Icon name="plus" size={12} />}
-          onClick={() => setCreating(true)}
-        >
-          Nueva tarea
-        </Button>
-      </div>
-    );
-  }
+  // Cuando creating=false no renderiza nada — el botón vive en el header
+  // del TaskInbox. Esto evita el botón "+ Nueva tarea" aislado bajo los filtros.
+  if (!creating) return null;
 
   const clientNames = Object.values(clientLookup);
 
