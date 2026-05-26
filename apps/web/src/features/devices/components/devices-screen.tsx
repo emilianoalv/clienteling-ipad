@@ -1,5 +1,5 @@
 import type { Device, DeviceStatus } from "@/types/device";
-import { Chip } from "@/components/primitives";
+import { BrandTag, Chip } from "@/components/primitives";
 import { Card, KpiCard } from "@/components/patterns";
 import { aggregateDeviceStats } from "../services/aggregate-device-stats";
 
@@ -10,9 +10,9 @@ const STATUS_VARIANT: Record<DeviceStatus, "ok" | "warn" | "danger"> = {
 };
 
 const STATUS_LABEL: Record<DeviceStatus, string> = {
-  active: "active",
-  maintenance: "maintenance",
-  inactive: "inactive",
+  active: "Activo",
+  maintenance: "Mantenimiento",
+  inactive: "Inactivo",
 };
 
 export interface DevicesScreenProps {
@@ -50,7 +50,12 @@ export function DevicesScreen({ devices, storeLookup, baLookup }: DevicesScreenP
               className="grid grid-cols-[1fr_1.4fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-3.5 px-5 py-3.5 border-b border-line last:border-b-0 items-center"
             >
               <span className="font-mono text-[16px] font-semibold">{d.serial}</span>
-              <span className="text-[16px]">{storeLookup[d.storeId] ?? d.storeId}</span>
+              <div className="flex flex-col gap-1 min-w-0">
+                <span className="text-[16px] font-medium leading-tight">
+                  {storeLookup[d.storeId] ?? d.storeId}
+                </span>
+                <BrandTag brand={d.brand} alwaysShow />
+              </div>
               <span className="text-[16px]">
                 {d.assignedBA ? (
                   (baLookup[d.assignedBA] ?? d.assignedBA)

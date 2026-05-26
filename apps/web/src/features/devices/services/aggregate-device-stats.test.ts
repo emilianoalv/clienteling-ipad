@@ -8,6 +8,7 @@ function dev(status: DeviceStatus): Device {
     id: `dv-${status}` as DeviceId,
     serial: "S",
     storeId: "st-x" as StoreId,
+    brand: "Lancôme",
     status,
     assignedBA: null,
     lastSync: "2026-04-23T00:00:00.000Z",
