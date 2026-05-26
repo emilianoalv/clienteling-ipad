@@ -53,6 +53,8 @@ const TIMING_LABELS: Record<RoutineTiming, string> = {
 
 export interface BeautyProfileTabProps {
   client: Client;
+  /** Si true, oculta el botón "Editar perfil". Vista consulta para no-BA. */
+  readOnly?: boolean;
 }
 
 interface Draft {
@@ -87,7 +89,7 @@ function buildDraft(client: Client): Draft {
   };
 }
 
-export function BeautyProfileTab({ client }: BeautyProfileTabProps) {
+export function BeautyProfileTab({ client, readOnly = false }: BeautyProfileTabProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Draft>(() => buildDraft(client));
   const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -198,9 +200,11 @@ export function BeautyProfileTab({ client }: BeautyProfileTabProps) {
             Estos datos alimentan el ranking de productos recomendados.
           </p>
         </div>
-        <Button variant="outline" onClick={enterEdit} leading={<Icon name="check" />}>
-          Editar perfil
-        </Button>
+        {readOnly ? null : (
+          <Button variant="outline" onClick={enterEdit} leading={<Icon name="check" />}>
+            Editar perfil
+          </Button>
+        )}
       </header>
 
       {notice ? (

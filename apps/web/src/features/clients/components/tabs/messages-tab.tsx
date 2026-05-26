@@ -19,6 +19,8 @@ const CHANNEL_ICON: Record<Channel, IconName> = {
 export interface MessagesTabProps {
   client: Client;
   communications: readonly Communication[];
+  /** Oculta el botón "Nuevo mensaje" cuando el viewer no es BA. */
+  readOnly?: boolean;
 }
 
 /**
@@ -28,7 +30,7 @@ export interface MessagesTabProps {
  * para tener espacio para el preview tipo teléfono. Esta tab solo muestra
  * el historial filtrable + el botón que navega al composer.
  */
-export function MessagesTab({ client, communications }: MessagesTabProps) {
+export function MessagesTab({ client, communications, readOnly = false }: MessagesTabProps) {
   const [channelFilter, setChannelFilter] = useState<ChannelFilter>("all");
 
   const clientLookup = { [client.id]: client.name } as Record<string, string>;
@@ -67,13 +69,15 @@ export function MessagesTab({ client, communications }: MessagesTabProps) {
             mensaje con plantillas pre-cargadas.
           </p>
         </div>
-        <Link
-          href={`/ba/clients/${client.id}/message/new`}
-          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-ink text-[14px] font-semibold no-underline hover:bg-bone transition-colors"
-        >
-          <Icon name="whatsapp" size={12} />
-          Nuevo mensaje
-        </Link>
+        {readOnly ? null : (
+          <Link
+            href={`/ba/clients/${client.id}/message/new`}
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-line bg-white text-ink text-[14px] font-semibold no-underline hover:bg-bone transition-colors"
+          >
+            <Icon name="whatsapp" size={12} />
+            Nuevo mensaje
+          </Link>
+        )}
       </header>
 
       {availableChannels.length > 2 ? (

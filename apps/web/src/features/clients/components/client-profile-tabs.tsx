@@ -56,6 +56,12 @@ export interface ClientProfileTabsProps {
   productBySku: Record<string, Product>;
   clientName: string;
   clientId: string;
+  /**
+   * Solo lectura: oculta botones de editar perfil de belleza, crear
+   * tareas en seguimientos, enviar mensajes, etc. Para roles que
+   * consultan el perfil sin operar (Gerente/Supervisor/Admin).
+   */
+  readOnly?: boolean;
 }
 
 export function ClientProfileTabs(props: ClientProfileTabsProps) {
@@ -127,12 +133,22 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
             baLookup={props.baLookup}
           />
         )}
-        {tab === "beauty" && <BeautyProfileTab client={props.client} />}
+        {tab === "beauty" && (
+          <BeautyProfileTab client={props.client} readOnly={props.readOnly} />
+        )}
         {tab === "followup" && (
-          <FollowupTab clientId={props.clientId as ClientId} tasks={props.followupTasks} />
+          <FollowupTab
+            clientId={props.clientId as ClientId}
+            tasks={props.followupTasks}
+            readOnly={props.readOnly}
+          />
         )}
         {tab === "msgs" && (
-          <MessagesTab client={props.client} communications={props.communications} />
+          <MessagesTab
+            client={props.client}
+            communications={props.communications}
+            readOnly={props.readOnly}
+          />
         )}
       </Card>
     </div>

@@ -115,6 +115,13 @@ export interface TaskInboxProps {
   mode?: "global" | "client-scoped";
   /** Required en modo client-scoped — necesario para el form de crear. */
   clientId?: ClientId;
+  /**
+   * Vista solo consulta: oculta header con botón "Nueva tarea", el form
+   * de crear, y las acciones por fila (Responder / Marcar hecha / Cancelar /
+   * Agendar cita). Para Gerente / Supervisor / Admin viendo el tab del
+   * cliente sin operar.
+   */
+  readOnly?: boolean;
 }
 
 export function TaskInbox({
@@ -122,6 +129,7 @@ export function TaskInbox({
   clientLookup,
   mode = "global",
   clientId,
+  readOnly = false,
 }: TaskInboxProps) {
   const [bucket, setBucket] = useState<Bucket>("today");
   // Filtro por CATEGORÍA (qué clase de seguimiento es): Feedback de muestra,
@@ -230,13 +238,15 @@ export function TaskInbox({
               venta o aquí mismo con el botón &ldquo;Nueva tarea&rdquo;.
             </p>
           </div>
-          <Button
-            variant="primary"
-            leading={<Icon name="plus" size={14} />}
-            onClick={() => setCreatingGlobal(true)}
-          >
-            Nueva tarea
-          </Button>
+          {readOnly ? null : (
+            <Button
+              variant="primary"
+              leading={<Icon name="plus" size={14} />}
+              onClick={() => setCreatingGlobal(true)}
+            >
+              Nueva tarea
+            </Button>
+          )}
         </header>
       ) : null}
 
@@ -277,26 +287,28 @@ export function TaskInbox({
                 );
               })}
             </div>
-            <Button
-              variant="primary"
-              leading={<Icon name="plus" size={14} />}
-              onClick={() => setCreatingScoped(true)}
-            >
-              Nueva tarea
-            </Button>
+            {readOnly ? null : (
+              <Button
+                variant="primary"
+                leading={<Icon name="plus" size={14} />}
+                onClick={() => setCreatingScoped(true)}
+              >
+                Nueva tarea
+              </Button>
+            )}
           </div>
         </header>
       ) : null}
 
-      {/* Create rows — variante según el modo */}
-      {mode === "client-scoped" && clientId ? (
+      {/* Create rows — variante según el modo (oculto en readOnly) */}
+      {!readOnly && mode === "client-scoped" && clientId ? (
         <CreateTaskRow
           clientId={clientId}
           creating={creatingScoped}
           onChangeCreating={setCreatingScoped}
         />
       ) : null}
-      {mode === "global" ? (
+      {!readOnly && mode === "global" ? (
         <CreateTaskGlobalRow
           clientLookup={clientLookup}
           creating={creatingGlobal}
@@ -417,6 +429,7 @@ export function TaskInbox({
               task={task}
               clientName={clientLookup[task.clientId] ?? "Cliente"}
               mode={mode}
+              readOnly={readOnly}
             />
           ))}
         </ul>
@@ -429,10 +442,12 @@ function TaskRow({
   task,
   clientName,
   mode,
+  readOnly = false,
 }: {
   task: FollowupTask;
   clientName: string;
   mode: "global" | "client-scoped";
+  readOnly?: boolean;
 }) {
   const isDone = task.status === "done";
   const isCancelled = task.status === "cancelled";
@@ -515,7 +530,7 @@ function TaskRow({
           >
             {isDone || isCancelled ? "" : relativeDue(task.dueAt)}
           </span>
-          {task.status === "pending" && !marking ? (
+          {!readOnly && task.status === "pending" && !marking ? (
             <>
               {task.type === "appointment" ? (
                 <Link

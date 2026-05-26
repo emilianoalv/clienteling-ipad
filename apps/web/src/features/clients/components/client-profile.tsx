@@ -38,6 +38,14 @@ export interface ClientProfileProps {
   baLookup: Record<string, string>;
   /** SKU → Product. Used by recs/samples previews to render real names. */
   productBySku: Record<string, Product>;
+  /**
+   * Modo solo-lectura: oculta el strip de acciones (Registrar visita /
+   * venta / Nueva cita), el card ARCO y todos los botones de edición /
+   * envío / creación dentro de los tabs. Lo activan las pages para
+   * Gerente / Supervisor / Admin — esos roles consultan pero no
+   * operan sobre el cliente como BA.
+   */
+  readOnly?: boolean;
 }
 
 export async function ClientProfile({
@@ -52,6 +60,7 @@ export async function ClientProfile({
   followupTasks,
   baLookup,
   productBySku,
+  readOnly = false,
 }: ClientProfileProps) {
   const t = await getTranslations();
   const segment = segmentClient(client);
@@ -96,25 +105,29 @@ export async function ClientProfile({
           </div>
         </Card>
 
-        {/* Action strip — Recomendar lives ahora dentro del wizard de visita
-            y la captura de perfil de belleza está en la tab dedicada. */}
-        <div className="grid grid-cols-3 gap-2.5">
-          <Link href={`/ba/clients/${client.id}/visit`}>
-            <Button leading={<Icon name="calendar" />} className="h-14 w-full">
-              {t("profile.actions.register_visit")}
-            </Button>
-          </Link>
-          <Link href={`/ba/clients/${client.id}/sale`}>
-            <Button leading={<Icon name="bag" />} className="h-14 w-full">
-              {t("profile.actions.register_sale")}
-            </Button>
-          </Link>
-          <Link href={`/ba/appointments/new?clientId=${encodeURIComponent(client.id)}`}>
-            <Button leading={<Icon name="calendar" />} className="h-14 w-full">
-              Nueva cita
-            </Button>
-          </Link>
-        </div>
+        {/* Action strip — Registrar visita / Registrar venta / Nueva cita.
+            Solo para BA. En modo read-only (Gerente/Supervisor/Admin
+            consultando) el strip desaparece — esas acciones son propias
+            del BA en piso de tienda. */}
+        {readOnly ? null : (
+          <div className="grid grid-cols-3 gap-2.5">
+            <Link href={`/ba/clients/${client.id}/visit`}>
+              <Button leading={<Icon name="calendar" />} className="h-14 w-full">
+                {t("profile.actions.register_visit")}
+              </Button>
+            </Link>
+            <Link href={`/ba/clients/${client.id}/sale`}>
+              <Button leading={<Icon name="bag" />} className="h-14 w-full">
+                {t("profile.actions.register_sale")}
+              </Button>
+            </Link>
+            <Link href={`/ba/appointments/new?clientId=${encodeURIComponent(client.id)}`}>
+              <Button leading={<Icon name="calendar" />} className="h-14 w-full">
+                Nueva cita
+              </Button>
+            </Link>
+          </div>
+        )}
 
         {/* KPI strip */}
         <Card className="grid grid-cols-2 gap-0">
@@ -143,6 +156,7 @@ export async function ClientProfile({
           productBySku={productBySku}
           clientName={client.name}
           clientId={client.id}
+          readOnly={readOnly}
         />
       </main>
 
@@ -154,7 +168,12 @@ export async function ClientProfile({
         <AppointmentsCard appointments={appointments} />
         <UpcomingEventsCard client={client} />
         <ConsentSummaryCard consents={consents} />
-        <ArcoRightsCard clientId={client.id} clientName={client.name} />
+        {/* ARCO (derecho al olvido) — acción sensible que dispara borrado
+            en cascada. Solo accesible para BA. Gerente / Supervisor /
+            Admin tienen Audit log en /admin para el rastro. */}
+        {readOnly ? null : (
+          <ArcoRightsCard clientId={client.id} clientName={client.name} />
+        )}
       </aside>
     </div>
   );

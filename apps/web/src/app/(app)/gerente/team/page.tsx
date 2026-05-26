@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { SectionHeader } from "@/components/patterns";
 import { TeamScreen } from "@/features/gerente/components/team-screen";
+import { segmentClient } from "@/features/clients/services/segment-client";
 import { requireSession } from "@/server/auth/session";
 import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 import { clientRepository } from "@/server/repositories/client.repository";
@@ -112,7 +113,7 @@ export default async function TeamPage({
               email: c.email,
               phone: c.phone,
               brands: c.brands,
-              tier: c.tier,
+              segment: segmentClient(c),
               lastPurchase: c.stats.lastPurchase,
               ltv: c.stats.ltv,
             })),

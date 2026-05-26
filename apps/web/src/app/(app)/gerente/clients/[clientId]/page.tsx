@@ -3,10 +3,10 @@ import { requireSession } from "@/server/auth/session";
 
 /**
  * /gerente/clients/[clientId] — Gerente ve el perfil completo de cualquier
- * cliente de su tienda. Reusa el mismo componente ClientProfile que la BA;
- * el fetchClientWithHistory ya valida el scope tienda+marca y el
- * isClientOwnedBy retorna true para roles distintos a BA (un Gerente ve
- * todos los clientes de su tienda sin importar a qué BA estén asignados).
+ * cliente de su tienda. Reusa el mismo componente ClientProfile que la BA
+ * pero en modo readOnly: el strip de acciones (Registrar visita / venta /
+ * Nueva cita), el card ARCO y los botones de edición / envío / crear
+ * tarea quedan ocultos. Es vista de consulta para coaching y reportes.
  */
 export default async function GerenteClientProfilePage({
   params,
@@ -16,5 +16,5 @@ export default async function GerenteClientProfilePage({
   const { clientId } = await params;
   const { staff } = await requireSession();
   const data = await fetchClientWithHistory(clientId, staff);
-  return <ClientProfile {...data} />;
+  return <ClientProfile {...data} readOnly />;
 }

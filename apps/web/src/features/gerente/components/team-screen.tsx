@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { BrandId } from "@/types/brand";
-import type { ClientTier } from "@/types/client";
+import type { Segment } from "@/types/client";
 import { Avatar, BrandTag, Chip, Icon, Input } from "@/components/primitives";
 import { Card } from "@/components/patterns";
 import { formatCurrency } from "@/lib/format/format-currency";
@@ -25,7 +25,12 @@ export interface TeamClientSummary {
   email: string;
   phone: string;
   brands: readonly BrandId[];
-  tier: ClientTier;
+  /**
+   * Segmento derivado (no el tier de loyalty). Refleja salud del cliente:
+   * VIP (alto LTV+visits), Recurrent (compras frecuentes), New (≤90 días),
+   * AtRisk (>180d sin comprar).
+   */
+  segment: Segment;
   lastPurchase: string | null;
   ltv: number;
 }
@@ -36,10 +41,18 @@ export interface TeamScreenProps {
   selectedBaId: string | null;
 }
 
-const TIER_VARIANT: Record<ClientTier, "neutral" | "accent" | "ok"> = {
-  Signature: "neutral",
-  Icon: "ok",
-  Atelier: "accent",
+const SEGMENT_VARIANT: Record<Segment, "neutral" | "accent" | "ok" | "danger"> = {
+  VIP: "accent",
+  Recurrent: "ok",
+  New: "neutral",
+  AtRisk: "danger",
+};
+
+const SEGMENT_LABEL: Record<Segment, string> = {
+  VIP: "VIP",
+  Recurrent: "Recurrente",
+  New: "Nueva",
+  AtRisk: "En riesgo",
 };
 
 export function TeamScreen({ team, clientsByBa, selectedBaId }: TeamScreenProps) {
@@ -177,8 +190,8 @@ export function TeamScreen({ team, clientsByBa, selectedBaId }: TeamScreenProps)
                           <BrandTag key={b} brand={b} alwaysShow />
                         ))}
                       </div>
-                      <Chip variant={TIER_VARIANT[c.tier]} size="sm">
-                        {c.tier}
+                      <Chip variant={SEGMENT_VARIANT[c.segment]} size="sm">
+                        {SEGMENT_LABEL[c.segment]}
                       </Chip>
                       <div className="text-right">
                         <div className="text-[14px] font-semibold tabular leading-tight">
