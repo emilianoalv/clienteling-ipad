@@ -11,20 +11,20 @@ import {
 } from "./_test-fixtures";
 
 describe("getNewClientsCount", () => {
-  it("Admin Q1 2026: cl-ines (2026-01-09) + cl-lorena (2026-02-12) = 2", async () => {
-    expect(await getNewClientsCount(admin, { period: q1Period })).toBe(2);
+  it("Admin Q1 2026: cl-ines + cl-lorena + cl-pilar-pol + cl-irma-stf = 4", async () => {
+    expect(await getNewClientsCount(admin, { period: q1Period })).toBe(4);
   });
 
-  it("BA Lancôme Polanco Q1 2026: solo cl-lorena (Polanco LCM)", async () => {
-    expect(await getNewClientsCount(baLcmPol, { period: q1Period })).toBe(1);
+  it("BA Lancôme Polanco Q1 2026: cl-lorena (LCM) + cl-pilar-pol (multi) = 2", async () => {
+    expect(await getNewClientsCount(baLcmPol, { period: q1Period })).toBe(2);
   });
 
-  it("BA YSL Polanco Q1 2026: 0 (cl-lorena es LCM-only)", async () => {
-    expect(await getNewClientsCount(baYslPol, { period: q1Period })).toBe(0);
+  it("BA YSL Polanco Q1 2026: cl-pilar-pol (multi-brand incluye YSL)", async () => {
+    expect(await getNewClientsCount(baYslPol, { period: q1Period })).toBe(1);
   });
 
-  it("Gerente Polanco Q1 2026: cl-lorena (POL ambas marcas)", async () => {
-    expect(await getNewClientsCount(gerentePol, { period: q1Period })).toBe(1);
+  it("Gerente Polanco Q1 2026: cl-lorena + cl-pilar-pol = 2", async () => {
+    expect(await getNewClientsCount(gerentePol, { period: q1Period })).toBe(2);
   });
 
   it("período sin altas → 0", async () => {

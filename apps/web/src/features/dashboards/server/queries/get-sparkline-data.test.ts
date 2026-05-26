@@ -35,26 +35,26 @@ describe("getSparklineData — granularity auto", () => {
 });
 
 describe("getSparklineData — sales (default)", () => {
-  it("Admin abril (30 days → day): 30 buckets, suma = 80,010", async () => {
+  it("Admin abril (30 days → day): 30 buckets, suma = 125,980", async () => {
     const series = await getSparklineData(admin, { period: aprilPeriod });
     expect(series).toHaveLength(30);
-    expect(series.reduce((s, b) => s + b.value, 0)).toBe(80_010);
-    // index 1 = abr-2 = pu-3 12,100
-    expect(series[1]!.value).toBe(12_100);
+    expect(series.reduce((s, b) => s + b.value, 0)).toBe(125_980);
+    // index 1 = abr-2 = pu-3 12,100 + pu-23 3,250 = 15,350
+    expect(series[1]!.value).toBe(15_350);
     // index 20 = abr-21 = pu-1 16,200
     expect(series[20]!.value).toBe(16_200);
     // Bucket without sales (abr-1) → 0
     expect(series[0]!.value).toBe(0);
   });
 
-  it("BA Lancôme Polanco abril: suma = 28,300", async () => {
+  it("BA Lancôme Polanco abril: suma = 40,500", async () => {
     const series = await getSparklineData(baLcmPol, { period: aprilPeriod });
-    expect(series.reduce((s, b) => s + b.value, 0)).toBe(28_300);
+    expect(series.reduce((s, b) => s + b.value, 0)).toBe(40_500);
   });
 
-  it("Supervisor Centro abril (excluye Perisur): suma = 63,190", async () => {
+  it("Supervisor Centro abril (excluye Perisur): suma = 94,720", async () => {
     const series = await getSparklineData(supervisorCentro, { period: aprilPeriod });
-    expect(series.reduce((s, b) => s + b.value, 0)).toBe(63_190);
+    expect(series.reduce((s, b) => s + b.value, 0)).toBe(94_720);
   });
 });
 
@@ -68,13 +68,13 @@ describe("getSparklineData — granularity week", () => {
 });
 
 describe("getSparklineData — métricas alternas", () => {
-  it("transactions: 9 buckets con 1, suma = 9", async () => {
+  it("transactions: suma = 18 (todas las compras de abril)", async () => {
     const series = await getSparklineData(
       admin,
       { period: aprilPeriod },
       { metric: "transactions" },
     );
-    expect(series.reduce((s, b) => s + b.value, 0)).toBe(9);
+    expect(series.reduce((s, b) => s + b.value, 0)).toBe(18);
   });
 
   it("newClients: ninguna alta en abril → suma = 0", async () => {
@@ -127,21 +127,21 @@ describe("getSparklineData — buckets vacíos y bordes", () => {
     );
     // 30 días → 5 buckets de 7 días (último parcial 2 días)
     expect(series).toHaveLength(5);
-    expect(series.reduce((s, b) => s + b.value, 0)).toBe(80_010);
+    expect(series.reduce((s, b) => s + b.value, 0)).toBe(125_980);
   });
 
-  it("BA YSL Polanco abril sales: 0 ventas en POL YSL → todos buckets 0", async () => {
+  it("BA YSL Polanco abril sales: pu-21 = 5,110", async () => {
     const series = await getSparklineData(baYslPol, { period: aprilPeriod });
-    expect(series.reduce((s, b) => s + b.value, 0)).toBe(0);
+    expect(series.reduce((s, b) => s + b.value, 0)).toBe(5_110);
   });
 
-  it("Gerente Polanco filtrando por st-per (intersección vacía): suma 0", async () => {
+  it("Admin filtrando por st-per: suma PER abril = 31,260", async () => {
     const series = await getSparklineData(admin, {
       period: aprilPeriod,
       storeIds: [ST_PER],
-      // Admin permite st-per → no isEmpty; pero para test de intersección vacía:
     });
-    // Admin viendo solo PER: pu-5 9,800 + pu-7 3,800 + pu-18 3,220 = 16,820
-    expect(series.reduce((s, b) => s + b.value, 0)).toBe(16_820);
+    // PER abril: pu-5 9,800 + pu-7 3,800 + pu-18 3,220 + pu-25 8,770
+    //           + pu-26 1,550 + pu-27 4,120 = 31,260
+    expect(series.reduce((s, b) => s + b.value, 0)).toBe(31_260);
   });
 });

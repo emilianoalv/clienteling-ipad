@@ -10,62 +10,63 @@ import {
 
 // Anchor = May 1 local.
 //
-// Last purchase per (client, sku) with SKU in product seed
-// (Bug A: YS-LIB-50, LC-HYB-30 are NOT in product seed → skipped):
-//   cl-constanza LC-ABS-50  pu-1  abr-21 → +100d = ago-09
-//   cl-constanza LC-GEN-50  pu-1  abr-21 → +90d  = jul-20
-//   cl-cristina  LC-ABS-50  pu-5  abr-25 → +100d = ago-03
-//   cl-elena     LC-GEN-50  pu-6  mar-10 → +90d  = jun-08
-//   cl-elena     LC-ABS-50  pu-14 feb-10 → +100d = may-21
-//   cl-gabriela  YS-LC-01   pu-18 abr-22 → +90d  = jul-21
-//   cl-gabriela  YS-PSE-15  pu-18 abr-22 → +90d  = jul-21
-//   cl-ines      YS-RPC-01  pu-7  abr-12 → +240d = dec-08
-//   cl-julieta   YS-OR-100  pu-8  feb-22 → +100d = jun-02
-//   cl-karla     LC-ABS-50  pu-9  abr-28 → +100d = ago-06
-//   cl-karla     YS-Y-60    pu-19 abr-29 → +180d ← FUERA de window=100
-//   cl-marina    LC-GEN-50  pu-10 abr-18 → +90d  = jul-17
-//   cl-nadia     YS-OR-100  pu-11 dic-10 → +100d = mar-20 ← BEFORE anchor
-//   cl-rocio     YS-BO-50   pu-17 abr-15 → +180d ← FUERA de window=100
-//   cl-rocio     YS-TC-01   pu-17 abr-15 → +200d ← FUERA de window=100
+// Last purchase per (client, sku) con SKU en product seed. El seed expandido
+// añade muchas alertas; las más cercanas:
+//   cl-gabriela  YS-LIB-90  pu-15 sep-10 2025 +240d = may-08 2026 (daysAway 7)
+//   cl-elena     LC-ABS-50  pu-14 feb-10        +100d = may-21       (daysAway 20)
+//   cl-julieta   YS-OR-100  pu-8  feb-22        +100d = jun-02       (daysAway 32)
+//   cl-elena     LC-GEN-50  pu-6  mar-10        +90d  = jun-08       (daysAway 38)
+//   cl-ofelia    LC-HZN-50  pu-3  abr-02        +75d  = jun-16       (daysAway 46)
+//   ... etc.
+// Total ventana 100d = 24 alertas. BA Lancôme Polanco (POL × LCM) ventana 100
+// = 6 alertas (cl-ofelia LC-HZN-50, cl-andrea-pol LC-REN-50, cl-constanza × 2,
+// cl-monica-pol × 2).
 
 describe("getEstimatedReplenishments", () => {
-  it("Admin default window=14: ninguno (más cercano = may-21)", async () => {
+  it("Admin default window=14: 1 alerta (cl-gabriela YS-LIB-90 may-08)", async () => {
     const r = await getEstimatedReplenishments(admin, { period: aprilPeriodLocal });
-    expect(r).toEqual([]);
+    expect(r).toHaveLength(1);
+    expect(r[0]!.clientId).toBe("cl-gabriela");
+    expect(r[0]!.sku).toBe("YS-LIB-90");
+    expect(r[0]!.daysAway).toBe(7);
   });
 
-  it("Admin window=30: solo cl-elena LC-ABS-50 (may-21)", async () => {
+  it("Admin window=30: cl-gabriela YS-LIB-90 (may-08) + cl-elena LC-ABS-50 (may-21)", async () => {
     const r = await getEstimatedReplenishments(
       admin,
       { period: aprilPeriodLocal },
       { windowDays: 30 },
     );
-    expect(r).toHaveLength(1);
-    expect(r[0]!.clientId).toBe("cl-elena");
-    expect(r[0]!.sku).toBe("LC-ABS-50");
-    expect(r[0]!.daysAway).toBe(20); // may-21 - may-1 = 20
+    expect(r).toHaveLength(2);
+    expect(r[0]!.clientId).toBe("cl-gabriela");
+    expect(r[0]!.sku).toBe("YS-LIB-90");
+    expect(r[1]!.clientId).toBe("cl-elena");
+    expect(r[1]!.sku).toBe("LC-ABS-50");
+    expect(r[1]!.daysAway).toBe(20);
   });
 
-  it("Admin window=100: 10 alertas (excluye SKUs sin product entry y los antes del anchor)", async () => {
+  it("Admin window=100: 24 alertas (excluye SKUs sin product entry y los antes del anchor)", async () => {
     const r = await getEstimatedReplenishments(
       admin,
       { period: aprilPeriodLocal },
       { windowDays: 100 },
     );
-    expect(r).toHaveLength(10);
-    // Ordenado por daysAway → primero el más cercano (cl-elena may-21)
-    expect(r[0]!.clientId).toBe("cl-elena");
-    expect(r[0]!.sku).toBe("LC-ABS-50");
+    expect(r).toHaveLength(24);
+    // Ordenado por daysAway → primero el más cercano (cl-gabriela may-08)
+    expect(r[0]!.clientId).toBe("cl-gabriela");
+    expect(r[0]!.sku).toBe("YS-LIB-90");
   });
 
-  it("BA Lancôme Polanco window=100: 2 alerts (cl-constanza × 2 SKUs)", async () => {
+  it("BA Lancôme Polanco window=100: 6 alerts (POL × LCM)", async () => {
     const r = await getEstimatedReplenishments(
       baLcmPol,
       { period: aprilPeriodLocal },
       { windowDays: 100 },
     );
-    expect(r).toHaveLength(2);
-    expect(r.every((x) => x.clientId === "cl-constanza")).toBe(true);
+    // cl-ofelia LC-HZN-50, cl-andrea-pol LC-REN-50, cl-constanza LC-GEN-50,
+    // cl-monica-pol LC-GEN-50, cl-constanza LC-ABS-50, cl-monica-pol LC-ABS-50.
+    expect(r).toHaveLength(6);
+    expect(r.every((x) => ["cl-ofelia", "cl-andrea-pol", "cl-constanza", "cl-monica-pol"].includes(x.clientId))).toBe(true);
   });
 
   it("BA YSL Polanco window=100: 0 (todos los SKUs YSL faltan en product seed)", async () => {

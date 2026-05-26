@@ -10,25 +10,29 @@ import {
   supervisorCentro,
 } from "./_test-fixtures";
 
-// Reference (abril 2026):
-//   cl-karla     STF · multi · 24,850 (pu-9 21,900 + pu-19 2,950) + int-14
-//   cl-constanza POL · LCM · 16,200  (pu-1)    + int-1  purchase abr-21
-//   cl-ofelia    POL · LCM · 12,100  (pu-3)    + int-2  sample   abr-08
-//   cl-cristina  PER · LCM ·  9,800  (pu-5)    + int-8  purchase abr-25
-//   cl-marina    STF · LCM ·  6,400  (pu-10)   + int-15 consult  abr-18
-//   cl-ines      PER · YSL ·  3,800  (pu-7)    + int-13 purchase abr-12
-//   cl-rocio     STF · YSL ·  3,640  (pu-17)   — sin interaction abr
-//   cl-gabriela  PER · YSL ·  3,220  (pu-18)   + int-21 whatsapp abr-25
-// = 8 clientas con actividad en abril.
+// Reference (abril 2026, seed expandido = 17 clientas activas):
+//   cl-karla       24,850 (pu-9 + pu-19) + int-14
+//   cl-constanza   16,200 (pu-1) + int-1
+//   cl-ofelia      12,100 (pu-3) + int-2
+//   cl-cristina     9,800 (pu-5) + int-8
+//   cl-laura-stf    9,560 (pu-28)
+//   cl-monica-pol   8,950 (pu-20)
+//   cl-yolanda-per  8,770 (pu-25)
+//   cl-marina       6,400 (pu-10) + int-15
+//   cl-paloma-pol   5,110 (pu-21)
+//   cl-veronica-per 4,120 (pu-27)
+//   ... y más
 
 describe("getTopClients", () => {
-  it("Admin abril topN=10: 8 clientas, orden por totalSpent desc", async () => {
+  it("Admin abril topN=10: 10 clientas top, orden por totalSpent desc", async () => {
     const r = await getTopClients(admin, { period: aprilPeriod });
-    expect(r).toHaveLength(8);
+    expect(r).toHaveLength(10);
     expect(r[0]!.clientId).toBe("cl-karla");
     expect(r[0]!.totalSpent).toBe(24_850);
     expect(r[1]!.clientId).toBe("cl-constanza");
     expect(r[1]!.totalSpent).toBe(16_200);
+    expect(r[2]!.clientId).toBe("cl-ofelia");
+    expect(r[2]!.totalSpent).toBe(12_100);
   });
 
   it("topN respetado (topN=3 → solo 3 entradas)", async () => {
@@ -38,7 +42,9 @@ describe("getTopClients", () => {
   });
 
   it("visitsCount cuenta SOLO presenciales (whatsapp excluido)", async () => {
-    const r = await getTopClients(admin, { period: aprilPeriod });
+    // cl-gabriela queda fuera del top 10 con el seed expandido; pedimos topN
+    // grande para garantizar que aparezca.
+    const r = await getTopClients(admin, { period: aprilPeriod }, { topN: 20 });
     const gabriela = r.find((x) => x.clientId === "cl-gabriela");
     expect(gabriela).toBeDefined();
     expect(gabriela!.visitsCount).toBe(0); // solo tiene int-21 whatsapp (no presencial)
@@ -52,26 +58,34 @@ describe("getTopClients", () => {
     expect(karla!.lastVisitDate?.toISOString()).toBe("2026-04-28T16:00:00.000Z");
   });
 
-  it("BA Lancôme Polanco: solo cl-constanza y cl-ofelia (POL × LCM en abril)", async () => {
+  it("BA Lancôme Polanco: 4 clientas POL × LCM en abril", async () => {
     const r = await getTopClients(baLcmPol, { period: aprilPeriod });
-    expect(r).toHaveLength(2);
-    expect(r.map((x) => x.clientId).sort()).toEqual(["cl-constanza", "cl-ofelia"]);
+    expect(r).toHaveLength(4);
+    expect(r.map((x) => x.clientId).sort()).toEqual([
+      "cl-andrea-pol",
+      "cl-constanza",
+      "cl-monica-pol",
+      "cl-ofelia",
+    ]);
   });
 
-  it("BA YSL Polanco: 0 clientas con actividad POL × YSL en abril", async () => {
+  it("BA YSL Polanco: cl-paloma-pol (pu-21) en abril", async () => {
     const r = await getTopClients(baYslPol, { period: aprilPeriod });
-    expect(r).toEqual([]);
+    expect(r).toHaveLength(1);
+    expect(r[0]!.clientId).toBe("cl-paloma-pol");
   });
 
-  it("Gerente Polanco abril: cl-constanza + cl-ofelia (no hay YSL POL en abril)", async () => {
+  it("Gerente Polanco abril: 5 clientas POL (LCM + YSL)", async () => {
     const r = await getTopClients(gerentePol, { period: aprilPeriod });
-    expect(r).toHaveLength(2);
+    expect(r).toHaveLength(5);
   });
 
-  it("Supervisor Centro (POL + STF) abril excluye Perisur: 5 clientas", async () => {
+  it("Supervisor Centro (POL + STF) abril excluye Perisur: 10 clientas (topN default)", async () => {
     const r = await getTopClients(supervisorCentro, { period: aprilPeriod });
-    // POL: cl-constanza, cl-ofelia. STF: cl-karla, cl-marina, cl-rocio. = 5
-    expect(r).toHaveLength(5);
+    // POL: cl-constanza, cl-ofelia, cl-monica-pol, cl-paloma-pol, cl-andrea-pol = 5
+    // STF: cl-karla, cl-marina, cl-rocio, cl-laura-stf, cl-luisa-stf, cl-tatiana-stf = 6
+    // Total = 11. topN default = 10.
+    expect(r).toHaveLength(10);
     expect(r[0]!.clientId).toBe("cl-karla"); // top
   });
 

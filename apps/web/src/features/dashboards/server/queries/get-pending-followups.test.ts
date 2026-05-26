@@ -14,17 +14,23 @@ import {
 //   ft-10 cl-elena    Regina  dueAt 2026-04-22 → overdue
 //   ft-11 cl-cristina Regina  dueAt 2026-05-10 → upcoming
 //
-// (Plus four pending tasks with relativeISO in other counters; those don't
-// interfere when we filter by PER × LCM scope.)
+// PER × LCM con dueAt relativo (todas upcoming, post-anchor):
+//   ft-27 (Andrea, cl-natalia-per)
+//   ft-28 (Andrea, cl-sandra-per)
+//   ft-29 (Regina, cl-claudia-per)
+//   ft-30 (Regina, cl-veronica-per)
 
 describe("getPendingFollowups", () => {
-  it("BA Andrea (PER × LCM) ve sus 3 tasks PER LCM en orden: overdue → upcoming", async () => {
+  it("BA Andrea (PER × LCM) ve las 7 tasks PER LCM: overdue → upcoming", async () => {
     const r = await getPendingFollowups(baLcmPer2, { period: aprilPeriod });
-    expect(r).toHaveLength(3);
+    expect(r).toHaveLength(7);
+    // Overdue primero (oldest first)
     expect(r[0]!.taskId).toBe("ft-09");
     expect(r[0]!.isOverdue).toBe(true);
     expect(r[1]!.taskId).toBe("ft-10");
     expect(r[1]!.isOverdue).toBe(true);
+    // El próximo upcoming (más cercano) es ft-11 (2026-05-10), antes que
+    // las tasks relativas.
     expect(r[2]!.taskId).toBe("ft-11");
     expect(r[2]!.isOverdue).toBe(false);
   });
@@ -53,8 +59,10 @@ describe("getPendingFollowups", () => {
       period: aprilPeriod,
       baId: baLcmPer2.id, // Andrea
     });
-    expect(r).toHaveLength(1);
+    // Andrea: ft-09 (overdue), ft-27, ft-28 (upcoming).
+    expect(r).toHaveLength(3);
     expect(r[0]!.taskId).toBe("ft-09");
+    expect(r[0]!.isOverdue).toBe(true);
   });
 
   it("BA Lancôme Polanco no ve tasks PER LCM (ft-09/10/11)", async () => {
@@ -71,11 +79,11 @@ describe("getPendingFollowups", () => {
     expect(r).toEqual([]);
   });
 
-  it("BA YSL Polanco: 2 pending POL YSL (ft-17 Daniela + ft-18 Sofía)", async () => {
+  it("BA YSL Polanco: 6 pending POL YSL (ft-17, ft-18, ft-23..ft-26)", async () => {
     const r = await getPendingFollowups(baYslPol, { period: aprilPeriod });
-    expect(r).toHaveLength(2);
+    expect(r).toHaveLength(6);
     const ids = r.map((x) => x.taskId as string).sort();
-    expect(ids).toEqual(["ft-17", "ft-18"]);
+    expect(ids).toEqual(["ft-17", "ft-18", "ft-23", "ft-24", "ft-25", "ft-26"]);
   });
 
   it("isOverdue se calcula contra filters.period.to (no contra hoy real)", async () => {

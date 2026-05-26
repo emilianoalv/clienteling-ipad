@@ -17,33 +17,33 @@ import {
 } from "./_test-fixtures";
 
 // Reference (abril 2026):
-//   POL × LCM: Valentina 16,200 (pu-1) · Fernanda 12,100 (pu-3)
-//   POL × YSL: Daniela 0 · Sofía 0  (sin compras POL YSL en abril)
-//   STF × LCM: Renata 21,900 (pu-9) · Ximena 6,400 (pu-10)
+//   POL × LCM: Fernanda 24,300 (pu-3 + pu-20 + pu-23) · Valentina 16,200 (pu-1)
+//   POL × YSL: Sofía 5,110 (pu-21) · Daniela 0
+//   STF × LCM: Renata 24,390 (pu-9 + pu-31) · Ximena 15,960 (pu-10 + pu-28)
 
 describe("getBaRankingInCounter", () => {
-  it("Valentina POL LCM: rank 1 de 2 (top seller)", async () => {
+  it("Valentina POL LCM: rank 2 de 2 (Fernanda lidera)", async () => {
     const r = await getBaRankingInCounter(baLcmPol, { period: aprilPeriod });
-    expect(r.myRank).toBe(1);
-    expect(r.totalInCounter).toBe(2);
-    expect(r.topThree).toHaveLength(2);
-    expect(r.topThree[0]!.name).toBe("Valentina Ríos");
-    expect(r.topThree[0]!.salesAmount).toBe(16_200);
-    expect(r.topThree[1]!.name).toBe("Fernanda Oliveros");
-    expect(r.topThree[1]!.salesAmount).toBe(12_100);
-  });
-
-  it("Fernanda POL LCM: rank 2 de 2 (segundo)", async () => {
-    const r = await getBaRankingInCounter(baLcmPol2, { period: aprilPeriod });
     expect(r.myRank).toBe(2);
     expect(r.totalInCounter).toBe(2);
+    expect(r.topThree).toHaveLength(2);
+    expect(r.topThree[0]!.name).toBe("Fernanda Oliveros");
+    expect(r.topThree[0]!.salesAmount).toBe(24_300);
+    expect(r.topThree[1]!.name).toBe("Valentina Ríos");
+    expect(r.topThree[1]!.salesAmount).toBe(16_200);
   });
 
-  it("Renata STF LCM: rank 1 con 21,900; Ximena queda en 2", async () => {
+  it("Fernanda POL LCM: rank 1 de 2 (lidera con 24,300)", async () => {
+    const r = await getBaRankingInCounter(baLcmPol2, { period: aprilPeriod });
+    expect(r.myRank).toBe(1);
+    expect(r.totalInCounter).toBe(2);
+  });
+
+  it("Renata STF LCM: rank 1 con 24,390; Ximena queda en 2 con 15,960", async () => {
     const r = await getBaRankingInCounter(baLcmStf, { period: aprilPeriod });
     expect(r.myRank).toBe(1);
-    expect(r.topThree[0]!.salesAmount).toBe(21_900);
-    expect(r.topThree[1]!.salesAmount).toBe(6_400);
+    expect(r.topThree[0]!.salesAmount).toBe(24_390);
+    expect(r.topThree[1]!.salesAmount).toBe(15_960);
   });
 
   it("Ximena STF LCM: rank 2 de 2", async () => {
@@ -51,16 +51,18 @@ describe("getBaRankingInCounter", () => {
     expect(r.myRank).toBe(2);
   });
 
-  it("Empate en 0 → orden alfabético por nombre (Daniela antes que Sofía)", async () => {
+  it("POL × YSL: Sofía 5,110 lidera, Daniela 0 en 2", async () => {
     const r = await getBaRankingInCounter(baYslPol, { period: aprilPeriod });
-    expect(r.topThree[0]!.name).toBe("Daniela Castro");
-    expect(r.topThree[1]!.name).toBe("Sofía Marín");
-    expect(r.myRank).toBe(1); // Daniela
+    expect(r.topThree[0]!.name).toBe("Sofía Marín");
+    expect(r.topThree[0]!.salesAmount).toBe(5_110);
+    expect(r.topThree[1]!.name).toBe("Daniela Castro");
+    expect(r.topThree[1]!.salesAmount).toBe(0);
+    expect(r.myRank).toBe(2); // Daniela
   });
 
-  it("Sofía POL YSL: rank 2 por orden alfabético en empate", async () => {
+  it("Sofía POL YSL: rank 1 con única venta del counter (pu-21)", async () => {
     const r = await getBaRankingInCounter(baYslPol2, { period: aprilPeriod });
-    expect(r.myRank).toBe(2);
+    expect(r.myRank).toBe(1);
   });
 
   it("Counter con 1 BA (Kiehl's sintético): myRank=1, total=1, topThree=[staff]", async () => {

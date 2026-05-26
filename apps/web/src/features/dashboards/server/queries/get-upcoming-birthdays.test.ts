@@ -13,31 +13,37 @@ import {
 // Default window=30 → [May 1, May 31).
 //
 // Clientas con bday en esa ventana:
-//   cl-pamela 1999-05-08 → 2026-05-08, daysAway=7,  age 27
-//   cl-constanza 1988-05-22 → 2026-05-22, daysAway=21, age 38
+//   cl-pamela        1999-05-08 → daysAway 7  age 27 (STF LCM)
+//   cl-constanza     1988-05-22 → daysAway 21 age 38 (POL multi)
+//   cl-mariana-pol   1995-05-28 → daysAway 27 age 31 (POL LCM)
+//   cl-fernanda-stf  2000-05-30 → daysAway 29 age 26 (STF YSL)
 
 describe("getUpcomingBirthdays", () => {
-  it("Admin default 30d: cl-pamela + cl-constanza ordenadas por daysAway", async () => {
+  it("Admin default 30d: 4 cumpleaños ordenados por daysAway", async () => {
     const r = await getUpcomingBirthdays(admin, { period: aprilPeriodLocal });
-    expect(r).toHaveLength(2);
+    expect(r).toHaveLength(4);
     expect(r[0]!.name).toBe("Pamela Vázquez");
     expect(r[0]!.daysAway).toBe(7);
     expect(r[0]!.age).toBe(27);
     expect(r[1]!.name).toBe("Constanza Iturbide");
     expect(r[1]!.daysAway).toBe(21);
     expect(r[1]!.age).toBe(38);
+    expect(r[2]!.clientId).toBe("cl-mariana-pol");
+    expect(r[2]!.daysAway).toBe(27);
+    expect(r[3]!.clientId).toBe("cl-fernanda-stf");
+    expect(r[3]!.daysAway).toBe(29);
   });
 
-  it("BA Lancôme Polanco: solo cl-constanza (multi-brand visible) = 1", async () => {
+  it("BA Lancôme Polanco: cl-constanza + cl-mariana-pol", async () => {
     const r = await getUpcomingBirthdays(baLcmPol, { period: aprilPeriodLocal });
-    expect(r).toHaveLength(1);
-    expect(r[0]!.clientId).toBe("cl-constanza");
+    expect(r).toHaveLength(2);
+    expect(r.map((x) => x.clientId).sort()).toEqual(["cl-constanza", "cl-mariana-pol"]);
   });
 
-  it("Gerente Santa Fe: solo cl-pamela", async () => {
+  it("Gerente Santa Fe: cl-pamela + cl-fernanda-stf", async () => {
     const r = await getUpcomingBirthdays(gerenteStf, { period: aprilPeriodLocal });
-    expect(r).toHaveLength(1);
-    expect(r[0]!.clientId).toBe("cl-pamela");
+    expect(r).toHaveLength(2);
+    expect(r.map((x) => x.clientId).sort()).toEqual(["cl-fernanda-stf", "cl-pamela"]);
   });
 
   it("BA Lancôme Santa Fe: solo cl-pamela (STF LCM)", async () => {
@@ -118,13 +124,15 @@ describe("getUpcomingBirthdays", () => {
     expect(r.length).toBeGreaterThanOrEqual(5);
   });
 
-  it("anchor jul-15 2000 local, window=7: no hay bdays en ese rango → []", async () => {
-    // jul-15 a jul-22 — ninguna clienta del seed cumple en ese rango.
+  it("anchor jul-15 2000 local, window=7: cl-yolanda-per (jul-19)", async () => {
+    // jul-15 a jul-22 — cl-yolanda-per nace 1979-07-19 (4 días lejos).
     const r = await getUpcomingBirthdays(
       admin,
       { period: { from: new Date(2000, 6, 1), to: new Date(2000, 6, 15) } },
       { windowDays: 7 },
     );
-    expect(r).toEqual([]);
+    expect(r).toHaveLength(1);
+    expect(r[0]!.clientId).toBe("cl-yolanda-per");
+    expect(r[0]!.daysAway).toBe(4);
   });
 });

@@ -8,15 +8,21 @@ import {
 } from "./_test-fixtures";
 
 // Anchor = May 1 local. Default window=30, minTenure=30.
-//   cl-adriana since 2024-05-14 → next anniv 2026-05-14, daysAway=13, years=2
+//   cl-adriana     since 2024-05-14 → anniv 2026-05-14 daysAway 13 years 2
+//   cl-natalia-per since 2018-05-14 → anniv 2026-05-14 daysAway 13 years 8
 
 describe("getUpcomingAnniversaries", () => {
-  it("Admin default: cl-adriana es la única en ventana", async () => {
+  it("Admin default: cl-adriana + cl-natalia-per (mismo 05-14)", async () => {
     const r = await getUpcomingAnniversaries(admin, { period: aprilPeriodLocal });
-    expect(r).toHaveLength(1);
-    expect(r[0]!.clientId).toBe("cl-adriana");
-    expect(r[0]!.daysAway).toBe(13);
-    expect(r[0]!.yearsAsClient).toBe(2);
+    expect(r).toHaveLength(2);
+    const adriana = r.find((x) => x.clientId === "cl-adriana");
+    expect(adriana).toBeDefined();
+    expect(adriana!.daysAway).toBe(13);
+    expect(adriana!.yearsAsClient).toBe(2);
+    const natalia = r.find((x) => x.clientId === "cl-natalia-per");
+    expect(natalia).toBeDefined();
+    expect(natalia!.daysAway).toBe(13);
+    expect(natalia!.yearsAsClient).toBe(8);
   });
 
   it("clienta con tenure < 30d EXCLUIDA", async () => {

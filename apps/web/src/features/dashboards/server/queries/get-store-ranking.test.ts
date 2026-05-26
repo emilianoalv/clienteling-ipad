@@ -9,39 +9,37 @@ import {
   supervisorCentro,
 } from "./_test-fixtures";
 
-// Reference (abril 2026):
-//   POL: pu-1 16,200 + pu-3 12,100 = 28,300, 2 tx, 2 BAs activos (Val + Fer)
-//        interactions abril POL: int-1 (constanza), int-2 (ofelia)
-//        activeClients = 2
-//   STF: pu-9 + pu-10 + pu-17 + pu-19 = 34,890, 4 tx, 4 BAs activos
-//        (Renata, Ximena, Paulina, Carolina)
+// Reference (abril 2026, seed expandido):
+//   POL: 45,610 (5 tx) — BAs Valentina, Fernanda, Sofía activos = 3
+//        interactions abril POL: int-1 (constanza), int-2 (ofelia) = 2
+//   STF: 49,110 (7 tx) — BAs Renata, Ximena, Paulina, Carolina activos = 4
 //        interactions abril STF: int-14 (karla), int-15 (marina) = 2
-//   PER: pu-5 + pu-7 + pu-18 = 16,820, 3 tx, 2 BAs (Regina + Mariana)
+//   PER: 31,260 (6 tx) — BAs Regina, Andrea, Mariana, Lucía activos = 4
 //        interactions abril PER: int-8 (cristina), int-13 (ines), int-21 (gabriela) = 3
 
 describe("getStoreRanking", () => {
-  it("Admin abril: STF lidera (34,890), POL segundo (28,300), PER tercero (16,820)", async () => {
+  it("Admin abril: STF (49,110), POL (45,610), PER (31,260)", async () => {
     const r = await getStoreRanking(admin, { period: aprilPeriod });
     expect(r).toHaveLength(3);
     expect(r[0]!.storeName).toBe("Palacio Santa Fe");
-    expect(r[0]!.salesAmount).toBe(34_890);
+    expect(r[0]!.salesAmount).toBe(49_110);
     expect(r[0]!.rank).toBe(1);
     expect(r[1]!.storeName).toBe("Liverpool Polanco");
-    expect(r[1]!.salesAmount).toBe(28_300);
+    expect(r[1]!.salesAmount).toBe(45_610);
     expect(r[2]!.storeName).toBe("Liverpool Perisur");
-    expect(r[2]!.salesAmount).toBe(16_820);
+    expect(r[2]!.salesAmount).toBe(31_260);
   });
 
   it("activeBas y activeClients correctos por tienda", async () => {
     const r = await getStoreRanking(admin, { period: aprilPeriod });
     const pol = r.find((x) => x.storeName === "Liverpool Polanco")!;
-    expect(pol.activeBas).toBe(2);
+    expect(pol.activeBas).toBe(3); // Valentina, Fernanda, Sofía
     expect(pol.activeClients).toBe(2);
     const stf = r.find((x) => x.storeName === "Palacio Santa Fe")!;
-    expect(stf.activeBas).toBe(4); // Renata, Ximena, Paulina, Carolina (pu-9/10/17/19)
+    expect(stf.activeBas).toBe(4); // Renata, Ximena, Paulina, Carolina
     const per = r.find((x) => x.storeName === "Liverpool Perisur")!;
-    expect(per.activeBas).toBe(2); // Regina, Mariana (pu-5/7/18 — Mariana hace dos)
-    expect(per.activeClients).toBe(3); // cristina, ines, gabriela (whatsapp también)
+    expect(per.activeBas).toBe(4); // Regina, Andrea, Mariana, Lucía
+    expect(per.activeClients).toBe(3); // cristina, ines, gabriela
   });
 
   it("franchiseName mapea desde Store.chain", async () => {

@@ -190,12 +190,13 @@ describe("BA isolation by tienda + marca (RF-52)", () => {
 });
 
 describe("Gerente — ve toda su tienda (RF-53)", () => {
-  it("Gerente Polanco ve las 5 clientas de Polanco (ambas marcas)", async () => {
+  it("Gerente Polanco ve las 11 clientas de Polanco (ambas marcas)", async () => {
     const clients = await clientRepository.list({
       brands: brandScopeFor(gtePol),
       storeIds: storeScopeFor(gtePol),
     });
-    expect(clients).toHaveLength(5);
+    // 5 originales (Polanco) + 6 nuevas (cl-*-pol) = 11
+    expect(clients).toHaveLength(11);
     expect(clients.every((c) => c.storeId === ST_POL)).toBe(true);
     // Includes both LCM-only and YSL-only clientas:
     const ids = new Set(clients.map((c) => c.id as string));
@@ -206,24 +207,26 @@ describe("Gerente — ve toda su tienda (RF-53)", () => {
 });
 
 describe("Supervisor — ve su zona (RF-54)", () => {
-  it("Supervisor Centro ve Polanco + Santa Fe (10 clientas), NO Perisur", async () => {
+  it("Supervisor Centro ve Polanco + Santa Fe (22 clientas), NO Perisur", async () => {
     const clients = await clientRepository.list({
       brands: brandScopeFor(supCentro),
       storeIds: storeScopeFor(supCentro),
     });
-    expect(clients).toHaveLength(10);
+    // 11 Polanco + 11 Santa Fe = 22
+    expect(clients).toHaveLength(22);
     expect(clients.every((c) => c.storeId === ST_POL || c.storeId === ST_STF)).toBe(true);
     expect(clients.some((c) => c.storeId === ST_PER)).toBe(false);
   });
 });
 
 describe("Administrador Central — ve todo (RF-55)", () => {
-  it("Admin ve las 15 clientas (todas las tiendas, todas las marcas)", async () => {
+  it("Admin ve las 33 clientas (todas las tiendas, todas las marcas)", async () => {
     const clients = await clientRepository.list({
       brands: brandScopeFor(admin),
       storeIds: storeScopeFor(admin),
     });
-    expect(clients).toHaveLength(15);
+    // 15 originales + 18 nuevas = 33
+    expect(clients).toHaveLength(33);
     const storeIds = new Set(clients.map((c) => c.storeId));
     expect(storeIds).toEqual(new Set([ST_POL, ST_PER, ST_STF]));
   });
@@ -272,14 +275,15 @@ describe("Purchase / Appointment / Recommendation / Communication respetan el sc
     expect(comms.some((c) => c.storeId === ST_PER)).toBe(false);
   });
 
-  it("Admin ve todas las compras (19) independientemente de marca/tienda", async () => {
+  it("Admin ve todas las compras (31) independientemente de marca/tienda", async () => {
     // 12 originales + 4 históricas (pu-13..pu-16) para retention KPIs
-    // + 3 YSL (pu-17..pu-19) del catálogo expandido.
+    // + 3 YSL (pu-17..pu-19) del catálogo expandido
+    // + 12 nuevas (pu-20..pu-31) para clientes recién creados.
     const purchases = await purchaseRepository.list({
       brands: brandScopeFor(admin),
       storeIds: storeScopeFor(admin),
     });
-    expect(purchases).toHaveLength(19);
+    expect(purchases).toHaveLength(31);
   });
 });
 

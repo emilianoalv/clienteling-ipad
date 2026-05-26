@@ -12,23 +12,32 @@ import {
 } from "./_test-fixtures";
 
 describe("getAverageTicket", () => {
-  it("Admin abril: 80,010 / 9 = 8,890", async () => {
-    expect(await getAverageTicket(admin, { period: aprilPeriod })).toBe(8_890);
+  it("Admin abril: 125,980 / 18 = 6,998.888…", async () => {
+    // Total April 2026: 18 transactions, sum 125,980 → 125980 / 18 = 6998.888…
+    expect(await getAverageTicket(admin, { period: aprilPeriod })).toBeCloseTo(
+      125_980 / 18,
+    );
   });
 
-  it("BA Lancôme Polanco abril: (16,200 + 12,100) / 2 = 14,150", async () => {
-    expect(await getAverageTicket(baLcmPol, { period: aprilPeriod })).toBe(14_150);
+  it("BA Lancôme Polanco abril: POL × LCM = 40,500 / 4 = 10,125", async () => {
+    // POL × LCM en abril = pu-1 + pu-3 + pu-20 + pu-23 = 40,500.
+    expect(await getAverageTicket(baLcmPol, { period: aprilPeriod })).toBe(10_125);
   });
 
-  it("sin transacciones → 0 (no NaN)", async () => {
-    expect(await getAverageTicket(baYslPol, { period: aprilPeriod })).toBe(0);
+  it("BA YSL Polanco abril: solo pu-21 = 5,110", async () => {
+    // POL × YSL en abril = pu-21 (5,110).
+    expect(await getAverageTicket(baYslPol, { period: aprilPeriod })).toBe(5_110);
+  });
+
+  it("período sin compras → 0 (no NaN)", async () => {
     expect(await getAverageTicket(admin, { period: emptyPeriod })).toBe(0);
   });
 
-  it("Supervisor Centro abril: 63,190 / 6 = 10,531.666…", async () => {
+  it("Supervisor Centro abril: 94,720 / 12 = 7,893.333…", async () => {
+    // POL + STF abril = 12 tickets, sum 94,720.
     expect(
       await getAverageTicket(supervisorCentro, { period: aprilPeriod }),
-    ).toBeCloseTo(63_190 / 6);
+    ).toBeCloseTo(94_720 / 12);
   });
 
   it("intersección vacía → 0", async () => {
