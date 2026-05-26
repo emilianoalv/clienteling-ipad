@@ -1,4 +1,4 @@
-import { NewClientWizard } from "@/features/clients";
+import { ClientSearchOrCreate } from "@/features/clients/components/client-search-or-create";
 import { requireSession } from "@/server/auth/session";
 import { storeRepository } from "@/server/repositories/store.repository";
 import type { StoreId } from "@/types/store";
@@ -10,9 +10,7 @@ export default async function NewClientPage() {
   const store = storeId ? await storeRepository.findById(storeId) : null;
 
   // Marca por default = la del BA logueado. Si es Gerente/Supervisor/Admin
-  // con scope multi-brand, usamos la primera de su lista. Antes esto estaba
-  // hardcoded a Lancôme en el wizard, por eso las BAs YSL no veían sus
-  // clientes recién creados (quedaban como Lancôme y se filtraban fuera).
+  // con scope multi-brand, usamos la primera de su lista.
   const defaultBrands: readonly BrandId[] =
     staff.role === "BA"
       ? [staff.brand]
@@ -20,10 +18,13 @@ export default async function NewClientPage() {
         ? [staff.brands[0]!]
         : ["Lancôme"];
 
+  const baBrand = staff.role === "BA" ? staff.brand : (defaultBrands[0] ?? "Lancôme");
+
   return (
-    <NewClientWizard
+    <ClientSearchOrCreate
       storeName={store?.name ?? "—"}
       baName={staff.name}
+      baBrand={baBrand}
       defaultBrands={defaultBrands}
     />
   );
