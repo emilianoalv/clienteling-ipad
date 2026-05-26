@@ -71,6 +71,10 @@ const FRAGRANCE_INTERESTS = [
   "Almizclada",
   "Chypre",
   "Frutal",
+  // "Aromática" / fougère / aromática-fresca — cubre fragancias masculinas
+  // contemporáneas (Y EDP, MYSLF, La Nuit de L'Homme) que antes no tenían
+  // una familia clara entre las 6 clásicas.
+  "Aromática",
 ] as const;
 
 function normalizeFamilyToken(raw: string): string {

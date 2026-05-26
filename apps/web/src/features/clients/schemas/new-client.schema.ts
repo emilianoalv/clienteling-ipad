@@ -70,8 +70,16 @@ export const INGREDIENT_TAGS = [
 ] as const;
 export const INTEREST_GROUPS = {
   Skincare: ["Hidratación", "Antiedad", "Luminosidad", "Manchas", "Acné", "Poros"],
-  Maquillaje: ["Labial", "Base", "Ojos", "Cejas", "Rubor", "Iluminador"],
-  Fragancia: ["Floral", "Oriental", "Amaderada", "Cítrica", "Gourmand", "Almizclada"],
+  Maquillaje: ["Labial", "Base", "Ojos / Pestañas", "Rubor", "Iluminador"],
+  Fragancia: [
+    "Floral",
+    "Oriental",
+    "Amaderada",
+    "Cítrica",
+    "Gourmand",
+    "Almizclada",
+    "Aromática",
+  ],
 } as const;
 export const DIAL_CODES = [
   { code: "+52", flag: "🇲🇽", label: "MX" },
