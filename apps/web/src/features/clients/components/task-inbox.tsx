@@ -119,25 +119,14 @@ export function TaskInbox({
   clientId,
 }: TaskInboxProps) {
   const [bucket, setBucket] = useState<Bucket>("today");
+  // Filtro por tipo (Llamada / WhatsApp / Correo / Feedback muestra / Cita /
+  // Otro). "all" omite el filtro. Se aplica DESPUÉS del bucket, así los
+  // conteos del bucket no cambian con el tipo pero los conteos del tipo
+  // sí reflejan el bucket activo.
+  const [typeFilter, setTypeFilter] = useState<FollowupType | "all">("all");
 
-  const counts = useMemo(() => {
-    const today = endOfTodayMs();
-    const week = endOfNDaysMs(7);
-    const c: Record<Bucket, number> = { today: 0, week: 0, pending: 0, done: 0 };
-    for (const t of tasks) {
-      if (t.status === "pending") {
-        c.pending++;
-        const dueMs = new Date(t.dueAt).getTime();
-        if (dueMs <= today) c.today++;
-        if (dueMs <= week) c.week++;
-      } else if (t.status === "done") {
-        c.done++;
-      }
-    }
-    return c;
-  }, [tasks]);
-
-  const filtered = useMemo(() => {
+  // Tasks tras filtrar por bucket — base para tipo + UI.
+  const inBucket = useMemo(() => {
     if (bucket === "done") {
       return tasks
         .filter((t) => t.status === "done")
@@ -157,6 +146,43 @@ export function TaskInbox({
     const cutoff = endOfNDaysMs(7);
     return pending.filter((t) => new Date(t.dueAt).getTime() <= cutoff);
   }, [tasks, bucket]);
+
+  const counts = useMemo(() => {
+    const today = endOfTodayMs();
+    const week = endOfNDaysMs(7);
+    const c: Record<Bucket, number> = { today: 0, week: 0, pending: 0, done: 0 };
+    for (const t of tasks) {
+      if (t.status === "pending") {
+        c.pending++;
+        const dueMs = new Date(t.dueAt).getTime();
+        if (dueMs <= today) c.today++;
+        if (dueMs <= week) c.week++;
+      } else if (t.status === "done") {
+        c.done++;
+      }
+    }
+    return c;
+  }, [tasks]);
+
+  /** Conteo por tipo dentro del bucket actual — alimenta los chips. */
+  const typeCounts = useMemo(() => {
+    const c: Record<FollowupType | "all", number> = {
+      all: inBucket.length,
+      call: 0,
+      whatsapp: 0,
+      email: 0,
+      "sample-feedback": 0,
+      appointment: 0,
+      other: 0,
+    };
+    for (const t of inBucket) c[t.type]++;
+    return c;
+  }, [inBucket]);
+
+  const filtered = useMemo(
+    () => (typeFilter === "all" ? inBucket : inBucket.filter((t) => t.type === typeFilter)),
+    [inBucket, typeFilter],
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -183,27 +209,62 @@ export function TaskInbox({
       ) : null}
       {mode === "global" ? <CreateTaskGlobalRow clientLookup={clientLookup} /> : null}
 
-      {/* Filter chips */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {BUCKETS.map((b) => {
-          const active = bucket === b.id;
-          return (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => setBucket(b.id)}
-              aria-pressed={active}
-              className={`inline-flex items-center gap-2 h-9 px-3.5 rounded-full border text-[14px] font-semibold cursor-pointer transition-colors ${
-                active
-                  ? "bg-ink text-paper border-ink"
-                  : "bg-white text-ink border-line hover:bg-bone"
-              }`}
-            >
-              <span>{b.label}</span>
-              <span className="opacity-70 font-medium tabular">· {counts[b.id]}</span>
-            </button>
-          );
-        })}
+      {/* Filter chips — fila 1: bucket temporal, fila 2: tipo de tarea */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {BUCKETS.map((b) => {
+            const active = bucket === b.id;
+            return (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => setBucket(b.id)}
+                aria-pressed={active}
+                className={`inline-flex items-center gap-2 h-9 px-3.5 rounded-full border text-[14px] font-semibold cursor-pointer transition-colors ${
+                  active
+                    ? "bg-ink text-paper border-ink"
+                    : "bg-white text-ink border-line hover:bg-bone"
+                }`}
+              >
+                <span>{b.label}</span>
+                <span className="opacity-70 font-medium tabular">· {counts[b.id]}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[12.5px] font-semibold tracking-[0.08em] uppercase text-ink/50 mr-1">
+            Tipo
+          </span>
+          {(
+            [
+              { id: "all" as const, label: "Todos" },
+              ...FOLLOWUP_TYPES,
+            ]
+          ).map((opt) => {
+            const active = typeFilter === opt.id;
+            const count = typeCounts[opt.id];
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setTypeFilter(opt.id)}
+                aria-pressed={active}
+                disabled={opt.id !== "all" && count === 0}
+                className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border text-[12.5px] font-semibold transition-colors ${
+                  active
+                    ? "bg-ink text-paper border-ink cursor-pointer"
+                    : opt.id !== "all" && count === 0
+                      ? "bg-white text-ink/30 border-line/60 cursor-default"
+                      : "bg-white text-ink border-line hover:bg-bone cursor-pointer"
+                }`}
+              >
+                <span>{opt.label}</span>
+                <span className="opacity-70 font-medium tabular">· {count}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* List */}
