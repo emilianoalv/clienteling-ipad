@@ -35,29 +35,34 @@ const STEP_FIELDS: Record<Step, ReadonlyArray<keyof NewClientInput>> = {
   2: ["acceptPrivacy", "consents", "signature"],
 };
 
-const INITIAL_DRAFT: Draft = {
-  firstName: "",
-  lastName: "",
-  dialCode: "+52",
-  phone: "",
-  email: "",
-  birthday: "",
-  city: "CDMX",
-  gender: "Femenino",
-  ageRange: "",
-  brands: ["Lancôme"],
-  // tone "" obliga a la BA a elegir un swatch antes de continuar (UI validation).
-  skin: { type: "Normal", concerns: [], tone: "" },
-  routine: "Básica",
-  routineTiming: ["morning"],
-  interests: ["Skincare"],
-  allergiesText: "",
-  preferredIngredients: [],
-  avoidedIngredients: [],
-  acceptPrivacy: false,
-  signature: "",
-  channels: { WhatsApp: false, Email: true, SMS: true },
-};
+function makeInitialDraft(brands: readonly string[]): Draft {
+  return {
+    firstName: "",
+    lastName: "",
+    dialCode: "+52",
+    phone: "",
+    email: "",
+    birthday: "",
+    city: "CDMX",
+    gender: "Femenino",
+    ageRange: "",
+    // brands viene del BA logueado — no más hardcoded a "Lancôme". Sin este
+    // fix, una BA YSL creaba clientes que aparecían en perfiles Lancôme y
+    // desaparecían del suyo.
+    brands: [...brands],
+    // tone "" obliga a la BA a elegir un swatch antes de continuar (UI validation).
+    skin: { type: "Normal", concerns: [], tone: "" },
+    routine: "Básica",
+    routineTiming: ["morning"],
+    interests: ["Skincare"],
+    allergiesText: "",
+    preferredIngredients: [],
+    avoidedIngredients: [],
+    acceptPrivacy: false,
+    signature: "",
+    channels: { WhatsApp: false, Email: true, SMS: true },
+  };
+}
 
 const STEP_LABELS: ReadonlyArray<{ id: Step; label: string }> = [
   { id: 0, label: "Datos básicos" },
@@ -68,14 +73,21 @@ const STEP_LABELS: ReadonlyArray<{ id: Step; label: string }> = [
 export interface NewClientWizardProps {
   storeName?: string;
   baName?: string;
+  /**
+   * Marcas que el cliente tendrá al guardarse. Default ["Lancôme"] solo
+   * por compat — siempre debe venir desde la page con la marca del staff
+   * logueado (staff.brand para BA, staff.brands[0] para Gerente/Admin).
+   */
+  defaultBrands?: readonly string[];
 }
 
 export function NewClientWizard({
   storeName = "Liverpool Polanco",
   baName = "Demo User",
+  defaultBrands = ["Lancôme"],
 }: NewClientWizardProps = {}) {
   const [step, setStep] = useState<Step>(0);
-  const [draft, setDraft] = useState<Draft>(INITIAL_DRAFT);
+  const [draft, setDraft] = useState<Draft>(() => makeInitialDraft(defaultBrands));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isPending, startTransition] = useTransition();
 
