@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { createSession } from "@/server/auth/session";
 import { homeFor } from "@/config/routes";
+import { auditEventRepository } from "@/server/repositories/audit-event.repository";
 import { userRepository } from "@/server/repositories/user.repository";
 import type { StaffId } from "@/types/staff";
 
@@ -46,12 +47,32 @@ export async function signInAction(input: {
   }
 
   const user = await userRepository.findByEmail(parsed.data.email);
-  if (!user) return { ok: false, reason: "invalid_credentials" };
+  if (!user) {
+    await auditEventRepository.create({
+      title: "Login fallido",
+      subject: parsed.data.email,
+      actor: "sistema",
+    });
+    return { ok: false, reason: "invalid_credentials" };
+  }
 
   const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
-  if (!valid) return { ok: false, reason: "invalid_credentials" };
+  if (!valid) {
+    await auditEventRepository.create({
+      title: "Login fallido",
+      subject: user.email,
+      actor: "sistema",
+    });
+    return { ok: false, reason: "invalid_credentials" };
+  }
 
   await createSession(user.id as unknown as StaffId, user.role);
+
+  await auditEventRepository.create({
+    title: "Inicio de sesión",
+    subject: user.name,
+    actor: `${user.name} · ${user.role}`,
+  });
 
   return { ok: true, redirectTo: homeFor(user.role) };
 }

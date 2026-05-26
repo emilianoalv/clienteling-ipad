@@ -209,6 +209,8 @@ export interface UserRepository {
   findFirstByRole(role: User["role"]): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
   create(user: User): Promise<User>;
+  update(id: UserId, patch: Partial<Omit<User, "id">>): Promise<User | null>;
+  delete(id: UserId): Promise<boolean>;
 }
 
 export const userRepository: UserRepository = {
@@ -234,5 +236,20 @@ export const userRepository: UserRepository = {
   async create(user) {
     USERS.set(user.id, user);
     return user;
+  },
+  async update(id, patch) {
+    const current = USERS.get(id);
+    if (!current) return null;
+    // Merge primero, luego re-fija `id` por defensividad para que el
+    // patch no pueda mutar la identidad. El cast es seguro porque User
+    // es una discriminated union por `role` y el merge preserva los
+    // campos requeridos por la variante actual a menos que `role`
+    // cambie — en ese caso el caller debe darnos todos los campos.
+    const next = { ...current, ...patch, id } as User;
+    USERS.set(id, next);
+    return next;
+  },
+  async delete(id) {
+    return USERS.delete(id);
   },
 };

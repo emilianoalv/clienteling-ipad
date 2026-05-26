@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
 import { can } from "@/config/rbac";
+import { auditEventRepository } from "@/server/repositories/audit-event.repository";
 import { userRepository } from "@/server/repositories/user.repository";
 import { generateId } from "@/lib/id/generate-id";
 import type { BrandId } from "@/types/brand";
@@ -58,6 +59,13 @@ export async function createUserAction(raw: NewUserInput): Promise<CreateUserRes
   };
 
   await userRepository.create(user);
+
+  await auditEventRepository.create({
+    title: "Usuario creado",
+    subject: `${user.name} · ${user.role}`,
+    actor: `${staff.name} · ${staff.role}`,
+  });
+
   revalidatePath("/admin/users");
   return { ok: true, userId: id };
 }

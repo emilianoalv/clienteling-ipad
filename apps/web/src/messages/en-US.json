@@ -32,7 +32,8 @@
     "tickets": "Tickets",
     "integrations": "Integrations",
     "users": "Users",
-    "audit": "Audit"
+    "audit": "Audit",
+    "privacy": "Notice"
   },
   "auth": {
     "welcome": "Welcome",

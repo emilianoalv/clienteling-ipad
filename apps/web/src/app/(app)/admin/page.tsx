@@ -33,14 +33,13 @@ import { requireSession } from "@/server/auth/session";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { consentRepository } from "@/server/repositories/consent.repository";
 import { interactionRepository } from "@/server/repositories/interaction.repository";
+import { privacyNoticeRepository } from "@/server/repositories/privacy-notice.repository";
 import { recommendationRepository } from "@/server/repositories/recommendation.repository";
 import { storeRepository } from "@/server/repositories/store.repository";
 import { templateRepository } from "@/server/repositories/template.repository";
 import { addDays, startOfDay } from "@/lib/date/week";
 import type { Admin, StaffId } from "@/types/staff";
 import type { StoreId } from "@/types/store";
-
-const PRIVACY_NOTICE_VERSION = "v2026.03";
 
 export default async function AdminPage({
   searchParams,
@@ -86,6 +85,7 @@ export default async function AdminPage({
     recentInteractions,
     lcmSparkline,
     yslSparkline,
+    activePrivacyNotice,
   ] = await Promise.all([
     getSalesAmount(admin, filters),
     getPeriodDelta(admin, filters, getSalesAmount),
@@ -120,7 +120,10 @@ export default async function AdminPage({
     listRecentInteractions(),
     getSparklineData(admin, { ...filters, brands: ["Lancôme"] }),
     getSparklineData(admin, { ...filters, brands: ["YSL"] }),
+    privacyNoticeRepository.getActive(),
   ]);
+
+  const privacyNoticeVersion = activePrivacyNotice?.version ?? "v2026.03";
 
   // Per-BA delta + sparkline for drill-down.
   const baAux = await Promise.all(
@@ -217,7 +220,7 @@ export default async function AdminPage({
     clientsTotal: clientsList.length,
     clientsWithGrantedConsent,
     auditEvents,
-    privacyNoticeVersion: PRIVACY_NOTICE_VERSION,
+    privacyNoticeVersion: privacyNoticeVersion,
   });
 
   // Adoption.
@@ -288,7 +291,7 @@ export default async function AdminPage({
         products,
         templates,
         auditEvents,
-        privacyNoticeVersion: PRIVACY_NOTICE_VERSION,
+        privacyNoticeVersion: privacyNoticeVersion,
         storeLookup,
       }}
     />

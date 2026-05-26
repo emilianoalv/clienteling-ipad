@@ -32,7 +32,8 @@
     "tickets": "Incidencias",
     "integrations": "Integraciones",
     "users": "Usuarios",
-    "audit": "Auditoría"
+    "audit": "Auditoría",
+    "privacy": "Aviso"
   },
   "auth": {
     "welcome": "Bienvenida",

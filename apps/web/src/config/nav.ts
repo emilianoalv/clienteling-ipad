@@ -38,8 +38,10 @@ export const NAV_BY_ROLE: Record<Role, readonly NavItem[]> = {
   Admin: [
     { id: "home", href: "/admin", labelKey: "rail.home", icon: "home" },
     { id: "users", href: "/admin/users", labelKey: "rail.users", icon: "users" },
+    { id: "stores", href: "/admin/stores", labelKey: "rail.stores", icon: "bag" },
     { id: "segments", href: "/admin/segments", labelKey: "rail.segments", icon: "chart" },
     { id: "integrations", href: "/admin/integrations", labelKey: "rail.integrations", icon: "plug" },
+    { id: "privacy", href: "/admin/privacy", labelKey: "rail.privacy", icon: "shield" },
     { id: "reports", href: "/admin/reports", labelKey: "rail.reports", icon: "pdf" },
     { id: "audit", href: "/admin/audit", labelKey: "rail.audit", icon: "shield" },
   ],

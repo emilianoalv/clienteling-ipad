@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
 import { can } from "@/config/rbac";
+import { auditEventRepository } from "@/server/repositories/audit-event.repository";
 import { integrationRepository } from "@/server/repositories/integration.repository";
 import type { IntegrationKey, IntegrationStatus } from "@/types/integration";
 
@@ -42,6 +43,12 @@ export async function toggleIntegrationStatusAction(
   const next: IntegrationStatus = current.status === "live" ? "sandbox" : "live";
   const updated = await integrationRepository.setStatus(key, next);
   if (!updated) return { ok: false, message: "No se pudo actualizar" };
+
+  await auditEventRepository.create({
+    title: `Integración → ${next}`,
+    subject: current.label,
+    actor: `${staff.name} · ${staff.role}`,
+  });
 
   revalidatePath("/admin/integrations");
   return { ok: true, status: next };
