@@ -70,6 +70,6 @@ function toLite(client: Client, baId: string): ClientLite {
     email: client.email,
     brands: client.brands,
     storeId: client.storeId as unknown as string,
-    alreadyMine: client.assignedBaIds.includes(baId as never),
+    alreadyMine: (client.assignedBaIds ?? []).includes(baId as never),
   };
 }

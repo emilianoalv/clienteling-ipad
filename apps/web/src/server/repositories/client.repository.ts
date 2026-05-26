@@ -111,7 +111,10 @@ export const clientRepository: ClientRepository = {
       if (filter.brand && !c.brands.includes(filter.brand)) return false;
       if (brandScope && brandScope.length && !c.brands.some((b) => brandScope.includes(b))) return false;
       if (storeScope && storeScope.length && !storeScope.includes(c.storeId)) return false;
-      if (baFilter && !c.assignedBaIds.includes(baFilter)) return false;
+      // Guard defensivo: clientes que viven en cache persistent de una
+      // versión previa (pre v4) no tienen assignedBaIds. Tratarlos como
+      // sin asignar — la BA tendrá que vincularlos vía el buscador.
+      if (baFilter && !(c.assignedBaIds ?? []).includes(baFilter)) return false;
       if (!query) return true;
       const haystack = `${c.name} ${c.email} ${c.phone}`.toLowerCase();
       return haystack.includes(query);
@@ -138,14 +141,14 @@ export const clientRepository: ClientRepository = {
   async linkBa(id, baId, brand) {
     const current = CLIENTS.get(id);
     if (!current) return null;
-    const alreadyHasBa = current.assignedBaIds.includes(baId);
+    // Defensivo contra cache pre v4: trata undefined como vacío.
+    const currentAssigned = current.assignedBaIds ?? [];
+    const alreadyHasBa = currentAssigned.includes(baId);
     const alreadyHasBrand = current.brands.includes(brand);
     if (alreadyHasBa && alreadyHasBrand) return current;
     const next: Client = {
       ...current,
-      assignedBaIds: alreadyHasBa
-        ? current.assignedBaIds
-        : [...current.assignedBaIds, baId],
+      assignedBaIds: alreadyHasBa ? currentAssigned : [...currentAssigned, baId],
       brands: alreadyHasBrand ? current.brands : [...current.brands, brand],
     };
     CLIENTS.set(id, next);

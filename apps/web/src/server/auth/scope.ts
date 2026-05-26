@@ -65,10 +65,12 @@ export function assignedBaScopeFor(staff: Staff): StaffId | undefined {
  */
 export function isClientOwnedBy(
   staff: Staff,
-  clientAssignedBaIds: readonly StaffId[],
+  clientAssignedBaIds: readonly StaffId[] | undefined,
 ): boolean {
   if (staff.role !== "BA") return true;
-  return clientAssignedBaIds.includes(staff.id);
+  // Defensivo contra cache pre v4: si el cliente quedó sin assignedBaIds
+  // por migración, lo tratamos como no-asignado (404 silencioso).
+  return (clientAssignedBaIds ?? []).includes(staff.id);
 }
 
 /**
