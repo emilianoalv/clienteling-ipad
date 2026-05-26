@@ -42,7 +42,16 @@ export default async function BaPerformancePage({
     throw new Error("BA performance dashboard is only available to BA users.");
   }
 
-  const filters = parseFilters(params, { defaultPeriod: "mtd" });
+  // CRÍTICO: setear filters.baId = staff.id para que TODAS las queries
+  // del dashboard filtren por el BA logueado. Sin esto, parseFilters deja
+  // baId undefined y las queries (que solo aplican el guard
+  // `if (filters.baId && p.baId !== filters.baId)`) suman las ventas,
+  // transacciones, recomendaciones y top clients de TODO el counter —
+  // el BA ve los números de sus colegas como si fueran suyos.
+  // Las queries de comparativa (getBaRankingInCounter, getCounterAverages)
+  // son agnósticas a este filter — usan su propia lista de peers, así que
+  // no se rompen.
+  const filters = { ...parseFilters(params, { defaultPeriod: "mtd" }), baId: staff.id };
   // Pre-fetch user record for `monthlyTarget` (lives on User, not Staff).
   const [user, store] = await Promise.all([
     userRepository.findById(staff.id as unknown as UserId),
