@@ -38,7 +38,11 @@ export interface SampleRepository {
 
 const SAMPLES: Sample[] = persistent("__clienteling.samples.v2", () => [...SEED_SAMPLES]);
 
-const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInventory.v3", () => [
+// v4 invalida v3 para refrescar el inventario YSL: el SKU YS-OPI-1
+// del seed anterior se renombró a YS-BO-1 (sigue convención line-size),
+// se agregaron muestras de fragancias masculinas (Y, MYSLF) y skincare
+// Pure Shots — antes YSL tenía solo 25 unidades vs 193 de Lancôme.
+const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInventory.v4", () => [
   // ── Lancôme · skincare ────────────────────────────────────────────────────
   { sku: "LC-GEN-7", name: "Advanced Génifique 7ml", have: 31, capacity: 50, brand: "Lancôme" },
   { sku: "LC-REN-5", name: "Rénergie H.C.F. sample 5ml", have: 42, capacity: 60, brand: "Lancôme" },
@@ -51,10 +55,14 @@ const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInvento
   { sku: "LC-LIA-1", name: "La Vie Est Belle Iris Absolu 1.5ml vial", have: 6, capacity: 20, brand: "Lancôme" },
   { sku: "LC-TRE-1", name: "Trésor EDP 1.5ml vial", have: 8, capacity: 25, brand: "Lancôme" },
   { sku: "LC-MIR-1", name: "Miracle EDP 1.5ml vial", have: 11, capacity: 25, brand: "Lancôme" },
-  // ── YSL ──────────────────────────────────────────────────────────────────
-  { sku: "YS-LIB-1", name: "Libre EDP 1.2ml vial", have: 9, capacity: 30, brand: "YSL" },
-  { sku: "YS-OR-5", name: "Or Rouge crema 5ml", have: 4, capacity: 20, brand: "YSL" },
-  { sku: "YS-OPI-1", name: "Black Opium 1.2ml vial", have: 12, capacity: 30, brand: "YSL" },
+  // ── YSL · skincare ───────────────────────────────────────────────────────
+  { sku: "YS-OR-5", name: "Or Rouge sérum 5ml", have: 12, capacity: 25, brand: "YSL" },
+  { sku: "YS-PSE-3", name: "Pure Shots Y-Shape Eye 3ml", have: 15, capacity: 30, brand: "YSL" },
+  // ── YSL · fragancias (vials 1.2ml) ───────────────────────────────────────
+  { sku: "YS-LIB-1", name: "Libre EDP 1.2ml vial", have: 22, capacity: 40, brand: "YSL" },
+  { sku: "YS-BO-1", name: "Black Opium EDP 1.2ml vial", have: 24, capacity: 40, brand: "YSL" },
+  { sku: "YS-Y-1", name: "Y EDP Hombre 1.2ml vial", have: 18, capacity: 35, brand: "YSL" },
+  { sku: "YS-MYS-1", name: "MYSLF EDP Hombre 1.2ml vial", have: 16, capacity: 35, brand: "YSL" },
 ]);
 
 export const sampleRepository: SampleRepository = {
