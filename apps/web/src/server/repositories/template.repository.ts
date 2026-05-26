@@ -82,6 +82,15 @@ const SEED: Template[] = [
 
   // ── YSL Beauty ───────────────────────────────────────────────────────
   {
+    id: "tpl-postvisit-ysl" as TemplateId,
+    brand: "YSL",
+    channel: "WhatsApp",
+    category: "Post-visita",
+    body:
+      "{nombre}, fue un placer recibirte hoy en {tienda}. Te comparto la selección que armamos para ti — cuando la pruebes, escríbeme: quiero saber cómo te sienta. — {ba}, YSL Beauty",
+    tokens: ["{nombre}", "{tienda}", "{ba}"],
+  },
+  {
     id: "tpl-launch-es" as TemplateId,
     brand: "YSL",
     channel: "WhatsApp",
@@ -147,12 +156,12 @@ const SEED: Template[] = [
 ];
 
 import { persistent } from "./_persist";
-// v8 invalida v7 para que las plantillas Muestra también se actualicen
-// a {muestra.productos} plural — la BA puede dar 2-3 muestras en una
-// visita y el mensaje de seguimiento debe listarlas todas, no solo la
-// más reciente. Replica el patrón ya hecho para {compra.productos}.
+// v9 invalida v8 para incluir la plantilla Post-visita YSL — paridad
+// con Lancôme que ya tenía la suya (tpl-postvisit-es). Las BAs YSL
+// ahora cubren las 7 categorías mínimas: Post-visita, Seguimiento,
+// Cumpleaños, Promoción, Reposición, Muestra, Aniversario, Lanzamiento.
 const TEMPLATES = persistent(
-  "__clienteling.templates.v8",
+  "__clienteling.templates.v9",
   () => new Map<TemplateId, Template>(SEED.map((t) => [t.id, t])),
 );
 
