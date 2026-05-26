@@ -357,7 +357,7 @@
     "register": "Registrar muestra",
     "empty": "Aún no hay muestras registradas en este alcance.",
     "follow": "Seguir",
-    "unknown_client": "Cliente desconocida",
+    "unknown_client": "Cliente sin nombre",
     "delivered_on": "Entregada {date}",
     "followup_on": "Seguim. {date}",
     "kpi": {

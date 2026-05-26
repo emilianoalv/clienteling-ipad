@@ -17,9 +17,12 @@ export default async function NewAppointmentPage({
   const { staff } = await requireSession();
   const storeIds = storeScopeFor(staff);
   const brands = brandScopeFor(staff);
+  const baOwnerId = assignedBaScopeFor(staff);
   const [clients, appointments, params] = await Promise.all([
-    listClients({ brands, storeIds, assignedBaId: assignedBaScopeFor(staff) }),
-    listAppointments({ brands, storeIds }),
+    listClients({ brands, storeIds, assignedBaId: baOwnerId }),
+    // Mostrar conflictos de agenda solo contra las propias citas del BA;
+    // hasConflict en createAppointment también filtra por baId.
+    listAppointments({ brands, storeIds, ...(baOwnerId ? { baId: baOwnerId } : {}) }),
     searchParams,
   ]);
 

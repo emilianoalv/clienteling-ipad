@@ -23,6 +23,12 @@ export interface SampleListFilter {
   from?: Date;
   /** Exclusive upper bound on `givenAt`. */
   to?: Date;
+  /**
+   * BA ownership filter — solo el BA pasa su id aquí. Cuando viene, la lista
+   * devuelta solo incluye muestras dadas por ese BA (sample.baId === id).
+   * Otros roles lo dejan undefined para ver el counter/zona completo.
+   */
+  baId?: import("@/types/staff").StaffId;
 }
 
 export interface SampleRepository {
@@ -69,9 +75,11 @@ export const sampleRepository: SampleRepository = {
   async list(filter = {}) {
     const brandScope = filter.brands;
     const storeScope = filter.storeIds;
+    const baFilter = filter.baId;
     return SAMPLES.filter((s) => {
       if (brandScope && brandScope.length && !brandScope.includes(s.brand)) return false;
       if (storeScope && storeScope.length && !storeScope.includes(s.storeId)) return false;
+      if (baFilter && s.baId !== baFilter) return false;
       const at = new Date(s.givenAt);
       if (filter.from && at < filter.from) return false;
       if (filter.to && at >= filter.to) return false;

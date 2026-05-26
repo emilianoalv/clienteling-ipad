@@ -26,9 +26,17 @@ export default async function AppointmentsPage({
 
   const storeIds = storeScopeFor(staff);
   const brands = brandScopeFor(staff);
+  const baOwnerId = assignedBaScopeFor(staff);
   const [appointments, clients] = await Promise.all([
-    listAppointments({ brands, storeIds }),
-    listClients({ brands, storeIds, assignedBaId: assignedBaScopeFor(staff) }),
+    // BA solo ve sus citas (las que ella agendó). Gerente/Supervisor/Admin
+    // ven todas las del scope para coordinar el counter.
+    listAppointments({ brands, storeIds, ...(baOwnerId ? { baId: baOwnerId } : {}) }),
+    // clientLookup SIN filtro de ownership — necesitamos el NOMBRE del
+    // cliente aunque históricamente la atendiera otra BA. Sin esto,
+    // citas existentes mostraban el ID raw ("cl-paloma-pol") en lugar
+    // del nombre. La privacidad sigue protegida porque el BA solo ve
+    // citas que ella misma agendó.
+    listClients({ brands, storeIds }),
   ]);
   const clientLookup = Object.fromEntries(clients.map((c) => [c.id, c.name]));
   const savedAppointment = savedId ? appointments.find((a) => a.id === savedId) : undefined;
