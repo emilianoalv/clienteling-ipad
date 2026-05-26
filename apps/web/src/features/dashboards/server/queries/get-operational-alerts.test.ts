@@ -17,29 +17,27 @@ import {
 //     etc. (all 12 BAs below 50%)
 //   Stores sales vs target (all below 60%):
 //     POL 28,300 / 1,800,000 = 1.6% — below
-//     PER 13,600 / 1,500,000 = 0.9% — below
-//     STF 28,300 / 2,000,000 = 1.4% — below
+//     PER 16,820 / 1,500,000 = 1.1% — below
+//     STF 34,890 / 2,000,000 = 1.7% — below
 //   At-risk clientes Admin abril: 2 (< default 3 → no alert)
-//   Stock muestras: YS-OR-5 (4/20 = 20% < 30%) → 1 SKU
+//   Stock muestras: con el inventario YSL expandido todos los SKUs están
+//     >= 30%, así que ya no se dispara la alerta `inv-sample-stock-low`.
 
 describe("getOperationalAlerts — Admin", () => {
-  it("Admin abril: BAs+Tiendas bajo cuota + stock bajo (3 alertas)", async () => {
+  it("Admin abril: BAs+Tiendas bajo cuota (2 alertas, sin stock bajo)", async () => {
     const r = await getOperationalAlerts(admin, { period: aprilPeriod });
-    expect(r.length).toBe(3);
+    expect(r.length).toBe(2);
     const ids = r.map((a) => a.id).sort();
     expect(ids).toEqual([
-      "inv-sample-stock-low",
       "perf-ba-below-quota",
       "perf-store-below-quota",
     ]);
   });
 
-  it("orden por severity: warning antes que info", async () => {
+  it("orden por severity: ambas warning (ya no hay info de stock)", async () => {
     const r = await getOperationalAlerts(admin, { period: aprilPeriod });
-    // 2 warnings + 1 info
     expect(r[0]!.severity).toBe("warning");
     expect(r[1]!.severity).toBe("warning");
-    expect(r[2]!.severity).toBe("info");
   });
 
   it("BAs bajo cuota: count=12 (todos), affectedIds populados", async () => {
@@ -56,11 +54,10 @@ describe("getOperationalAlerts — Admin", () => {
     expect(st!.count).toBe(3);
   });
 
-  it("Stock bajo: YS-OR-5 (20% < 30%) = 1 SKU", async () => {
+  it("Stock bajo: con inventario YSL expandido nadie cae bajo 30% → no alerta", async () => {
     const r = await getOperationalAlerts(admin, { period: aprilPeriod });
     const inv = r.find((a) => a.id === "inv-sample-stock-low");
-    expect(inv!.count).toBe(1);
-    expect(inv!.affectedIds).toContain("YS-OR-5");
+    expect(inv).toBeUndefined();
   });
 
   it("at-risk con default 3: NO se dispara (Admin tiene 2 < 3)", async () => {
@@ -103,13 +100,13 @@ describe("getOperationalAlerts — Admin", () => {
 });
 
 describe("getOperationalAlerts — scope por rol", () => {
-  it("Gerente Polanco: BAs bajo cuota solo POL (4), NO Tiendas (rol excluido), stock", async () => {
+  it("Gerente Polanco: BAs bajo cuota solo POL (4), NO Tiendas (rol excluido)", async () => {
     const r = await getOperationalAlerts(gerentePol, { period: aprilPeriod });
     const ba = r.find((a) => a.id === "perf-ba-below-quota");
     expect(ba!.count).toBe(4); // solo POL: Valentina, Fernanda, Daniela, Sofía
     expect(r.find((a) => a.id === "perf-store-below-quota")).toBeUndefined();
-    // Stock visible para Gerente
-    expect(r.find((a) => a.id === "inv-sample-stock-low")).toBeDefined();
+    // Con el inventario YSL expandido, ningún SKU cae bajo 30% → sin alerta
+    expect(r.find((a) => a.id === "inv-sample-stock-low")).toBeUndefined();
   });
 
   it("Supervisor Centro: BAs solo POL+STF (8), Tiendas (POL+STF = 2)", async () => {

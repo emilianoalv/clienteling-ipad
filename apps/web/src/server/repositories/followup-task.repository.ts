@@ -13,9 +13,14 @@ import { persistent } from "./_persist";
 // BAs reales del seed post-refactor (ver user.repository.ts).
 const BA_POL_LCM_1 = "us-ba-pol-lcm-1" as StaffId; // Valentina Ríos
 const BA_POL_LCM_2 = "us-ba-pol-lcm-2" as StaffId; // Fernanda Oliveros
+const BA_POL_YSL_1 = "us-ba-pol-ysl-1" as StaffId; // YSL Polanco 1
+const BA_POL_YSL_2 = "us-ba-pol-ysl-2" as StaffId; // YSL Polanco 2
 const BA_PER_YSL_1 = "us-ba-per-ysl-1" as StaffId; // Lucía Cabrera
+const BA_PER_YSL_2 = "us-ba-per-ysl-2" as StaffId; // YSL Perisur 2
 const BA_STF_LCM_1 = "us-ba-stf-lcm-1" as StaffId; // Renata Salazar
 const BA_STF_LCM_2 = "us-ba-stf-lcm-2" as StaffId; // Ximena Pereda
+const BA_STF_YSL_1 = "us-ba-stf-ysl-1" as StaffId; // YSL Santa Fe 1
+const BA_STF_YSL_2 = "us-ba-stf-ysl-2" as StaffId; // YSL Santa Fe 2
 
 function relativeISO(dayDelta: number, hours = 10, minutes = 0): string {
   const d = new Date();
@@ -168,6 +173,85 @@ const SEED: FollowupTask[] = [
     dueAt: "2026-05-10T16:00:00.000Z", // upcoming
     status: "pending",
     createdAt: "2026-04-28T12:00:00.000Z",
+  },
+  // ── Tasks YSL — paridad con Lancôme. Mix de categorías para que cada
+  //    BA YSL abra el inbox con trabajo realista (no solo sample-feedback).
+  {
+    id: "ft-12" as FollowupTaskId,
+    clientId: "cl-julieta" as ClientId, // Perisur YSL
+    baId: BA_PER_YSL_1,
+    type: "call",
+    category: "birthday",
+    description: "Saludo de cumpleaños + invitar a probar Tatouage Couture",
+    dueAt: relativeISO(0, 12, 30),
+    status: "pending",
+    createdAt: relativeISO(-2, 10, 0),
+  },
+  {
+    id: "ft-13" as FollowupTaskId,
+    clientId: "cl-rocio" as ClientId, // Santa Fe multi-brand
+    baId: BA_STF_YSL_1,
+    type: "whatsapp",
+    category: "post-purchase",
+    description: "Check-in post-venta de Black Opium + Tatouage Couture",
+    dueAt: relativeISO(2, 14, 0),
+    status: "pending",
+    createdAt: relativeISO(-1, 17, 30),
+  },
+  {
+    id: "ft-14" as FollowupTaskId,
+    clientId: "cl-gabriela" as ClientId, // Perisur YSL pura
+    baId: BA_PER_YSL_2,
+    type: "whatsapp",
+    category: "replenishment",
+    description: "Reposición estimada de Pure Shots Y-Shape Eye",
+    dueAt: relativeISO(45, 11, 0),
+    status: "pending",
+    createdAt: relativeISO(-1, 16, 0),
+  },
+  {
+    id: "ft-15" as FollowupTaskId,
+    clientId: "cl-nadia" as ClientId, // Santa Fe YSL
+    baId: BA_STF_YSL_1,
+    type: "whatsapp",
+    category: "special-event",
+    description: "Invitación a evento privado YSL Beauty — lanzamiento Lash Clash",
+    dueAt: relativeISO(5, 17, 0),
+    status: "pending",
+    createdAt: relativeISO(-3, 12, 30),
+  },
+  {
+    id: "ft-16" as FollowupTaskId,
+    clientId: "cl-pamela" as ClientId, // Santa Fe (recibió muestra YSL MYSLF)
+    baId: BA_STF_YSL_2,
+    type: "sample-feedback",
+    category: "sample-feedback",
+    description: "Feedback de muestra MYSLF — interés masculino confirmado",
+    dueAt: relativeISO(8, 11, 30),
+    status: "pending",
+    createdAt: relativeISO(-2, 14, 0),
+  },
+  {
+    id: "ft-17" as FollowupTaskId,
+    clientId: "cl-beatriz" as ClientId, // Polanco YSL
+    baId: BA_POL_YSL_1,
+    type: "call",
+    category: "birthday",
+    description: "Saludo de cumpleaños — ofrecer cortesía con Libre EDP",
+    dueAt: relativeISO(3, 10, 0),
+    status: "pending",
+    createdAt: relativeISO(-5, 9, 0),
+  },
+  {
+    id: "ft-18" as FollowupTaskId,
+    clientId: "cl-adriana" as ClientId, // Polanco YSL
+    baId: BA_POL_YSL_2,
+    type: "whatsapp",
+    category: "3-month-check",
+    description: "Check-in 3 meses sobre Libre EDP comprado en marzo",
+    dueAt: relativeISO(-2, 11, 0), // overdue para mostrar el badge "vencida"
+    status: "pending",
+    createdAt: relativeISO(-10, 14, 0),
   },
 ];
 

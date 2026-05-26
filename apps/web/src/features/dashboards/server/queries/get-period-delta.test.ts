@@ -20,38 +20,38 @@ import {
 //   → previous Admin sales = 24,200; transactions = 3; avgTicket = 8,066.67
 
 describe("getPeriodDelta", () => {
-  it("sales Admin abril vs marzo: 70,200 vs 24,200 → +46,000 / +190.1%", async () => {
+  it("sales Admin abril vs marzo: 80,010 vs 24,200 → +55,810 / +230.6%", async () => {
     const d = await getPeriodDelta(
       admin,
       { period: aprilPeriod },
       getSalesAmount,
     );
-    expect(d.current).toBe(70_200);
+    expect(d.current).toBe(80_010);
     expect(d.previous).toBe(24_200);
-    expect(d.deltaAbs).toBe(46_000);
-    expect(d.deltaPct).toBe(190.1);
+    expect(d.deltaAbs).toBe(55_810);
+    expect(d.deltaPct).toBe(230.6);
   });
 
-  it("transactions Admin: 6 vs 3 → +3 / +100.0%", async () => {
+  it("transactions Admin: 9 vs 3 → +6 / +200.0%", async () => {
     const d = await getPeriodDelta(
       admin,
       { period: aprilPeriod },
       getTransactionsCount,
     );
-    expect(d.current).toBe(6);
+    expect(d.current).toBe(9);
     expect(d.previous).toBe(3);
-    expect(d.deltaPct).toBe(100);
+    expect(d.deltaPct).toBe(200);
   });
 
-  it("avgTicket Admin: 11,700 vs 8,066.667 → +45.0%", async () => {
+  it("avgTicket Admin: 8,890 vs 8,066.667 → +10.2%", async () => {
     const d = await getPeriodDelta(
       admin,
       { period: aprilPeriod },
       getAverageTicket,
     );
-    expect(d.current).toBe(11_700);
+    expect(d.current).toBe(8_890);
     expect(d.previous).toBeCloseTo(24_200 / 3, 5);
-    expect(d.deltaPct).toBe(45);
+    expect(d.deltaPct).toBe(10.2);
   });
 
   it("previous === 0 → deltaPct = 0 (sin Infinity ni NaN)", async () => {

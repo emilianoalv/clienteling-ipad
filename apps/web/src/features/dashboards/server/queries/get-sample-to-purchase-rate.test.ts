@@ -13,15 +13,16 @@ import {
 } from "./_test-fixtures";
 
 // Reference seed (abril 2026):
-//   sp-1 cl-ofelia    POL LCM givenAt 2026-04-08  no converted
-//   sp-2 cl-constanza POL LCM givenAt 2026-04-12  converted (pu-1 abr-21)
-//   sp-4 cl-cristina  PER LCM givenAt 2026-04-18  converted (pu-5 abr-25)
-//   sp-7 cl-karla     STF LCM givenAt 2026-04-20  converted (pu-9 abr-28)
-//   → denom=4, num=3, tasa=0.75 globally.
+//   sp-1  cl-ofelia    POL LCM givenAt 2026-04-08  no converted
+//   sp-2  cl-constanza POL LCM givenAt 2026-04-12  converted (pu-1 abr-21)
+//   sp-4  cl-cristina  PER LCM givenAt 2026-04-18  converted (pu-5 abr-25)
+//   sp-7  cl-karla     STF LCM givenAt 2026-04-20  converted (pu-9 abr-28)
+//   sp-11 cl-karla     STF YSL givenAt 2026-04-29  converted (pu-19 abr-29)
+//   → denom=5, num=4, tasa=0.8 globally.
 
 describe("getSampleToPurchaseRate", () => {
-  it("Admin abril: 4 samples entregadas, 3 convertidas → 0.75", async () => {
-    expect(await getSampleToPurchaseRate(admin, { period: aprilPeriod })).toBe(0.75);
+  it("Admin abril: 5 samples entregadas, 4 convertidas → 0.8", async () => {
+    expect(await getSampleToPurchaseRate(admin, { period: aprilPeriod })).toBe(0.8);
   });
 
   it("BA Lancôme Polanco abril: sp-1 + sp-2, solo sp-2 convirtió → 0.5", async () => {
@@ -32,10 +33,10 @@ describe("getSampleToPurchaseRate", () => {
     expect(await getSampleToPurchaseRate(baYslPol, { period: aprilPeriod })).toBe(0);
   });
 
-  it("Supervisor Centro abril (POL+STF): 3 entregadas, 2 convertidas → 2/3", async () => {
+  it("Supervisor Centro abril (POL+STF): 4 entregadas, 3 convertidas → 0.75", async () => {
     expect(
       await getSampleToPurchaseRate(supervisorCentro, { period: aprilPeriod }),
-    ).toBeCloseTo(2 / 3, 5);
+    ).toBe(0.75);
   });
 
   it("Gerente Santa Fe abril: sp-7 entregada y convertida → 1.0", async () => {

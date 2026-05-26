@@ -15,8 +15,10 @@ import {
 //   Valentina (BA_POL_LCM_1) 16,200 (pu-1)
 //   Fernanda  (BA_POL_LCM_2) 12,100 (pu-3)
 //   Regina    (BA_PER_LCM_1)  9,800 (pu-5)
+//   Mariana   (BA_PER_YSL_2)  7,020 (pu-7 + pu-18)
 //   Ximena    (BA_STF_LCM_2)  6,400 (pu-10)
-//   Mariana   (BA_PER_YSL_2)  3,800 (pu-7)
+//   Paulina   (BA_STF_YSL_1)  3,640 (pu-17)
+//   Carolina  (BA_STF_YSL_2)  2,950 (pu-19)
 //   Everyone else: 0
 
 describe("getBaRanking", () => {
@@ -29,8 +31,8 @@ describe("getBaRanking", () => {
     expect(r[1]!.name).toBe("Valentina Ríos");
     expect(r[1]!.rank).toBe(2);
     expect(r[2]!.name).toBe("Fernanda Oliveros");
-    expect(r[5]!.name).toBe("Mariana Esquivel");
-    expect(r[5]!.salesAmount).toBe(3_800);
+    expect(r[5]!.name).toBe("Ximena Pereda");
+    expect(r[5]!.salesAmount).toBe(6_400);
   });
 
   it("Gerente Polanco: 4 BAs POL, Valentina rank 1", async () => {

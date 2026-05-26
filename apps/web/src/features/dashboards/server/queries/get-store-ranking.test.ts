@@ -13,23 +13,23 @@ import {
 //   POL: pu-1 16,200 + pu-3 12,100 = 28,300, 2 tx, 2 BAs activos (Val + Fer)
 //        interactions abril POL: int-1 (constanza), int-2 (ofelia)
 //        activeClients = 2
-//   STF: pu-9 21,900 + pu-10 6,400 = 28,300, 2 tx, 2 BAs (Renata + Ximena)
+//   STF: pu-9 + pu-10 + pu-17 + pu-19 = 34,890, 4 tx, 4 BAs activos
+//        (Renata, Ximena, Paulina, Carolina)
 //        interactions abril STF: int-14 (karla), int-15 (marina) = 2
-//   PER: pu-5 9,800 + pu-7 3,800 = 13,600, 2 tx, 2 BAs (Regina + Mariana)
+//   PER: pu-5 + pu-7 + pu-18 = 16,820, 3 tx, 2 BAs (Regina + Mariana)
 //        interactions abril PER: int-8 (cristina), int-13 (ines), int-21 (gabriela) = 3
 
 describe("getStoreRanking", () => {
-  it("Admin abril: 3 tiendas. POL y STF empatan en 28,300 → alfabético", async () => {
+  it("Admin abril: STF lidera (34,890), POL segundo (28,300), PER tercero (16,820)", async () => {
     const r = await getStoreRanking(admin, { period: aprilPeriod });
     expect(r).toHaveLength(3);
-    // "Liverpool Polanco" < "Palacio Santa Fe" alfabéticamente
-    expect(r[0]!.storeName).toBe("Liverpool Polanco");
-    expect(r[0]!.salesAmount).toBe(28_300);
+    expect(r[0]!.storeName).toBe("Palacio Santa Fe");
+    expect(r[0]!.salesAmount).toBe(34_890);
     expect(r[0]!.rank).toBe(1);
-    expect(r[1]!.storeName).toBe("Palacio Santa Fe");
+    expect(r[1]!.storeName).toBe("Liverpool Polanco");
     expect(r[1]!.salesAmount).toBe(28_300);
     expect(r[2]!.storeName).toBe("Liverpool Perisur");
-    expect(r[2]!.salesAmount).toBe(13_600);
+    expect(r[2]!.salesAmount).toBe(16_820);
   });
 
   it("activeBas y activeClients correctos por tienda", async () => {
@@ -37,8 +37,10 @@ describe("getStoreRanking", () => {
     const pol = r.find((x) => x.storeName === "Liverpool Polanco")!;
     expect(pol.activeBas).toBe(2);
     expect(pol.activeClients).toBe(2);
+    const stf = r.find((x) => x.storeName === "Palacio Santa Fe")!;
+    expect(stf.activeBas).toBe(4); // Renata, Ximena, Paulina, Carolina (pu-9/10/17/19)
     const per = r.find((x) => x.storeName === "Liverpool Perisur")!;
-    expect(per.activeBas).toBe(2);
+    expect(per.activeBas).toBe(2); // Regina, Mariana (pu-5/7/18 — Mariana hace dos)
     expect(per.activeClients).toBe(3); // cristina, ines, gabriela (whatsapp también)
   });
 

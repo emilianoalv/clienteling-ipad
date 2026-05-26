@@ -579,6 +579,54 @@ export const SEED_PURCHASES: Purchase[] = [
     brand: "Lancôme",
     ticketRef: "LV-250815-0177",
   },
+
+  // ── YSL · tickets con catálogo expandido ──────────────────────────────────
+  // Estos tickets usan los SKUs nuevos del catálogo YSL (Black Opium,
+  // Tatouage Couture, Lash Clash, Y EDP, Pure Shots) — antes el seed solo
+  // movía Libre / Or Rouge / Rouge Pur Couture y dejaba el resto sin
+  // tracking. Útil para demostrar reportes BA YSL con mix realista.
+  {
+    id: "pu-17" as Purchase["id"],
+    clientId: "cl-rocio" as ClientId, // multi-brand Santa Fe
+    baId: BA_STF_YSL_1,
+    storeId: ST_STF,
+    at: "2026-04-15T17:20:00.000Z",
+    items: [
+      { sku: "YS-BO-50" as Sku, qty: 1, unitPrice: 2_650 },
+      { sku: "YS-TC-01" as Sku, qty: 1, unitPrice: 990 },
+    ],
+    total: 3_640,
+    payment: "card",
+    brand: "YSL",
+    ticketRef: "PH-260415-0738",
+  },
+  {
+    id: "pu-18" as Purchase["id"],
+    clientId: "cl-gabriela" as ClientId, // YSL pura Perisur
+    baId: BA_PER_YSL_2,
+    storeId: ST_PER,
+    at: "2026-04-22T15:45:00.000Z",
+    items: [
+      { sku: "YS-PSE-15" as Sku, qty: 1, unitPrice: 2_280 },
+      { sku: "YS-LC-01" as Sku, qty: 1, unitPrice: 940 },
+    ],
+    total: 3_220,
+    payment: "card",
+    brand: "YSL",
+    ticketRef: "LV-260422-0613",
+  },
+  {
+    id: "pu-19" as Purchase["id"],
+    clientId: "cl-karla" as ClientId, // multi-brand Santa Fe — compra de regalo masculino
+    baId: BA_STF_YSL_2,
+    storeId: ST_STF,
+    at: "2026-04-29T19:10:00.000Z",
+    items: [{ sku: "YS-Y-60" as Sku, qty: 1, unitPrice: 2_950 }],
+    total: 2_950,
+    payment: "card",
+    brand: "YSL",
+    ticketRef: "PH-260429-0904",
+  },
 ];
 
 /**
@@ -898,7 +946,7 @@ export const SEED_SAMPLES: Sample[] = [
     baId: BA_PER_YSL_2,
     storeId: ST_PER,
     brand: "YSL",
-    sku: "YS-OPI-1" as Sku,
+    sku: "YS-BO-1" as Sku,
     name: "Black Opium · 1.2ml",
     givenAt: "2026-05-08T12:30:00.000Z",
     followUpAt: "2026-05-22T00:00:00.000Z",
@@ -941,6 +989,43 @@ export const SEED_SAMPLES: Sample[] = [
     name: "Libre EDP · 1.2ml",
     givenAt: "2026-01-15T15:00:00.000Z",
     followUpAt: "2026-01-29T00:00:00.000Z",
+    converted: false,
+  },
+  // ── Muestras YSL del catálogo expandido — recientes pending feedback ────
+  {
+    id: "sp-10" as Sample["id"],
+    clientId: "cl-julieta" as ClientId,
+    baId: BA_PER_YSL_1,
+    storeId: ST_PER,
+    brand: "YSL",
+    sku: "YS-PSE-3" as Sku,
+    name: "Pure Shots Y-Shape Eye · 3ml",
+    givenAt: "2026-05-09T16:00:00.000Z",
+    followUpAt: "2026-05-23T00:00:00.000Z",
+    converted: false,
+  },
+  {
+    id: "sp-11" as Sample["id"],
+    clientId: "cl-karla" as ClientId,
+    baId: BA_STF_YSL_2,
+    storeId: ST_STF,
+    brand: "YSL",
+    sku: "YS-Y-1" as Sku,
+    name: "Y EDP Hombre · 1.2ml",
+    givenAt: "2026-04-29T19:00:00.000Z",
+    converted: true,
+    purchaseId: "pu-19" as Purchase["id"],
+  },
+  {
+    id: "sp-12" as Sample["id"],
+    clientId: "cl-pamela" as ClientId,
+    baId: BA_STF_LCM_1, // BA Lancôme pero clientela multi-marca conoce YSL
+    storeId: ST_STF,
+    brand: "YSL",
+    sku: "YS-MYS-1" as Sku,
+    name: "MYSLF Hombre · 1.2ml",
+    givenAt: "2026-05-06T14:00:00.000Z",
+    followUpAt: "2026-05-20T00:00:00.000Z",
     converted: false,
   },
 ];
@@ -1012,6 +1097,29 @@ export const SEED_RECOMMENDATIONS: Recommendation[] = [
     at: "2025-12-09T11:30:00.000Z",
     items: ["YS-RPC-01" as Sku],
     status: "pending",
+  },
+  // ── YSL recos del catálogo expandido ──────────────────────────────────
+  {
+    id: "rc-7" as Recommendation["id"],
+    clientId: "cl-rocio" as ClientId,
+    baId: BA_STF_YSL_1,
+    storeId: ST_STF,
+    brand: "YSL",
+    at: "2026-04-15T17:00:00.000Z",
+    items: ["YS-BO-50" as Sku, "YS-TC-01" as Sku],
+    status: "converted",
+    purchaseId: "pu-17" as Purchase["id"],
+  },
+  {
+    id: "rc-8" as Recommendation["id"],
+    clientId: "cl-gabriela" as ClientId,
+    baId: BA_PER_YSL_2,
+    storeId: ST_PER,
+    brand: "YSL",
+    at: "2026-04-22T15:30:00.000Z",
+    items: ["YS-PSE-15" as Sku, "YS-LC-01" as Sku],
+    status: "converted",
+    purchaseId: "pu-18" as Purchase["id"],
   },
 ];
 

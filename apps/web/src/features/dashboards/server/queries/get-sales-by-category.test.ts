@@ -10,24 +10,26 @@ import {
 } from "./_test-fixtures";
 
 // Abril 2026 expected breakdown (Admin):
-//   Skincare: LC-ABS-50 (Crema) 29,400 + LC-GEN-50 (Sérum) 12,800 = 42,200
-//   Makeup:   YS-RPC-01 (Labial) 3,800
-//   Fragancia: 0 (no fragrance items sold in April)
-//   Unmapped: LC-HYB-30 12,100 (pu-3) + 12,100 (pu-9) = 24,200 (skipped by Bug A → Unmapped)
-//   Total: 70,200 ✓ matches getSalesAmount
+//   Skincare: LC-ABS-50 (Crema) 29,400 + LC-GEN-50 (Sérum) 12,800
+//             + YS-PSE-15 (Crema) 2,280 = 44,480
+//   Makeup:   YS-RPC-01 (Labial) 3,800 + YS-TC-01 (Labial) 990 = 4,790
+//   Fragancia: YS-BO-50 2,650 + YS-Y-60 2,950 = 5,600
+//   Unmapped: LC-HYB-30 24,200 (Bug A) + YS-LC-01 940 (Máscara no mapeada)
+//             = 25,140
+//   Total: 80,010 ✓ matches getSalesAmount
 
 describe("getSalesByCategory", () => {
   it("Admin abril: distribución correcta entre categorías", async () => {
     const r = await getSalesByCategory(admin, { period: aprilPeriod });
-    expect(r.Skincare).toBe(42_200);
-    expect(r.Makeup).toBe(3_800);
-    expect(r.Fragancia).toBe(0);
-    expect(r.Unmapped).toBe(24_200);
+    expect(r.Skincare).toBe(44_480);
+    expect(r.Makeup).toBe(4_790);
+    expect(r.Fragancia).toBe(5_600);
+    expect(r.Unmapped).toBe(25_140);
   });
 
   it("suma de las 4 categorías = total ventas del período (sanity)", async () => {
     const r = await getSalesByCategory(admin, { period: aprilPeriod });
-    expect(r.Skincare + r.Makeup + r.Fragancia + r.Unmapped).toBe(70_200);
+    expect(r.Skincare + r.Makeup + r.Fragancia + r.Unmapped).toBe(80_010);
   });
 
   it("SKUs sin entry en product repo (Bug A) → Unmapped", async () => {

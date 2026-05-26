@@ -17,11 +17,16 @@ import {
 //   cl-cristina  LC-ABS-50  pu-5  abr-25 → +100d = ago-03
 //   cl-elena     LC-GEN-50  pu-6  mar-10 → +90d  = jun-08
 //   cl-elena     LC-ABS-50  pu-14 feb-10 → +100d = may-21
+//   cl-gabriela  YS-LC-01   pu-18 abr-22 → +90d  = jul-21
+//   cl-gabriela  YS-PSE-15  pu-18 abr-22 → +90d  = jul-21
 //   cl-ines      YS-RPC-01  pu-7  abr-12 → +240d = dec-08
 //   cl-julieta   YS-OR-100  pu-8  feb-22 → +100d = jun-02
 //   cl-karla     LC-ABS-50  pu-9  abr-28 → +100d = ago-06
+//   cl-karla     YS-Y-60    pu-19 abr-29 → +180d ← FUERA de window=100
 //   cl-marina    LC-GEN-50  pu-10 abr-18 → +90d  = jul-17
 //   cl-nadia     YS-OR-100  pu-11 dic-10 → +100d = mar-20 ← BEFORE anchor
+//   cl-rocio     YS-BO-50   pu-17 abr-15 → +180d ← FUERA de window=100
+//   cl-rocio     YS-TC-01   pu-17 abr-15 → +200d ← FUERA de window=100
 
 describe("getEstimatedReplenishments", () => {
   it("Admin default window=14: ninguno (más cercano = may-21)", async () => {
@@ -41,13 +46,13 @@ describe("getEstimatedReplenishments", () => {
     expect(r[0]!.daysAway).toBe(20); // may-21 - may-1 = 20
   });
 
-  it("Admin window=100: 8 alertas (excluye SKUs sin product entry y los antes del anchor)", async () => {
+  it("Admin window=100: 10 alertas (excluye SKUs sin product entry y los antes del anchor)", async () => {
     const r = await getEstimatedReplenishments(
       admin,
       { period: aprilPeriodLocal },
       { windowDays: 100 },
     );
-    expect(r).toHaveLength(8);
+    expect(r).toHaveLength(10);
     // Ordenado por daysAway → primero el más cercano (cl-elena may-21)
     expect(r[0]!.clientId).toBe("cl-elena");
     expect(r[0]!.sku).toBe("LC-ABS-50");

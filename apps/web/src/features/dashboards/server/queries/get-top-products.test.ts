@@ -10,16 +10,21 @@ import {
 } from "./_test-fixtures";
 
 // Abril 2026 — items con SKU en product seed:
-//   LC-ABS-50 pu-1 (1×9,800) + pu-5 (1×9,800) + pu-9 (1×9,800) = 3 units, $29,400
-//   LC-GEN-50 pu-1 (1×6,400) + pu-10 (1×6,400)               = 2 units, $12,800
-//   YS-RPC-01 pu-7 (4×950)                                    = 4 units,  $3,800
+//   LC-ABS-50  pu-1 + pu-5 + pu-9     = 3 units, $29,400
+//   LC-GEN-50  pu-1 + pu-10           = 2 units, $12,800
+//   YS-RPC-01  pu-7 (4×950)           = 4 units,  $3,800
+//   YS-Y-60    pu-19 (1×2,950)        = 1 unit,   $2,950
+//   YS-BO-50   pu-17 (1×2,650)        = 1 unit,   $2,650
+//   YS-PSE-15  pu-18 (1×2,280)        = 1 unit,   $2,280
+//   YS-TC-01   pu-17 (1×990)          = 1 unit,     $990
+//   YS-LC-01   pu-18 (1×940)          = 1 unit,     $940
 // SKUs en purchases pero NO en product (skip silencioso):
 //   LC-HYB-30 (pu-3, pu-9), YS-LIB-50 (pu-2, pu-4, pu-12, pu-15)
 
 describe("getTopProducts", () => {
-  it("Admin abril top10: 3 productos ordenados por revenue", async () => {
+  it("Admin abril top10: 8 productos ordenados por revenue", async () => {
     const r = await getTopProducts(admin, { period: aprilPeriod });
-    expect(r).toHaveLength(3);
+    expect(r).toHaveLength(8);
     expect(r[0]!.sku).toBe("LC-ABS-50");
     expect(r[0]!.revenue).toBe(29_400);
     expect(r[0]!.unitsSold).toBe(3);
@@ -32,10 +37,10 @@ describe("getTopProducts", () => {
     expect(r[2]!.unitsSold).toBe(4);
   });
 
-  it("orden por REVENUE no por unitsSold (YS-RPC-01 vende más unidades pero menos revenue)", async () => {
+  it("orden por REVENUE no por unitsSold (YS-LC-01 está último por revenue)", async () => {
     const r = await getTopProducts(admin, { period: aprilPeriod });
-    // YS-RPC-01 (4 units) está último por revenue
-    expect(r[r.length - 1]!.sku).toBe("YS-RPC-01");
+    // YS-LC-01 940 es el revenue más bajo de los productos mapeados en abril.
+    expect(r[r.length - 1]!.sku).toBe("YS-LC-01");
   });
 
   it("topN respetado", async () => {

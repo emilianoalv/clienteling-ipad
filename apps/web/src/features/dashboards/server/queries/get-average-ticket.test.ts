@@ -12,8 +12,8 @@ import {
 } from "./_test-fixtures";
 
 describe("getAverageTicket", () => {
-  it("Admin abril: 70,200 / 6 = 11,700", async () => {
-    expect(await getAverageTicket(admin, { period: aprilPeriod })).toBe(11_700);
+  it("Admin abril: 80,010 / 9 = 8,890", async () => {
+    expect(await getAverageTicket(admin, { period: aprilPeriod })).toBe(8_890);
   });
 
   it("BA Lancôme Polanco abril: (16,200 + 12,100) / 2 = 14,150", async () => {
@@ -25,10 +25,10 @@ describe("getAverageTicket", () => {
     expect(await getAverageTicket(admin, { period: emptyPeriod })).toBe(0);
   });
 
-  it("Supervisor Centro abril: 56,600 / 4 = 14,150", async () => {
+  it("Supervisor Centro abril: 63,190 / 6 = 10,531.666…", async () => {
     expect(
       await getAverageTicket(supervisorCentro, { period: aprilPeriod }),
-    ).toBe(14_150);
+    ).toBeCloseTo(63_190 / 6);
   });
 
   it("intersección vacía → 0", async () => {

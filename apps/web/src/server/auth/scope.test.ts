@@ -272,13 +272,14 @@ describe("Purchase / Appointment / Recommendation / Communication respetan el sc
     expect(comms.some((c) => c.storeId === ST_PER)).toBe(false);
   });
 
-  it("Admin ve todas las compras (16) independientemente de marca/tienda", async () => {
-    // 12 originales + 4 históricas (pu-13..pu-16) agregadas para retention KPIs.
+  it("Admin ve todas las compras (19) independientemente de marca/tienda", async () => {
+    // 12 originales + 4 históricas (pu-13..pu-16) para retention KPIs
+    // + 3 YSL (pu-17..pu-19) del catálogo expandido.
     const purchases = await purchaseRepository.list({
       brands: brandScopeFor(admin),
       storeIds: storeScopeFor(admin),
     });
-    expect(purchases).toHaveLength(16);
+    expect(purchases).toHaveLength(19);
   });
 });
 

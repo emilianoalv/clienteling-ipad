@@ -16,9 +16,10 @@ import {
 describe("getSalesAmount", () => {
   it("Admin sin filtros suma TODAS las compras del período", async () => {
     // Abril 2026 contiene: pu-1 16,200 + pu-3 12,100 + pu-5 9,800 + pu-7 3,800
-    // + pu-9 21,900 + pu-10 6,400 = 70,200
+    // + pu-9 21,900 + pu-10 6,400 + pu-17 3,640 + pu-18 3,220 + pu-19 2,950
+    // = 80,010
     const total = await getSalesAmount(admin, { period: aprilPeriod });
-    expect(total).toBe(70_200);
+    expect(total).toBe(80_010);
   });
 
   it("BA Lancôme Polanco solo ve compras de su tienda+marca", async () => {
@@ -39,19 +40,21 @@ describe("getSalesAmount", () => {
   });
 
   it("Supervisor zona Centro NO ve Perisur (fuera de zona)", async () => {
-    // Abril POL + STF: pu-1 16,200 + pu-3 12,100 + pu-9 21,900 + pu-10 6,400 = 56,600
-    // Excluye pu-5 (Perisur 9,800) y pu-7 (Perisur 3,800)
+    // Abril POL + STF: pu-1 16,200 + pu-3 12,100 + pu-9 21,900 + pu-10 6,400
+    //                 + pu-17 3,640 + pu-19 2,950 = 63,190
+    // Excluye pu-5 (Perisur), pu-7 (Perisur), pu-18 (Perisur)
     const total = await getSalesAmount(supervisorCentro, { period: aprilPeriod });
-    expect(total).toBe(56_600);
+    expect(total).toBe(63_190);
   });
 
   it("filtro storeIds dentro del scope restringe correctamente", async () => {
-    // Admin filtrando solo Santa Fe en abril: pu-9 + pu-10 = 28,300
+    // Admin filtrando solo Santa Fe en abril:
+    // pu-9 21,900 + pu-10 6,400 + pu-17 3,640 + pu-19 2,950 = 34,890
     const total = await getSalesAmount(admin, {
       period: aprilPeriod,
       storeIds: [ST_STF],
     });
-    expect(total).toBe(28_300);
+    expect(total).toBe(34_890);
   });
 
   it("filtro storeIds fuera del scope (intersección vacía) → 0", async () => {
@@ -86,8 +89,9 @@ describe("getSalesAmount", () => {
         to: new Date("2026-04-21T00:00:00.000Z"),
       },
     });
-    // pu-3 12,100 + pu-7 3,800 + pu-10 6,400 = 22,300
-    expect(total).toBe(22_300);
+    // pu-3 12,100 + pu-7 3,800 + pu-10 6,400 + pu-17 3,640 = 25,940
+    // (pu-18 abr-22 y pu-19 abr-29 quedan fuera del rango)
+    expect(total).toBe(25_940);
   });
 
   it("BA filtrando por marca distinta a la suya → isEmpty → 0", async () => {

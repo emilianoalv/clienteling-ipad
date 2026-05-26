@@ -11,21 +11,22 @@ import {
 } from "./_test-fixtures";
 
 // Reference (abril 2026):
-//   cl-karla     STF · LCM · 21,900  (pu-9)    + int-14 purchase abr-28
+//   cl-karla     STF · multi · 24,850 (pu-9 21,900 + pu-19 2,950) + int-14
 //   cl-constanza POL · LCM · 16,200  (pu-1)    + int-1  purchase abr-21
 //   cl-ofelia    POL · LCM · 12,100  (pu-3)    + int-2  sample   abr-08
 //   cl-cristina  PER · LCM ·  9,800  (pu-5)    + int-8  purchase abr-25
 //   cl-marina    STF · LCM ·  6,400  (pu-10)   + int-15 consult  abr-18
 //   cl-ines      PER · YSL ·  3,800  (pu-7)    + int-13 purchase abr-12
-//   cl-gabriela  PER · YSL ·  0 (no purchase)  + int-21 whatsapp abr-25
-// = 7 clientas con actividad en abril.
+//   cl-rocio     STF · YSL ·  3,640  (pu-17)   — sin interaction abr
+//   cl-gabriela  PER · YSL ·  3,220  (pu-18)   + int-21 whatsapp abr-25
+// = 8 clientas con actividad en abril.
 
 describe("getTopClients", () => {
-  it("Admin abril topN=10: 7 clientas, orden por totalSpent desc", async () => {
+  it("Admin abril topN=10: 8 clientas, orden por totalSpent desc", async () => {
     const r = await getTopClients(admin, { period: aprilPeriod });
-    expect(r).toHaveLength(7);
+    expect(r).toHaveLength(8);
     expect(r[0]!.clientId).toBe("cl-karla");
-    expect(r[0]!.totalSpent).toBe(21_900);
+    expect(r[0]!.totalSpent).toBe(24_850);
     expect(r[1]!.clientId).toBe("cl-constanza");
     expect(r[1]!.totalSpent).toBe(16_200);
   });
@@ -40,8 +41,8 @@ describe("getTopClients", () => {
     const r = await getTopClients(admin, { period: aprilPeriod });
     const gabriela = r.find((x) => x.clientId === "cl-gabriela");
     expect(gabriela).toBeDefined();
-    expect(gabriela!.visitsCount).toBe(0); // solo tiene int-21 whatsapp
-    expect(gabriela!.totalSpent).toBe(0);
+    expect(gabriela!.visitsCount).toBe(0); // solo tiene int-21 whatsapp (no presencial)
+    expect(gabriela!.totalSpent).toBe(3_220); // pu-18 abr-22 (purchase sin interaction)
     expect(gabriela!.lastVisitDate).not.toBeNull(); // int-21 abr-25
   });
 
@@ -67,10 +68,10 @@ describe("getTopClients", () => {
     expect(r).toHaveLength(2);
   });
 
-  it("Supervisor Centro (POL + STF) abril excluye Perisur: 4 clientas", async () => {
+  it("Supervisor Centro (POL + STF) abril excluye Perisur: 5 clientas", async () => {
     const r = await getTopClients(supervisorCentro, { period: aprilPeriod });
-    // POL: cl-constanza, cl-ofelia. STF: cl-karla, cl-marina. = 4
-    expect(r).toHaveLength(4);
+    // POL: cl-constanza, cl-ofelia. STF: cl-karla, cl-marina, cl-rocio. = 5
+    expect(r).toHaveLength(5);
     expect(r[0]!.clientId).toBe("cl-karla"); // top
   });
 

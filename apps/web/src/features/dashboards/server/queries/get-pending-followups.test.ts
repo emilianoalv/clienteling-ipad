@@ -71,9 +71,11 @@ describe("getPendingFollowups", () => {
     expect(r).toEqual([]);
   });
 
-  it("BA YSL Polanco: 0 (no hay pending POL YSL en seed)", async () => {
+  it("BA YSL Polanco: 2 pending POL YSL (ft-17 Daniela + ft-18 Sofía)", async () => {
     const r = await getPendingFollowups(baYslPol, { period: aprilPeriod });
-    expect(r).toEqual([]);
+    expect(r).toHaveLength(2);
+    const ids = r.map((x) => x.taskId as string).sort();
+    expect(ids).toEqual(["ft-17", "ft-18"]);
   });
 
   it("isOverdue se calcula contra filters.period.to (no contra hoy real)", async () => {

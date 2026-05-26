@@ -19,6 +19,7 @@ const BA_PER_YSL_2 = "us-ba-per-ysl-2" as StaffId;
 const BA_STF_LCM_1 = "us-ba-stf-lcm-1" as StaffId;
 const BA_STF_LCM_2 = "us-ba-stf-lcm-2" as StaffId;
 const BA_STF_YSL_1 = "us-ba-stf-ysl-1" as StaffId;
+const BA_STF_YSL_2 = "us-ba-stf-ysl-2" as StaffId;
 const ST_POL = "st-pol" as StoreId;
 const ST_PER = "st-per" as StoreId;
 const ST_STF = "st-stf" as StoreId;
@@ -215,9 +216,46 @@ const SEED: Appointment[] = [
     cancelReason: "Conflicto de agenda",
     cancelledAt: "2026-04-18T09:00:00.000Z",
   },
+  // ── Citas YSL del catálogo expandido — variedad de tipos ────────────────
+  {
+    id: "ap-17" as AppointmentId,
+    clientId: "cl-rocio" as ClientId,
+    baId: BA_STF_YSL_2,
+    brand: "YSL",
+    storeId: ST_STF,
+    at: relativeISO(1, 16, 30),
+    durationMin: 60,
+    kind: "fragrance-consult",
+    status: "confirmed",
+    notes: "Probar Y EDP y MYSLF — interés masculino (regalo).",
+  },
+  {
+    id: "ap-18" as AppointmentId,
+    clientId: "cl-gabriela" as ClientId,
+    baId: BA_PER_YSL_2,
+    brand: "YSL",
+    storeId: ST_PER,
+    at: relativeISO(2, 11, 0),
+    durationMin: 90,
+    kind: "vip-cabin",
+    status: "confirmed",
+    notes: "Sesión privada Or Rouge + Pure Shots — cliente Atelier.",
+  },
+  {
+    id: "ap-19" as AppointmentId,
+    clientId: "cl-julieta" as ClientId,
+    baId: BA_PER_YSL_1,
+    brand: "YSL",
+    storeId: ST_PER,
+    at: relativeISO(3, 13, 30),
+    durationMin: 45,
+    kind: "makeup",
+    status: "scheduled",
+    notes: "Look completo con Tatouage Couture + Lash Clash + Touche Éclat.",
+  },
 ];
 
-const APPOINTMENTS: Appointment[] = persistent("__clienteling.appointments.v4", () => [...SEED]);
+const APPOINTMENTS: Appointment[] = persistent("__clienteling.appointments.v5", () => [...SEED]);
 
 export interface AppointmentListFilter {
   baId?: StaffId;
