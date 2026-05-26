@@ -31,9 +31,9 @@ export const NAV_BY_ROLE: Record<Role, readonly NavItem[]> = {
   ],
   Supervisor: [
     { id: "home", href: "/supervisor", labelKey: "rail.home", icon: "home" },
-    { id: "stores", href: "/supervisor/stores", labelKey: "rail.stores", icon: "device" },
+    { id: "stores", href: "/supervisor/stores", labelKey: "rail.stores", icon: "bag" },
+    { id: "appointments", href: "/supervisor/appointments", labelKey: "rail.appointments", icon: "calendar" },
     { id: "reports", href: "/supervisor/reports", labelKey: "rail.reports", icon: "pdf" },
-    { id: "tickets", href: "/supervisor/tickets", labelKey: "rail.tickets", icon: "ticket" },
   ],
   Admin: [
     { id: "home", href: "/admin", labelKey: "rail.home", icon: "home" },

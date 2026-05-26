@@ -1,5 +1,5 @@
 import { SectionHeader } from "@/components/patterns";
-import { GerenteReportsScreen } from "@/features/gerente/components/reports-screen";
+import { RoleReportsScreen } from "@/features/dashboards/components/role-reports-screen";
 import { parseFilters } from "@/features/dashboards/lib/parse-filters";
 import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 import { requireSession } from "@/server/auth/session";
@@ -46,10 +46,11 @@ export default async function ManagerReportsPage({
   return (
     <section className="flex flex-col gap-4">
       <SectionHeader title="Reportes" eyebrow="Mi tienda" />
-      <GerenteReportsScreen
+      <RoleReportsScreen
         filters={filters}
         baOptions={baOptions}
         showBrandFilter={showBrandFilter}
+        agendaHref="/gerente/appointments"
       />
     </section>
   );

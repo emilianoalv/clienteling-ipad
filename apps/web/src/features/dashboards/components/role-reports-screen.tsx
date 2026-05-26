@@ -2,34 +2,34 @@ import Link from "next/link";
 import { Card } from "@/components/patterns";
 import { Icon, type IconProps } from "@/components/primitives";
 import {
-  ExportButton,
-  FilterBar,
-} from "@/features/dashboards/components/_shared";
-import {
   exportBaPerformance,
   exportClientsReport,
   exportConversionByBa,
 } from "@/features/dashboards/server/actions";
 import type { DashboardFilters } from "@/features/dashboards/server/types";
 import type { StaffId } from "@/types/staff";
+import type { StoreId } from "@/types/store";
+import { ExportButton, FilterBar } from "./_shared";
 
 /**
- * Reportes del Gerente — cumple RF-43 / RF-45 / RF-47.
+ * Pantalla de reportes compartida entre Gerente y Supervisor — cumple
+ * RF-43 / RF-45 / RF-47. Cada card es un export real corriendo con el
+ * scope del rol intersectado con los filtros de la UI.
  *
- * No es una "biblioteca de reportes programados" (eso era el placeholder
- * F4). Cada card es un export real que corre con el scope del Gerente
- * (tienda + marcas) intersectado con los filtros que la usuaria
- * selecciona arriba.
+ * RF-46 (agenda) vive en cada `/<rol>/appointments` con su propio
+ * `<ExportButton>` — no se duplica aquí, solo se referencia con un
+ * link. Eso evita dos fuentes que pueden divergir.
  *
- * RF-46 (agenda) vive en `/gerente/appointments` con su propio
- * `<ExportButton>` — no se duplica aquí. El card debajo solo lo
- * referencia con un link.
+ * El rol controla qué filtros aparecen (Gerente no ve selector de
+ * tienda porque solo tiene una; Supervisor sí lo necesita).
  */
-export interface GerenteReportsScreenProps {
+export interface RoleReportsScreenProps {
   filters: DashboardFilters;
   baOptions: ReadonlyArray<{ id: StaffId; label: string }>;
-  /** Si el Gerente ve una sola marca, ocultamos el selector de marca. */
+  storeOptions?: ReadonlyArray<{ id: StoreId; label: string }>;
   showBrandFilter: boolean;
+  /** Link al que apunta el card de Agenda (RF-46). */
+  agendaHref: string;
 }
 
 interface ReportCard {
@@ -43,17 +43,19 @@ interface ReportCard {
   }>;
 }
 
-export function GerenteReportsScreen({
+export function RoleReportsScreen({
   filters,
   baOptions,
+  storeOptions,
   showBrandFilter,
-}: GerenteReportsScreenProps) {
+  agendaHref,
+}: RoleReportsScreenProps) {
   const cards: ReadonlyArray<ReportCard> = [
     {
       icon: "user",
       title: "Listado de clientes",
       description:
-        "Exporta el padrón completo de la tienda con nombre, teléfono, nacimiento, último BA, cliente desde, último contacto, última transacción y tipo de seguimiento. Útil para campañas y reactivación.",
+        "Exporta el padrón completo con nombre, teléfono, nacimiento, último BA, cliente desde, último contacto, última transacción y tipo de seguimiento. Útil para campañas y reactivación.",
       action: exportClientsReport,
     },
     {
@@ -72,16 +74,21 @@ export function GerenteReportsScreen({
     },
   ];
 
+  const showStoreFilter = (storeOptions?.length ?? 0) > 1;
+
   return (
     <div className="flex flex-col gap-5">
       <FilterBar
         roleConfig={{
           period: true,
-          store: false,
+          store: showStoreFilter,
           brand: showBrandFilter,
           baId: true,
         }}
-        scopeOptions={{ bas: baOptions }}
+        scopeOptions={{
+          ...(showStoreFilter ? { stores: storeOptions } : {}),
+          bas: baOptions,
+        }}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -101,9 +108,9 @@ export function GerenteReportsScreen({
           </Card>
         ))}
 
-        {/* Agenda — el export real vive en /gerente/appointments. No
-            replicamos el botón para no tener dos fuentes que pueden
-            divergir; aquí solo señalizamos dónde está. */}
+        {/* Agenda — el export real vive en `agendaHref` (la pantalla de
+            citas del rol). No replicamos el botón para no tener dos
+            fuentes que pueden divergir; aquí solo señalizamos dónde. */}
         <Card className="flex flex-col gap-4 border-dashed">
           <ReportHeader icon="calendar" title="Reporte de agenda" />
           <p className="m-0 text-[14.5px] leading-snug text-ink/65">
@@ -113,7 +120,7 @@ export function GerenteReportsScreen({
           </p>
           <div className="flex justify-end mt-auto">
             <Link
-              href="/gerente/appointments"
+              href={agendaHref}
               className="inline-flex items-center gap-1.5 h-10 px-4 rounded-md border border-line bg-white text-[15px] font-semibold text-ink no-underline hover:bg-bone transition-colors"
             >
               Ir a Agenda
