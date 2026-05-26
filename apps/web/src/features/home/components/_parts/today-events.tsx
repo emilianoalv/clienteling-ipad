@@ -47,9 +47,30 @@ export interface TodayEventsProps {
  * (screens-home.jsx:175-202 + 274-298).
  */
 export function TodayEvents({ entries }: TodayEventsProps) {
-  if (entries.length === 0) return null;
   const birthdays = entries.filter((e) => e.event.kind === "birthday").length;
   const anniversaries = entries.filter((e) => e.event.kind === "anniversary").length;
+
+  // Empty state: el card sigue presente para que la BA sepa que la sección
+  // existe (antes se ocultaba al estar vacío, generaba confusión sobre
+  // si era un bug o falta de datos).
+  if (entries.length === 0) {
+    return (
+      <article className="bg-white border border-line rounded-xl p-5 shadow-[0_1px_2px_rgba(14,14,15,0.03)]">
+        <header className="flex items-baseline justify-between mb-2">
+          <div>
+            <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+              Próximos 45 días
+            </div>
+            <div className="font-display text-[22px] mt-0.5">Eventos · 0</div>
+          </div>
+        </header>
+        <p className="m-0 text-[15px] text-ink/55 leading-snug">
+          Sin cumpleaños ni aniversarios en los próximos 45 días. Aquí aparecerán
+          cuando alguno de tus clientes esté cerca de la fecha.
+        </p>
+      </article>
+    );
+  }
 
   return (
     <article className="bg-white border border-line rounded-xl p-5 shadow-[0_1px_2px_rgba(14,14,15,0.03)]">

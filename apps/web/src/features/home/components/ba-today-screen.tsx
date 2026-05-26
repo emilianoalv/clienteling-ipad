@@ -40,7 +40,7 @@ export function BaTodayScreen({ baName, storeName, snapshot, now = new Date() }:
 
       <QuickActions />
 
-      {snapshot.upcomingEvents.length > 0 && <TodayEvents entries={snapshot.upcomingEvents} />}
+      <TodayEvents entries={snapshot.upcomingEvents} />
 
       <div className="grid gap-5 grid-cols-1 xl:grid-cols-[1fr_1.1fr]">
         <PendingList tasks={snapshot.pendingTasks} clientLookup={snapshot.clientLookup} />
