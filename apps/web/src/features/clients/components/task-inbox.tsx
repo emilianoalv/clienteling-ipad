@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { ClientId } from "@/types/client";
 import {
   FOLLOWUP_CATEGORIES,
@@ -10,6 +10,11 @@ import {
   type FollowupTask,
   type FollowupType,
 } from "@/types/followup-task";
+
+// Wrapper para que el filtro maneje "Todos" como pseudo-categoría.
+const ALL_CATEGORIES: FollowupCategory | "all" = "all" as const;
+void ALL_CATEGORIES;
+void FOLLOWUP_TYPES;
 import type { IconName } from "@/types/icon";
 import { Avatar, Button, Icon, Input } from "@/components/primitives";
 import { Card } from "@/components/patterns";
@@ -119,11 +124,12 @@ export function TaskInbox({
   clientId,
 }: TaskInboxProps) {
   const [bucket, setBucket] = useState<Bucket>("today");
-  // Filtro por tipo (Llamada / WhatsApp / Correo / Feedback muestra / Cita /
-  // Otro). "all" omite el filtro. Se aplica DESPUÉS del bucket, así los
-  // conteos del bucket no cambian con el tipo pero los conteos del tipo
-  // sí reflejan el bucket activo.
-  const [typeFilter, setTypeFilter] = useState<FollowupType | "all">("all");
+  // Filtro por CATEGORÍA (qué clase de seguimiento es): Feedback de muestra,
+  // Post-venta, Cumpleaños, Reposición, Evento especial, etc. NO confundir
+  // con `type` (canal: llamada/wa/correo). El filtro se aplica DESPUÉS del
+  // bucket — los conteos del bucket no cambian con la categoría pero los
+  // conteos de categoría sí reflejan el bucket activo.
+  const [categoryFilter, setCategoryFilter] = useState<FollowupCategory | "all">("all");
 
   // Tasks tras filtrar por bucket — base para tipo + UI.
   const inBucket = useMemo(() => {
@@ -164,25 +170,36 @@ export function TaskInbox({
     return c;
   }, [tasks]);
 
-  /** Conteo por tipo dentro del bucket actual — alimenta los chips. */
-  const typeCounts = useMemo(() => {
-    const c: Record<FollowupType | "all", number> = {
-      all: inBucket.length,
-      call: 0,
-      whatsapp: 0,
-      email: 0,
-      "sample-feedback": 0,
-      appointment: 0,
-      other: 0,
-    };
-    for (const t of inBucket) c[t.type]++;
+  /** Conteo por categoría dentro del bucket actual — alimenta los chips. */
+  const categoryCounts = useMemo(() => {
+    const c = new Map<FollowupCategory | "all", number>();
+    c.set("all", inBucket.length);
+    for (const t of inBucket) c.set(t.category, (c.get(t.category) ?? 0) + 1);
     return c;
   }, [inBucket]);
 
+  /** Categorías que tienen ≥1 tarea en el bucket — único chip set a mostrar. */
+  const visibleCategories = useMemo(() => {
+    return FOLLOWUP_CATEGORIES.filter((c) => (categoryCounts.get(c.id) ?? 0) > 0);
+  }, [categoryCounts]);
+
   const filtered = useMemo(
-    () => (typeFilter === "all" ? inBucket : inBucket.filter((t) => t.type === typeFilter)),
-    [inBucket, typeFilter],
+    () =>
+      categoryFilter === "all"
+        ? inBucket
+        : inBucket.filter((t) => t.category === categoryFilter),
+    [inBucket, categoryFilter],
   );
+
+  // Si cambia el bucket y la categoría seleccionada quedó sin tareas,
+  // limpiamos a "all" para no dejar al usuario en un estado vacío sin
+  // pista de por qué.
+  useEffect(() => {
+    if (categoryFilter === "all") return;
+    if ((categoryCounts.get(categoryFilter) ?? 0) === 0) {
+      setCategoryFilter("all");
+    }
+  }, [bucket, categoryFilter, categoryCounts]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -209,8 +226,10 @@ export function TaskInbox({
       ) : null}
       {mode === "global" ? <CreateTaskGlobalRow clientLookup={clientLookup} /> : null}
 
-      {/* Filter chips — fila 1: bucket temporal, fila 2: tipo de tarea */}
-      <div className="flex flex-col gap-2">
+      {/* Filtros — fila 1: bucket temporal; fila 2: categoría (Cita,
+          Cumpleaños, Reposición, etc.). Solo aparecen las categorías con
+          ≥1 tarea en el bucket, para que la fila no se sienta amontonada. */}
+      <div className="flex flex-col gap-2.5">
         <div className="flex items-center gap-2 flex-wrap">
           {BUCKETS.map((b) => {
             const active = bucket === b.id;
@@ -232,39 +251,43 @@ export function TaskInbox({
             );
           })}
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[12.5px] font-semibold tracking-[0.08em] uppercase text-ink/50 mr-1">
-            Tipo
-          </span>
-          {(
-            [
-              { id: "all" as const, label: "Todos" },
-              ...FOLLOWUP_TYPES,
-            ]
-          ).map((opt) => {
-            const active = typeFilter === opt.id;
-            const count = typeCounts[opt.id];
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => setTypeFilter(opt.id)}
-                aria-pressed={active}
-                disabled={opt.id !== "all" && count === 0}
-                className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border text-[12.5px] font-semibold transition-colors ${
-                  active
-                    ? "bg-ink text-paper border-ink cursor-pointer"
-                    : opt.id !== "all" && count === 0
-                      ? "bg-white text-ink/30 border-line/60 cursor-default"
-                      : "bg-white text-ink border-line hover:bg-bone cursor-pointer"
-                }`}
-              >
-                <span>{opt.label}</span>
-                <span className="opacity-70 font-medium tabular">· {count}</span>
-              </button>
-            );
-          })}
-        </div>
+        {visibleCategories.length > 0 ? (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setCategoryFilter("all")}
+              aria-pressed={categoryFilter === "all"}
+              className={`inline-flex items-center gap-1.5 h-7 px-3 rounded-full border text-[12.5px] font-semibold cursor-pointer transition-colors ${
+                categoryFilter === "all"
+                  ? "bg-ink text-paper border-ink"
+                  : "bg-white text-ink/70 border-line hover:bg-bone"
+              }`}
+            >
+              Todas las categorías
+            </button>
+            {visibleCategories.map((opt) => {
+              const active = categoryFilter === opt.id;
+              const count = categoryCounts.get(opt.id) ?? 0;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setCategoryFilter(opt.id)}
+                  aria-pressed={active}
+                  title={opt.hint}
+                  className={`inline-flex items-center gap-1.5 h-7 px-3 rounded-full border text-[12.5px] font-semibold cursor-pointer transition-colors ${
+                    active
+                      ? "bg-ink text-paper border-ink"
+                      : "bg-white text-ink/70 border-line hover:bg-bone"
+                  }`}
+                >
+                  <span>{opt.label}</span>
+                  <span className="opacity-70 font-medium tabular">· {count}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
 
       {/* List */}
