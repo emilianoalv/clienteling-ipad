@@ -33,7 +33,6 @@ export interface GerenteReportsScreenProps {
 }
 
 interface ReportCard {
-  brd: string;
   icon: IconProps["name"];
   title: string;
   description: string;
@@ -51,7 +50,6 @@ export function GerenteReportsScreen({
 }: GerenteReportsScreenProps) {
   const cards: ReadonlyArray<ReportCard> = [
     {
-      brd: "RF-43",
       icon: "user",
       title: "Listado de clientes",
       description:
@@ -59,7 +57,6 @@ export function GerenteReportsScreen({
       action: exportClientsReport,
     },
     {
-      brd: "RF-45",
       icon: "users",
       title: "Desempeño por BA",
       description:
@@ -67,7 +64,6 @@ export function GerenteReportsScreen({
       action: exportBaPerformance,
     },
     {
-      brd: "RF-47",
       icon: "sparkle",
       title: "Tasa de conversión por BA",
       description:
@@ -90,23 +86,8 @@ export function GerenteReportsScreen({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {cards.map((card) => (
-          <Card key={card.brd} variant="luxe" className="flex flex-col gap-4">
-            <header className="flex items-start gap-3.5">
-              <span
-                aria-hidden
-                className="inline-flex w-11 h-11 items-center justify-center rounded-md bg-bone text-ink/70 shrink-0"
-              >
-                <Icon name={card.icon} size={20} />
-              </span>
-              <div className="min-w-0 flex flex-col gap-0.5">
-                <span className="text-[12.5px] font-semibold tracking-[0.08em] uppercase text-ink/55">
-                  {card.brd}
-                </span>
-                <h3 className="m-0 font-display text-[22px] leading-tight">
-                  {card.title}
-                </h3>
-              </div>
-            </header>
+          <Card key={card.title} variant="luxe" className="flex flex-col gap-4">
+            <ReportHeader icon={card.icon} title={card.title} />
             <p className="m-0 text-[14.5px] leading-snug text-ink/65">
               {card.description}
             </p>
@@ -124,22 +105,7 @@ export function GerenteReportsScreen({
             replicamos el botón para no tener dos fuentes que pueden
             divergir; aquí solo señalizamos dónde está. */}
         <Card className="flex flex-col gap-4 border-dashed">
-          <header className="flex items-start gap-3.5">
-            <span
-              aria-hidden
-              className="inline-flex w-11 h-11 items-center justify-center rounded-md bg-bone text-ink/70 shrink-0"
-            >
-              <Icon name="calendar" size={20} />
-            </span>
-            <div className="min-w-0 flex flex-col gap-0.5">
-              <span className="text-[12.5px] font-semibold tracking-[0.08em] uppercase text-ink/55">
-                RF-46
-              </span>
-              <h3 className="m-0 font-display text-[22px] leading-tight">
-                Reporte de agenda
-              </h3>
-            </div>
-          </header>
+          <ReportHeader icon="calendar" title="Reporte de agenda" />
           <p className="m-0 text-[14.5px] leading-snug text-ink/65">
             La exportación de citas con sus columnas (nombre, teléfono, fecha,
             tipo de evento, comentario) ya vive en la pantalla de Agenda
@@ -157,5 +123,27 @@ export function GerenteReportsScreen({
         </Card>
       </div>
     </div>
+  );
+}
+
+function ReportHeader({
+  icon,
+  title,
+}: {
+  icon: IconProps["name"];
+  title: string;
+}) {
+  return (
+    <header className="flex items-center gap-4 pb-3 border-b border-line">
+      <span
+        aria-hidden
+        className="inline-flex w-14 h-14 items-center justify-center rounded-full bg-ink text-paper shrink-0"
+      >
+        <Icon name={icon} size={26} />
+      </span>
+      <h3 className="m-0 font-display text-[28px] leading-[1.05] tracking-[-0.015em] text-ink">
+        {title}
+      </h3>
+    </header>
   );
 }
