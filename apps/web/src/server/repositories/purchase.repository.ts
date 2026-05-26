@@ -15,6 +15,8 @@ export interface PurchaseListFilter {
    * Omit to disable scoping (Admin/HQ).
    */
   storeIds?: readonly StoreId[];
+  /** Filter por BA específica (atribución). Útil para Mi KPI y /gerente/team. */
+  baId?: import("@/types/staff").StaffId;
   /** Free-text matched against ticketRef / id. Client-name matching happens in the feature layer. */
   query?: string;
 }
@@ -34,10 +36,12 @@ export const purchaseRepository: PurchaseRepository = {
   async list(filter = {}) {
     const brandScope = filter.brands;
     const storeScope = filter.storeIds;
+    const baFilter = filter.baId;
     const query = filter.query?.trim().toLowerCase();
     return PURCHASES.filter((p) => {
       if (brandScope && brandScope.length && p.brand && !brandScope.includes(p.brand)) return false;
       if (storeScope && storeScope.length && !storeScope.includes(p.storeId)) return false;
+      if (baFilter && p.baId !== baFilter) return false;
       if (!query) return true;
       return `${p.id} ${p.ticketRef ?? ""}`.toLowerCase().includes(query);
     }).sort((a, b) => b.at.localeCompare(a.at));
