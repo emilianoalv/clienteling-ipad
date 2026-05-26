@@ -499,6 +499,315 @@ const TECH: Record<string, ProductTech> = {
     layerWith: [],
     source: "https://www.fragrantica.com/perfume/Lancome/Miracle-184.html",
   },
+
+  // ── YSL · Fragancias ────────────────────────────────────────────────────
+  "YS-LIB-90": {
+    keyActives: [
+      { ingredient: "Esencia de lavanda", benefit: "Acorde aromático moderno y limpio" },
+      { ingredient: "Azahar de Marruecos", benefit: "Floral blanco luminoso" },
+      { ingredient: "Almizcle blanco", benefit: "Estela sensual de fondo" },
+    ],
+    clinicalResults: [],
+    usage: {
+      timing: ["AM", "PM"],
+      frequency: "Diario",
+      slot: "fragrance",
+      position: 6,
+    },
+    target: { skinTypes: [], concerns: [] },
+    sensorial: {
+      texture: "Eau de parfum, intensidad alta",
+      scent: "Floral aromático provocador — lavanda femenina y azahar",
+      feel: "Estela contemporánea unisex-leaning, duración 8-10 h",
+    },
+    saleTip: "El espíritu de la libertad femenina YSL. Su firma — lavanda francesa reinterpretada en clave floral femenina — es disruptiva, ya no solo masculina. Recomienda a clientas que quieren algo icónico sin caer en lo cliché floral dulce. Frasco recargable.",
+    cautions: [],
+    layerWith: [],
+    source: "https://www.yslbeauty.com.mx/fragancia/libre",
+  },
+  "YS-BO-50": {
+    keyActives: [
+      { ingredient: "Café negro adictivo", benefit: "Acorde gourmand profundo distintivo" },
+      { ingredient: "Vainilla blanca de Madagascar", benefit: "Dulzura cremosa de fondo" },
+      { ingredient: "Flor de azahar + jazmín sambac", benefit: "Floral oscuro en el corazón" },
+    ],
+    clinicalResults: [],
+    usage: {
+      timing: ["PM"],
+      frequency: "Diario",
+      slot: "fragrance",
+      position: 6,
+    },
+    target: { skinTypes: [], concerns: [] },
+    sensorial: {
+      texture: "Eau de parfum, intensidad muy alta",
+      scent: "Gourmand oriental — café, vainilla y flores oscuras",
+      feel: "Estela enveloping de tarde-noche, duración 10-12 h",
+    },
+    saleTip: "Ícono moderno YSL — el café como nota base la convirtió en categoría aparte. Cliente fan de Lancôme La Vie Est Belle suele cruzarse aquí cuando busca algo más oscuro y adictivo. Mejor para tardes y noches; muy intensa para horarios laborales conservadores.",
+    cautions: ["Intensidad alta — testear antes de comprar para uso diario"],
+    layerWith: [],
+    source: "https://www.yslbeauty.com.mx/fragancia/black-opium",
+  },
+  "YS-Y-60": {
+    keyActives: [
+      { ingredient: "Salvia esclárea", benefit: "Acorde aromático fresco distintivo" },
+      { ingredient: "Bergamota italiana", benefit: "Salida cítrica vibrante" },
+      { ingredient: "Cedro de Virginia + ámbargris", benefit: "Fondo amaderado seco" },
+    ],
+    clinicalResults: [],
+    usage: {
+      timing: ["AM", "PM"],
+      frequency: "Diario",
+      slot: "fragrance",
+      position: 6,
+    },
+    target: { skinTypes: [], concerns: [] },
+    sensorial: {
+      texture: "Eau de parfum, intensidad media-alta",
+      scent: "Aromática amaderada — salvia, bergamota y cedro",
+      feel: "Estela limpia y elegante, ideal de día a noche, duración 8 h",
+    },
+    saleTip: "La firma masculina YSL contemporánea — versátil de oficina a cena. Cliente que valora aromáticos limpios (no dulces, no orientales pesados). Combina con MYSLF para wardrobe completo.",
+    cautions: [],
+    layerWith: ["YS-MYS-60" as Sku],
+    source: "https://www.yslbeauty.com.mx/fragancia-hombre/y",
+  },
+  "YS-MYS-60": {
+    keyActives: [
+      { ingredient: "Azahar provenzal", benefit: "Floral masculino fresco" },
+      { ingredient: "Acorde de pera jugosa", benefit: "Frescura frutal sofisticada" },
+      { ingredient: "Pachulí + cashmeran", benefit: "Estela amaderada cremosa" },
+    ],
+    clinicalResults: [],
+    usage: {
+      timing: ["AM", "PM"],
+      frequency: "Diario",
+      slot: "fragrance",
+      position: 6,
+    },
+    target: { skinTypes: [], concerns: [] },
+    sensorial: {
+      texture: "Eau de parfum, intensidad media",
+      scent: "Aromática floral fresca — pera, azahar y pachulí",
+      feel: "Sillage moderno con personalidad, duración 7-8 h",
+    },
+    saleTip: "Lanzamiento masculino YSL 2023 — apuesta por una identidad menos territorial que Y. Más versátil para clientes que rechazan fragancias 'demasiado masculinas'. Ideal para audiencia 25-40.",
+    cautions: [],
+    layerWith: ["YS-Y-60" as Sku],
+    source: "https://www.yslbeauty.com.mx/fragancia-hombre/myslf",
+  },
+
+  // ── YSL · Maquillaje ────────────────────────────────────────────────────
+  "YS-RPC-01": {
+    keyActives: [
+      { ingredient: "Pigmentos saturados", benefit: "Color real desde la primera pasada" },
+      { ingredient: "Aceites tratantes", benefit: "Confort 8 h sin resequedad" },
+    ],
+    clinicalResults: [
+      { claim: "8 h de confort en uso continuo", period: "test sensorial", sample: "instrumental" },
+    ],
+    usage: { timing: ["AM", "PM"], frequency: "Diario", slot: "lip", position: 6 },
+    target: { skinTypes: [], concerns: ["Color duradero", "Pigmentación intensa"] },
+    sensorial: {
+      texture: "Bullet cremoso satinado",
+      finish: "Satinado luminoso",
+      feel: "Desliza, no reseca, color intenso",
+    },
+    saleTip: "El labial YSL por excelencia — color saturado en una pasada, tubo dorado icónico. Cliente que quiere statement lip clásico. 30+ tonos en colección permanente.",
+    cautions: [],
+    layerWith: [],
+    source: "https://www.yslbeauty.com.mx/labial/rouge-pur-couture",
+  },
+  "YS-TC-01": {
+    keyActives: [
+      { ingredient: "Pigmentos de alta concentración", benefit: "Cobertura full opaca" },
+      { ingredient: "Polímeros de fijación", benefit: "Larga duración sin transferir" },
+    ],
+    clinicalResults: [
+      { claim: "16 h de uso sin transferencia", period: "test consumidoras", sample: "100 mujeres" },
+    ],
+    usage: { timing: ["AM", "PM"], frequency: "Diario", slot: "lip", position: 6 },
+    target: { skinTypes: [], concerns: ["Color duradero", "Acabado mate"] },
+    sensorial: {
+      texture: "Líquido cremoso que seca aterciopelado",
+      finish: "Matte velvet (no plano, no reseco)",
+      feel: "Aplicador difuminador exclusivo, suave al secar",
+    },
+    saleTip: "Para clientas que aman matte pero rechazan la sensación seca tradicional. Aplicador exclusivo doble difuminador. Compite con Rouge Pur Couture en ocasiones donde se busca máxima duración (eventos, noches largas).",
+    cautions: ["Dejar secar 60 segundos antes de tomar agua o besar"],
+    layerWith: [],
+    source: "https://www.yslbeauty.com.mx/labial/tatouage-couture",
+  },
+  "YS-LS-01": {
+    keyActives: [
+      { ingredient: "Aceite de jojoba", benefit: "Hidratación inmediata sin pegajosidad" },
+      { ingredient: "Polímeros de brillo", benefit: "Acabado vinilo espejado" },
+    ],
+    clinicalResults: [
+      { claim: "Labios visiblemente más hidratados al instante", period: "uso primera vez", sample: "panel consumidoras" },
+    ],
+    usage: { timing: ["AM", "PM"], frequency: "Diario", slot: "lip", position: 6 },
+    target: { skinTypes: [], concerns: ["Hidratación", "Brillo", "Volumen visible"] },
+    sensorial: {
+      texture: "Gel-aceite ligero no pegajoso",
+      finish: "Brillo vinilo espejado",
+      feel: "Fundente, hidrata como bálsamo, brilla como gloss",
+    },
+    saleTip: "Híbrido brillo + cuidado — la categoría puente entre lip oil y gloss tradicional. Para clientas que rechazan matte pero quieren color visible. Ideal para 'no maquillaje' look y rutinas express. Frasco recargable.",
+    cautions: [],
+    layerWith: ["YS-RPC-01" as Sku],
+    source: "https://www.yslbeauty.com.mx/labial/loveshine",
+  },
+  "YS-AHF-25": {
+    keyActives: [
+      { ingredient: "Sistema de fijación de larga duración", benefit: "24 h sin transferir ni oxidarse" },
+      { ingredient: "Pigmentos finos de cobertura", benefit: "Full coverage construible" },
+      { ingredient: "SPF 30", benefit: "Protección solar UV diaria" },
+    ],
+    clinicalResults: [
+      { claim: "24 h de uso continuo sin retoque", period: "24 h", sample: "test sensorial 50 mujeres" },
+      { claim: "Cobertura sin sensación pesada", period: "test inmediato", sample: "panel consumidoras" },
+    ],
+    usage: { timing: ["AM"], frequency: "Diario", slot: "foundation", position: 6 },
+    target: {
+      skinTypes: ["Todas", "Mixta", "Grasa"],
+      concerns: ["Cobertura", "Imperfecciones", "Larga duración"],
+    },
+    sensorial: {
+      texture: "Fluida ligera que se fija matte",
+      finish: "Matte natural (no plástico)",
+      feel: "Cobertura sin sentir capa, ideal calor o eventos largos",
+    },
+    saleTip: "La base 'no me maquillo dos veces' YSL. Cliente con piel mixta a grasa que necesita durabilidad real (turno largo, eventos, climas tropicales). Combina con Touche Éclat en zonas que necesiten luminosidad puntual.",
+    cautions: [],
+    layerWith: ["YS-TCL-02" as Sku],
+    source: "https://www.yslbeauty.com.mx/maquillaje/base/all-hours",
+  },
+  "YS-NPR-30": {
+    keyActives: [
+      { ingredient: "Ácido hialurónico", benefit: "Hidratación instantánea + 24 h" },
+      { ingredient: "Niacinamida", benefit: "Refuerza barrera y unifica tono" },
+      { ingredient: "Pigmentos translúcidos", benefit: "Velo de color glow natural" },
+    ],
+    clinicalResults: [
+      { claim: "94% ingredientes de origen natural", period: "formulación", sample: "INCI publicado" },
+      { claim: "Piel más luminosa visible al instante", period: "primera aplicación", sample: "panel consumidoras" },
+    ],
+    usage: { timing: ["AM"], frequency: "Diario", slot: "foundation", position: 6 },
+    target: {
+      skinTypes: ["Mixta", "Seca", "Todas"],
+      concerns: ["Hidratación", "Luminosidad", "Cobertura ligera"],
+    },
+    sensorial: {
+      texture: "Fluida acuosa fundente",
+      finish: "Glow saludable (skin-finish)",
+      feel: "Casi no se siente, deja velo luminoso natural",
+    },
+    saleTip: "La base para clientas que NO quieren parecer maquilladas — la piel se ve descansada, no cubierta. Tendencia 'skin-finish' actual. Ideal sobre rutina skincare completa. No para quienes buscan cobertura.",
+    cautions: [],
+    layerWith: ["YS-PSE-15" as Sku, "YS-TCL-02" as Sku],
+    source: "https://www.yslbeauty.com.mx/maquillaje/base/nu-bare-look",
+  },
+  "YS-TCL-02": {
+    keyActives: [
+      { ingredient: "Pigmentos iluminadores", benefit: "Efecto ilumina sin cobertura" },
+      { ingredient: "Aplicador click pen", benefit: "Dosis precisa de uso quirúrgico" },
+    ],
+    clinicalResults: [
+      { claim: "40 millones de unidades vendidas mundialmente desde 1992", period: "histórico", sample: "ventas globales" },
+    ],
+    usage: { timing: ["AM", "PM"], frequency: "Diario", slot: "concealer", position: 6 },
+    target: {
+      skinTypes: ["Todas"],
+      concerns: ["Ojeras", "Luminosidad", "Tono desigual"],
+    },
+    sensorial: {
+      texture: "Fluido aterciopelado ligero",
+      finish: "Iluminado natural (no metálico, no glitter)",
+      feel: "Hidrata mientras ilumina, no se acumula en líneas",
+    },
+    saleTip: "Producto fundacional YSL — más una herramienta de luz que un corrector convencional. Aplicar en arco de cupido, entrecejo y ángulos del rostro para 'levantar' visualmente. Funciona sobre y debajo de base. Icónico desde 1992.",
+    cautions: [],
+    layerWith: ["YS-AHF-25" as Sku, "YS-NPR-30" as Sku],
+    source: "https://www.yslbeauty.com.mx/maquillaje/touche-eclat",
+  },
+  "YS-LC-01": {
+    keyActives: [
+      { ingredient: "Polímeros de volumen", benefit: "Multiplica grosor visible de la pestaña" },
+      { ingredient: "Cera carnauba", benefit: "Curva y fija sin endurecer" },
+    ],
+    clinicalResults: [
+      { claim: "Volumen visible desde la primera capa", period: "primera aplicación", sample: "test sensorial" },
+      { claim: "24 h sin caer ni manchar bajo el ojo", period: "24 h", sample: "test consumidoras" },
+    ],
+    usage: { timing: ["AM"], frequency: "Diario", slot: "lip", position: 6 },
+    target: { skinTypes: [], concerns: ["Volumen", "Larga duración"] },
+    sensorial: {
+      texture: "Cremosa pigmentada",
+      finish: "Negro intenso saturado",
+      feel: "Cepillo XL alcanza raíz, no grumos al apilar capas",
+    },
+    saleTip: "El cepillo es el diferenciador — XL exclusivo permite atrapar todas las pestañas en una sola pasada. Para clientas que no logran volumen con máscaras tradicionales. Reemplaza extensiones para uso diario.",
+    cautions: ["Desmaquillar con bifásico — fórmula resiste agua y aceite"],
+    layerWith: [],
+    source: "https://www.yslbeauty.com.mx/maquillaje/ojos/lash-clash",
+  },
+
+  // ── YSL · Skincare ─────────────────────────────────────────────────────
+  "YS-OR-100": {
+    keyActives: [
+      { ingredient: "Azafrán Premium Sativus", concentration: "concentrado", benefit: "Antioxidante de alta gama" },
+      { ingredient: "Glycyrretinic acid", benefit: "Antiinflamatorio cutáneo" },
+      { ingredient: "Niacinamida", benefit: "Unifica tono y mejora elasticidad" },
+    ],
+    clinicalResults: [
+      { claim: "Piel visiblemente más luminosa", period: "4 semanas", sample: "panel mujeres 40+" },
+      { claim: "Arrugas finas suavizadas", period: "8 semanas", sample: "panel consumidoras" },
+    ],
+    usage: { timing: ["AM", "PM"], frequency: "Diario", slot: "treatment-serum", position: 2 },
+    target: {
+      ageMin: 40,
+      skinTypes: ["Madura", "Todas"],
+      concerns: ["Luminosidad", "Arrugas", "Firmeza"],
+      routineLevel: "Avanzada",
+    },
+    sensorial: {
+      texture: "Fluido aterciopelado dorado",
+      scent: "Floral cálido sutil",
+      feel: "Absorbe rápido, no pegajoso, deja piel acolchonada",
+    },
+    saleTip: "Top-tier YSL skincare — el azafrán como activo de alta gama compite con líneas Lancôme Absolue. Para clientas premium 40+ que ya tienen rutina completa y buscan upgrade en sérum. Funciona excelente bajo Or Rouge Crema (no en catálogo todavía) o cualquier crema antiedad.",
+    cautions: [],
+    layerWith: ["YS-PSE-15" as Sku],
+    source: "https://www.yslbeauty.com.mx/skincare/or-rouge",
+  },
+  "YS-PSE-15": {
+    keyActives: [
+      { ingredient: "Cafeína", benefit: "Drena bolsas y descongesta" },
+      { ingredient: "Ácido hialurónico", benefit: "Hidratación profunda" },
+      { ingredient: "Vitamina E", benefit: "Antioxidante protector" },
+    ],
+    clinicalResults: [
+      { claim: "Bolsas reducidas visiblemente", period: "1 semana", sample: "panel 35 mujeres" },
+      { claim: "Patas de gallo suavizadas", period: "4 semanas", sample: "panel consumidoras" },
+    ],
+    usage: { timing: ["AM", "PM"], frequency: "Diario", slot: "eye-cream", position: 3 },
+    target: {
+      ageMin: 30,
+      skinTypes: ["Madura", "Todas"],
+      concerns: ["Ojeras", "Patas de gallo", "Bolsas", "Firmeza"],
+      routineLevel: "Intermedia",
+    },
+    sensorial: {
+      texture: "Gel-crema fresco con aplicador metálico",
+      feel: "Aplicador masaje drenante; absorbe instantáneo sin grasa",
+    },
+    saleTip: "El aplicador metálico es lo que vende — masaje drenante en el momento de aplicación. Para clientas que se quejan de bolsas y ojeras matutinas. Más accesible que Or Rouge y enfocado en zona específica. Combina perfecto con Touche Éclat encima (skincare → makeup).",
+    cautions: [],
+    layerWith: ["YS-OR-100" as Sku, "YS-TCL-02" as Sku],
+    source: "https://www.yslbeauty.com.mx/skincare/pure-shots",
+  },
 };
 
 export interface ProductTechRepository {
