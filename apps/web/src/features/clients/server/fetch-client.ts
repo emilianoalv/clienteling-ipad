@@ -15,7 +15,6 @@ import { productRepository } from "@/server/repositories/product.repository";
 import { userRepository } from "@/server/repositories/user.repository";
 import { brandScopeFor, isStoreInScope } from "@/server/auth/scope";
 import type { Product, Sku } from "@/types/product";
-import { deriveAffinities } from "../services/derive-affinities";
 
 /**
  * Loads a single client by id, enforcing the caller's store scope. Returns
@@ -80,11 +79,6 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
   const productBySku: Record<string, Product> = {};
   for (const p of products) productBySku[p.sku as Sku] = p;
 
-  // Derive afinidades automáticas combinando perfil + historial de compras.
-  // Más útil que la lista manual del seed: emerge "Fan de Génifique" tras
-  // 2 compras de la línea sin que la BA tenga que marcarlo manualmente.
-  const derivedAffinities = deriveAffinities({ client, purchases, productBySku });
-
   return {
     client,
     interactions,
@@ -97,6 +91,5 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     followupTasks,
     baLookup,
     productBySku,
-    derivedAffinities,
   };
 }
