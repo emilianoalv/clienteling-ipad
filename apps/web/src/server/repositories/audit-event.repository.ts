@@ -1,6 +1,7 @@
 import "server-only";
 import type { AuditEvent, AuditEventId } from "@/types/audit-event";
 import { generateId } from "@/lib/id/generate-id";
+import { RTBF_AUDIT_EVENTS } from "./seed-rtbf-audit";
 import { persistent } from "./_persist";
 
 const SEED: AuditEvent[] = [
@@ -48,7 +49,10 @@ const SEED: AuditEvent[] = [
   },
 ];
 
-const EVENTS: AuditEvent[] = persistent("__clienteling.auditEvents.v1", () => [...SEED]);
+const EVENTS: AuditEvent[] = persistent("__clienteling.auditEvents.v2", () => [
+  ...SEED,
+  ...RTBF_AUDIT_EVENTS,
+]);
 
 export interface AuditEventRepository {
   list(): Promise<AuditEvent[]>;

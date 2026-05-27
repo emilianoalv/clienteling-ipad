@@ -5,6 +5,7 @@ import type { Communication, CommunicationId } from "@/types/communication";
 import type { StoreId } from "@/types/store";
 import { generateId } from "@/lib/id/generate-id";
 import { SEED_COMMUNICATIONS } from "./seed";
+import { MAY_2026_COMMUNICATIONS } from "./seed-may-2026";
 import { persistent } from "./_persist";
 
 export interface CommunicationListFilter {
@@ -25,7 +26,10 @@ export interface CommunicationRepository {
   deleteByClient(clientId: ClientId): Promise<number>;
 }
 
-const COMMUNICATIONS: Communication[] = persistent("__clienteling.communications.v3", () => [...SEED_COMMUNICATIONS]);
+const COMMUNICATIONS: Communication[] = persistent("__clienteling.communications.v4", () => [
+  ...SEED_COMMUNICATIONS,
+  ...MAY_2026_COMMUNICATIONS,
+]);
 
 export const communicationRepository: CommunicationRepository = {
   async list(filter = {}) {

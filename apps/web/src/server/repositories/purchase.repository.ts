@@ -5,6 +5,7 @@ import type { Purchase, PurchaseId } from "@/types/purchase";
 import type { StoreId } from "@/types/store";
 import { generateId } from "@/lib/id/generate-id";
 import { SEED_PURCHASES } from "./seed";
+import { MAY_2026_PURCHASES } from "./seed-may-2026";
 import { persistent } from "./_persist";
 
 export interface PurchaseListFilter {
@@ -30,7 +31,10 @@ export interface PurchaseRepository {
   deleteByClient(clientId: ClientId): Promise<number>;
 }
 
-const PURCHASES: Purchase[] = persistent("__clienteling.purchases.v3", () => [...SEED_PURCHASES]);
+const PURCHASES: Purchase[] = persistent("__clienteling.purchases.v4", () => [
+  ...SEED_PURCHASES,
+  ...MAY_2026_PURCHASES,
+]);
 
 export const purchaseRepository: PurchaseRepository = {
   async list(filter = {}) {
