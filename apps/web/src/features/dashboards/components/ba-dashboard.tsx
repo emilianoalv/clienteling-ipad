@@ -2,12 +2,16 @@ import Link from "next/link";
 import {
   ConversionBar,
   Donut,
-  Sparkline,
+  LineChart,
   type DonutSegment,
 } from "@/components/charts";
 import { Icon, ProgressBar } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { formatDateRelative, formatDateShort, smartFormatDate } from "@/lib/format/date";
+import {
+  buildXAxisLabels,
+  formatPeriodTitle,
+} from "../lib/chart-labels";
 import {
   formatCount,
   formatCurrencyCompact,
@@ -105,6 +109,8 @@ export function BaDashboard({
     period: filters.period,
   });
   const sparklineValues = toSparklinePoints([...data.sparklineData]);
+  const sparklineLabels = buildXAxisLabels(data.sparklineData);
+  const sparklineTitle = formatPeriodTitle(data.sparklineData);
 
   const carteraAlerts = countAlerts(
     data.operationalAlerts,
@@ -139,6 +145,8 @@ export function BaDashboard({
               ratioPct={ratioPct}
               salesDelta={data.salesDelta}
               sparklineValues={sparklineValues}
+              sparklineLabels={sparklineLabels}
+              sparklineTitle={sparklineTitle}
               pacingText={pacing.text}
               pacingAhead={pacing.ratio >= 1}
             />
@@ -259,6 +267,8 @@ function HeroMain({
   ratioPct,
   salesDelta,
   sparklineValues,
+  sparklineLabels,
+  sparklineTitle,
   pacingText,
   pacingAhead,
 }: {
@@ -267,6 +277,8 @@ function HeroMain({
   ratioPct: number;
   salesDelta: PeriodDeltaResult;
   sparklineValues: number[];
+  sparklineLabels: readonly string[];
+  sparklineTitle: string;
   pacingText: string;
   pacingAhead: boolean;
 }) {
@@ -301,7 +313,16 @@ function HeroMain({
           tone={ratioPct >= 100 ? "ok" : ratioPct >= 70 ? "warn" : "danger"}
         />
       ) : null}
-      <Sparkline values={sparklineValues} className="text-ink" />
+      <LineChart
+        values={sparklineValues}
+        labels={sparklineLabels}
+        height={200}
+        showYAxis
+        yAxisFormatter={formatCurrencyCompact}
+        xAxisTitle={sparklineTitle}
+        colors={["var(--color-ink)"]}
+        className="text-ink"
+      />
       {pacingText ? (
         <p
           className={cn(

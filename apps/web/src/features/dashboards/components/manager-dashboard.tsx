@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Donut,
   Funnel,
-  Sparkline,
+  LineChart,
   SplitBar,
   type DonutSegment,
   type FunnelStage,
@@ -13,6 +13,10 @@ import {
 import { Chip, Icon, ProgressBar } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { formatDateRelative } from "@/lib/format/date";
+import {
+  buildXAxisLabels,
+  formatPeriodTitle,
+} from "../lib/chart-labels";
 import {
   formatCount,
   formatCurrencyCompact,
@@ -119,6 +123,8 @@ export function ManagerDashboard({
 
   const split = toSplitBarData(data.salesByBrand);
   const sparklineValues = toSparklinePoints([...data.sparklineData]);
+  const sparklineLabels = buildXAxisLabels(data.sparklineData);
+  const sparklineTitle = formatPeriodTitle(data.sparklineData);
   const ratioPct =
     storeTarget > 0 ? Math.round((data.salesAmount / storeTarget) * 100) : 0;
   const worstPerformer = pickWorstPerformer(data.baRanking);
@@ -193,6 +199,8 @@ export function ManagerDashboard({
               ratioPct={ratioPct}
               salesDelta={data.salesDelta}
               sparklineValues={sparklineValues}
+              sparklineLabels={sparklineLabels}
+              sparklineTitle={sparklineTitle}
               forecastText={forecast.text}
               ahead={ratioPct >= 100 || (forecast.simulatedProjection ?? 0) > storeTarget}
             />
@@ -308,6 +316,8 @@ function HeroMain({
   ratioPct,
   salesDelta,
   sparklineValues,
+  sparklineLabels,
+  sparklineTitle,
   forecastText,
   ahead,
 }: {
@@ -316,6 +326,8 @@ function HeroMain({
   ratioPct: number;
   salesDelta: PeriodDeltaResult;
   sparklineValues: number[];
+  sparklineLabels: readonly string[];
+  sparklineTitle: string;
   forecastText: string;
   ahead: boolean;
 }) {
@@ -350,7 +362,15 @@ function HeroMain({
           tone={ratioPct >= 100 ? "ok" : ratioPct >= 70 ? "warn" : "danger"}
         />
       ) : null}
-      <Sparkline values={sparklineValues} />
+      <LineChart
+        values={sparklineValues}
+        labels={sparklineLabels}
+        height={220}
+        showYAxis
+        yAxisFormatter={formatCurrencyCompact}
+        xAxisTitle={sparklineTitle}
+        colors={["var(--color-ink)"]}
+      />
       {forecastText ? (
         <p
           className={cn(

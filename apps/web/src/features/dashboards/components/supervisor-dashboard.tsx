@@ -6,7 +6,6 @@ import {
   Donut,
   Funnel,
   LineChart,
-  Sparkline,
   SplitBar,
   type DonutSegment,
   type FunnelStage,
@@ -14,6 +13,10 @@ import {
 import { Chip, Icon, ProgressBar } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { formatDateRelative } from "@/lib/format/date";
+import {
+  buildXAxisLabels,
+  formatPeriodTitle,
+} from "../lib/chart-labels";
 import {
   formatCount,
   formatCurrencyCompact,
@@ -157,6 +160,8 @@ export function SupervisorDashboard({
 
   const split = toSplitBarData(data.salesByBrand);
   const sparklineValues = toSparklinePoints([...data.sparklineData]);
+  const sparklineLabels = buildXAxisLabels(data.sparklineData);
+  const sparklineTitle = formatPeriodTitle(data.sparklineData);
   const ratioPct =
     zoneTarget > 0 ? Math.round((data.salesAmount / zoneTarget) * 100) : 0;
 
@@ -280,6 +285,8 @@ export function SupervisorDashboard({
               ratioPct={ratioPct}
               salesDelta={data.salesDelta}
               sparklineValues={sparklineValues}
+              sparklineLabels={sparklineLabels}
+              sparklineTitle={sparklineTitle}
               forecastText={forecast.text}
               ahead={
                 ratioPct >= 100 ||
@@ -463,6 +470,8 @@ function HeroMain({
   ratioPct,
   salesDelta,
   sparklineValues,
+  sparklineLabels,
+  sparklineTitle,
   forecastText,
   ahead,
 }: {
@@ -471,6 +480,8 @@ function HeroMain({
   ratioPct: number;
   salesDelta: PeriodDeltaResult;
   sparklineValues: number[];
+  sparklineLabels: readonly string[];
+  sparklineTitle: string;
   forecastText: string;
   ahead: boolean;
 }) {
@@ -505,7 +516,15 @@ function HeroMain({
           tone={ratioPct >= 100 ? "ok" : ratioPct >= 70 ? "warn" : "danger"}
         />
       ) : null}
-      <Sparkline values={sparklineValues} />
+      <LineChart
+        values={sparklineValues}
+        labels={sparklineLabels}
+        height={240}
+        showYAxis
+        yAxisFormatter={formatCurrencyCompact}
+        xAxisTitle={sparklineTitle}
+        colors={["var(--color-ink)"]}
+      />
       {forecastText ? (
         <p
           className={cn(

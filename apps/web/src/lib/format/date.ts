@@ -71,3 +71,18 @@ export function smartFormatDate(date: Date, now: Date = new Date()): string {
   if (abs <= 90) return formatDateShort(date);
   return formatDateLong(date);
 }
+
+/** Day number only — useful for chart axes inside a single month ("15"). */
+export function formatDayOnly(date: Date): string {
+  return String(date.getDate());
+}
+
+/** Day + abbreviated month, lowercase, no trailing dot ("15 may"). */
+export function formatDayMonth(date: Date): string {
+  const day = date.getDate();
+  const month = new Intl.DateTimeFormat(MX_LOCALE, { month: "short" })
+    .format(date)
+    .toLowerCase()
+    .replace(".", "");
+  return `${day} ${month}`;
+}
