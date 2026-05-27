@@ -275,15 +275,19 @@ describe("Purchase / Appointment / Recommendation / Communication respetan el sc
     expect(comms.some((c) => c.storeId === ST_PER)).toBe(false);
   });
 
-  it("Admin ve todas las compras (31) independientemente de marca/tienda", async () => {
-    // 12 originales + 4 históricas (pu-13..pu-16) para retention KPIs
-    // + 3 YSL (pu-17..pu-19) del catálogo expandido
-    // + 12 nuevas (pu-20..pu-31) para clientes recién creados.
-    const purchases = await purchaseRepository.list({
-      brands: brandScopeFor(admin),
-      storeIds: storeScopeFor(admin),
-    });
-    expect(purchases).toHaveLength(31);
+  it("Admin ve TODAS las compras independientemente de marca/tienda", async () => {
+    // Property-based: el scope de Admin no filtra nada, así que el resultado
+    // debe coincidir con `list()` sin filtros. La cuenta absoluta cambia
+    // conforme crece el seed (e.g. enrichment de mayo 2026 → ~199 entries).
+    const [scoped, unfiltered] = await Promise.all([
+      purchaseRepository.list({
+        brands: brandScopeFor(admin),
+        storeIds: storeScopeFor(admin),
+      }),
+      purchaseRepository.list(),
+    ]);
+    expect(scoped).toHaveLength(unfiltered.length);
+    expect(scoped.length).toBeGreaterThan(0);
   });
 });
 
