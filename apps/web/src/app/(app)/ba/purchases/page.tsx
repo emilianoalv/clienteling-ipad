@@ -13,8 +13,11 @@ export default async function PurchasesPage() {
   const storeIds = storeScopeFor(staff);
   const brands = brandScopeFor(staff);
 
+  // Esta ruta vive bajo `/ba/*` — el middleware ya rechaza otros roles.
+  // Filtramos por `staff.id` para que la BA vea solo las compras que ella
+  // registró, no las del counter completo. Es la lectura "mis ventas".
   const [purchases, clients, products] = await Promise.all([
-    listPurchases({ brands, storeIds }),
+    listPurchases({ brands, storeIds, baId: staff.id }),
     listClients({ brands, storeIds }),
     listProducts({}),
   ]);
