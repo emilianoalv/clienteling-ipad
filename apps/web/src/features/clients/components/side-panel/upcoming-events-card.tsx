@@ -25,7 +25,7 @@ export async function UpcomingEventsCard({ client }: { client: Client }) {
 
   return (
     <Card>
-      <SectionHeader title={t("profile.card.upcoming_events")} />
+      <SectionHeader size="inline" title={t("profile.card.upcoming_events")} />
       {events.length === 0 ? (
         <p className="m-0 text-[16px] font-medium leading-snug text-ink/60">Sin eventos próximos.</p>
       ) : (

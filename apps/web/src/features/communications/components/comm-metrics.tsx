@@ -20,7 +20,7 @@ export function CommMetrics({ communications }: CommMetricsProps) {
   return (
     <div className="flex flex-col gap-4">
       <Card>
-        <SectionHeader title={t("comm.metrics.title")} eyebrow={t("comm.metrics.eyebrow")} />
+        <SectionHeader size="inline" title={t("comm.metrics.title")} eyebrow={t("comm.metrics.eyebrow")} />
         <div className="grid grid-cols-2 gap-3">
           <KpiCard label={t("comm.metrics.sent")} value={String(stats.sent)} size="sm" />
           <KpiCard
@@ -33,7 +33,7 @@ export function CommMetrics({ communications }: CommMetricsProps) {
         </div>
       </Card>
       <Card>
-        <SectionHeader title={t("comm.channel_mix.title")} />
+        <SectionHeader size="inline" title={t("comm.channel_mix.title")} />
         <ul className="list-none m-0 p-0 flex flex-col gap-3">
           {CHANNELS.map((ch) => {
             const ratio = stats.channelMix[ch];

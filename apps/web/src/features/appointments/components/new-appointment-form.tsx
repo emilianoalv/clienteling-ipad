@@ -108,7 +108,7 @@ export function NewAppointmentForm({
     <div className="grid grid-cols-[minmax(0,1fr)_320px] gap-5 items-start">
       <div className="flex flex-col gap-4">
         <Card variant="luxe">
-          <SectionHeader title={t("appointment.field.client")} />
+          <SectionHeader size="inline" title={t("appointment.field.client")} />
           {client ? (
             <div className="grid grid-cols-[40px_1fr_auto] gap-3 items-center">
               <Avatar initials={initials(client.name)} tone={brandToTone(client.brands[0])} />
@@ -157,7 +157,7 @@ export function NewAppointmentForm({
         </Card>
 
         <Card variant="luxe">
-          <SectionHeader title={t("appointment.field.kind")} />
+          <SectionHeader size="inline" title={t("appointment.field.kind")} />
           <div className="flex flex-wrap gap-1.5 mb-4">
             {APPOINTMENT_KINDS.map((k) => (
               <ChipBtn key={k} active={kind === k} onClick={() => setKind(k)}>
@@ -168,7 +168,7 @@ export function NewAppointmentForm({
 
           {showBrandPicker ? (
             <>
-              <SectionHeader title={t("appointment.field.brand")} />
+              <SectionHeader size="inline" title={t("appointment.field.brand")} />
               <div className="flex flex-wrap gap-1.5 mb-4">
                 {allowedBrands.map((b) => (
                   <ChipBtn key={b} active={brand === b} onClick={() => setBrand(b)}>
@@ -179,7 +179,7 @@ export function NewAppointmentForm({
             </>
           ) : null}
 
-          <SectionHeader title={t("appointment.field.ba")} />
+          <SectionHeader size="inline" title={t("appointment.field.ba")} />
           <div className="flex flex-wrap gap-1.5">
             {baOptions.map((b) => (
               <ChipBtn key={b.id} active={baId === b.id} onClick={() => setBaId(b.id)}>
@@ -190,7 +190,7 @@ export function NewAppointmentForm({
         </Card>
 
         <Card variant="luxe">
-          <SectionHeader title={t("appointment.field.date")} />
+          <SectionHeader size="inline" title={t("appointment.field.date")} />
           <div className="grid grid-cols-2 gap-3 mb-4">
             <Input
               label={t("appointment.field.date")}
@@ -207,7 +207,7 @@ export function NewAppointmentForm({
               onChange={(e) => setDurationMin(Math.max(15, Number(e.target.value)))}
             />
           </div>
-          <SectionHeader title={t("appointment.field.time")} />
+          <SectionHeader size="inline" title={t("appointment.field.time")} />
           <AvailabilityGrid
             date={date}
             baId={baId}

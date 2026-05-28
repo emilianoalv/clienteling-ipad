@@ -7,7 +7,7 @@ export async function SkinProfileCard({ client }: { client: Client }) {
   const t = await getTranslations();
   return (
     <Card>
-      <SectionHeader title={t("profile.card.skin_profile")} />
+      <SectionHeader size="inline" title={t("profile.card.skin_profile")} />
       <KvRow label={t("capture.field.skin_type")} value={client.skin.type} />
       <KvRow label={t("capture.field.skin_tone")} value={client.skin.tone} />
       <div className="flex flex-wrap gap-1.5 mt-2">

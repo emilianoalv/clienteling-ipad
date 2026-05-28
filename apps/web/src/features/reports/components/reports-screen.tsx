@@ -81,7 +81,7 @@ export function ReportsScreen({ reports }: ReportsScreenProps) {
 
       <aside className="flex flex-col gap-4 sticky top-4">
         <Card>
-          <SectionHeader title="Armar reporte ad-hoc" eyebrow="Constructor rápido" />
+          <SectionHeader size="inline" title="Armar reporte ad-hoc" eyebrow="Constructor rápido" />
           <KvRow
             label="Entidad"
             value="Clientes · Compras · Recomendaciones · Muestras"

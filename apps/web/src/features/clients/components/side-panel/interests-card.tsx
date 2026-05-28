@@ -7,7 +7,7 @@ export async function InterestsCard({ client }: { client: Client }) {
   const t = await getTranslations();
   return (
     <Card>
-      <SectionHeader title={t("profile.card.interests")} />
+      <SectionHeader size="inline" title={t("profile.card.interests")} />
       <KvRow label={t("capture.field.routine")} value={client.routine} />
       <div className="flex flex-wrap gap-1.5 mt-2">
         {client.interests.map((i) => (

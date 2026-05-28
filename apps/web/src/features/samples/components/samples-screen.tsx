@@ -99,7 +99,7 @@ export function SamplesScreen({
       </Card>
 
       <Card className="self-start sticky top-4 flex flex-col gap-3">
-        <SectionHeader title={t("samples.inventory.title")} eyebrow={t("samples.inventory.eyebrow")} />
+        <SectionHeader size="inline" title={t("samples.inventory.title")} eyebrow={t("samples.inventory.eyebrow")} />
         <ul className="list-none m-0 p-0 flex flex-col gap-3.5">
           {inventory.map((row) => {
             const ratio = row.capacity > 0 ? row.have / row.capacity : 0;

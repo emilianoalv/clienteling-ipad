@@ -133,7 +133,7 @@ export function TicketsScreen({ tickets }: TicketsScreenProps) {
         </Card>
 
         <Card>
-          <SectionHeader title="Por categoría" />
+          <SectionHeader size="inline" title="Por categoría" />
           <ul className="list-none m-0 p-0 flex flex-col gap-2.5">
             {stats.byCategory.map((c) => (
               <li key={c.category}>

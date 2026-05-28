@@ -54,14 +54,13 @@ export function PurchasesList({ purchases, clientLookup, productLookup }: Purcha
         <EmptyState title={t("purchases.empty.title")} description={t("purchases.empty.description")} />
       ) : (
         <Card variant="flat" className="p-0 overflow-hidden">
-          <div className="grid grid-cols-[0.8fr_1.4fr_1.6fr_1fr_0.7fr_0.8fr_0.7fr] gap-3 px-5 py-3 bg-bone border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60">
+          <div className="grid grid-cols-[0.9fr_1.4fr_1.6fr_1fr_0.7fr_0.8fr] gap-3 px-5 py-3 bg-bone border-b border-line text-[14px] font-semibold tracking-[0.12em] uppercase text-ink/60">
             <span>{t("purchases.column.ticket")}</span>
             <span>{t("purchases.column.client")}</span>
             <span>{t("purchases.column.products")}</span>
             <span>{t("purchases.column.date")}</span>
             <span>{t("purchases.column.brand")}</span>
             <span>{t("purchases.column.total")}</span>
-            <span>{t("purchases.column.ba")}</span>
           </div>
           <ul className="list-none m-0 p-0">
             {filtered.map((p) => {
@@ -74,10 +73,17 @@ export function PurchasesList({ purchases, clientLookup, productLookup }: Purcha
               return (
                 <li key={p.id}>
                   <Link
-                    href={`/ba/clients/${p.clientId}`}
-                    className="grid grid-cols-[0.8fr_1.4fr_1.6fr_1fr_0.7fr_0.8fr_0.7fr] gap-3 px-5 py-3.5 border-b border-line last:border-b-0 items-center cursor-pointer no-underline text-inherit hover:bg-bone transition-colors"
+                    href={`/ba/clients/${p.clientId}/purchases/${p.id}`}
+                    className="grid grid-cols-[0.9fr_1.4fr_1.6fr_1fr_0.7fr_0.8fr] gap-3 px-5 py-3.5 border-b border-line last:border-b-0 items-center cursor-pointer no-underline text-inherit hover:bg-bone transition-colors"
                   >
-                    <span className="font-mono text-[16px] font-semibold">{ticket}</span>
+                    <span className="inline-flex items-center gap-1.5 min-w-0">
+                      <span className="font-mono text-[16px] font-semibold">{ticket}</span>
+                      {p.manual ? (
+                        <Chip size="sm" className="h-4 text-[13px]">
+                          {t("purchases.manual")}
+                        </Chip>
+                      ) : null}
+                    </span>
                     <div className="flex items-center gap-2 min-w-0">
                       <Avatar initials={initials(clientName)} size={28} />
                       <span className="text-[16px] font-medium leading-tight truncate">
@@ -97,14 +103,6 @@ export function PurchasesList({ purchases, clientLookup, productLookup }: Purcha
                     <span>{p.brand ? <BrandTag brand={p.brand} alwaysShow /> : <span className="text-ink/40">—</span>}</span>
                     <span className="text-[16px] font-semibold tabular">
                       {formatCurrency(p.total)}
-                    </span>
-                    <span className="text-[15px] font-medium leading-snug text-ink/60 inline-flex items-center gap-1.5">
-                      {p.baId ? p.baId.replace(/^ba-/, "") : "—"}
-                      {p.manual ? (
-                        <Chip size="sm" className="h-4 text-[13px]">
-                          {t("purchases.manual")}
-                        </Chip>
-                      ) : null}
                     </span>
                   </Link>
                 </li>
