@@ -19,6 +19,7 @@ export type Permission =
   | "users:write"
   | "integrations:write"
   | "stores:write"
+  | "products:write"
   | "admin:read";
 
 const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
@@ -82,6 +83,7 @@ const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
     "users:write",
     "integrations:write",
     "stores:write",
+    "products:write",
     "admin:read",
   ]),
 };

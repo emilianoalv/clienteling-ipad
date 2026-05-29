@@ -2,6 +2,7 @@ import "server-only";
 import type { BrandId } from "@/types/brand";
 import type { Product, Sku } from "@/types/product";
 import type { StoreId } from "@/types/store";
+import { persistent } from "./_persist";
 
 const ST_POLANCO = "st-polanco" as StoreId;
 const ST_SANTA_FE = "st-santa-fe" as StoreId;
@@ -576,7 +577,13 @@ const SEED: Product[] = [
   },
 ];
 
-const PRODUCTS = new Map<Sku, Product>(SEED.map((p) => [p.sku, p]));
+// v2 invalida v1 — antes era un Map plano sin write ops. Ahora el repo
+// soporta create/update/delete para que el Admin gestione el catálogo
+// desde la UI (RF-55 + RF-17) sin redeploy.
+const PRODUCTS = persistent(
+  "__clienteling.products.v2",
+  () => new Map<Sku, Product>(SEED.map((p) => [p.sku, p])),
+);
 
 export interface ProductListFilter {
   query?: string;
@@ -589,6 +596,9 @@ export interface ProductListFilter {
 export interface ProductRepository {
   list(filter?: ProductListFilter): Promise<Product[]>;
   findBySku(sku: Sku): Promise<Product | null>;
+  create(input: Product): Promise<Product>;
+  update(sku: Sku, patch: Partial<Omit<Product, "sku">>): Promise<Product | null>;
+  delete(sku: Sku): Promise<boolean>;
 }
 
 export const productRepository: ProductRepository = {
@@ -608,5 +618,25 @@ export const productRepository: ProductRepository = {
 
   async findBySku(sku) {
     return PRODUCTS.get(sku) ?? null;
+  },
+
+  async create(input) {
+    PRODUCTS.set(input.sku, input);
+    return input;
+  },
+
+  async update(sku, patch) {
+    const current = PRODUCTS.get(sku);
+    if (!current) return null;
+    // attrs es un sub-objeto; el caller pasa attrs completo si quiere
+    // editar campos sueltos (la UI hace el merge antes). El resto del
+    // patch hace shallow merge directo.
+    const next: Product = { ...current, ...patch, sku };
+    PRODUCTS.set(sku, next);
+    return next;
+  },
+
+  async delete(sku) {
+    return PRODUCTS.delete(sku);
   },
 };
