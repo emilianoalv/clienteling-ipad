@@ -80,10 +80,19 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
   if (input.samples.length > 0) {
     const inventory = await sampleRepository.listInventory();
     const invBySku = new Map(inventory.map((i) => [i.sku, i]));
+
+    // Decremento agregado por sampleSku: una visita puede entregar varias
+    // muestras del mismo SKU; los decrementos son aditivos y el update
+    // final golpea el repo una sola vez por SKU. `have` queda piso a 0
+    // por el max() del repo si por algún caso de seed inconsistente la
+    // BA "entrega" más de lo que aparenta haber.
+    const decrementBySku = new Map<string, number>();
+
     for (const sku of input.samples) {
       const product = await productRepository.findBySku(sku as Sku);
       const sampleSku = (product?.sampleSku ?? (sku as Sku)) as Sku;
-      const inv = invBySku.get(sampleSku as unknown as string);
+      const sampleSkuStr = sampleSku as unknown as string;
+      const inv = invBySku.get(sampleSkuStr);
       await sampleRepository.create({
         clientId,
         baId: staff.id,
@@ -93,6 +102,22 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
         name: inv?.name ?? product?.line ?? sku,
         givenAt: at,
         converted: false,
+      });
+
+      // Solo decrementamos SKUs que existen en el inventario. Si la BA
+      // sampleó un SKU "huérfano" (no registrado en el inventario) no
+      // tocamos nada — eso refleja que el counter le dio una mini ad-hoc
+      // que el sistema no estaba siguiendo.
+      if (inv) {
+        decrementBySku.set(sampleSkuStr, (decrementBySku.get(sampleSkuStr) ?? 0) + 1);
+      }
+    }
+
+    for (const [sampleSkuStr, qty] of decrementBySku) {
+      const current = invBySku.get(sampleSkuStr);
+      if (!current) continue;
+      await sampleRepository.updateInventory(sampleSkuStr, {
+        have: current.have - qty,
       });
     }
   }
