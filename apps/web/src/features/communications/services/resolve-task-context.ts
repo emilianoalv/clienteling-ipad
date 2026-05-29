@@ -97,6 +97,36 @@ async function resolveLastSample(
   };
 }
 
+/**
+ * Resuelve el contexto de plantilla anclado a una muestra específica
+ * (por `sampleId`) — usado cuando la BA hace clic en &ldquo;Seguir&rdquo;
+ * desde la lista de muestras del Home y el sample puede no ser el
+ * más reciente del cliente. Verifica que la muestra pertenezca al
+ * cliente y agrupa las muestras del mismo día (típicamente la misma
+ * visita) para llenar `{muestra.productos}` natural.
+ */
+export async function resolveSampleContext(
+  clientId: ClientId,
+  sampleId: string,
+  now: Date = new Date(),
+  deps: ResolveTaskContextDeps = DEFAULT_DEPS,
+): Promise<TemplateContext> {
+  const samples = await deps.listSamplesByClient(clientId);
+  const target = samples.find((s) => (s.id as unknown as string) === sampleId);
+  if (!target) return {};
+
+  const dayKey = target.givenAt.slice(0, 10);
+  const sameDay = samples.filter((s) => s.givenAt.slice(0, 10) === dayKey);
+  const names = sameDay.map((s) => s.name);
+
+  return {
+    "muestra.producto": target.name,
+    "muestra.productos": formatNameList(names),
+    "muestra.productos.lista": formatBulletList(names),
+    "muestra.dia": formatConversationalDate(target.givenAt, now),
+  };
+}
+
 async function resolveLastPurchase(
   clientId: ClientId,
   now: Date,

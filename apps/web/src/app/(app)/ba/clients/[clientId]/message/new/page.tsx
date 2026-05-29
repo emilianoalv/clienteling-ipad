@@ -2,13 +2,17 @@ import Link from "next/link";
 import { Icon } from "@/components/primitives";
 import { fetchClient } from "@/features/clients";
 import { type TemplateContext } from "@/features/communications";
-import { resolveTaskContext } from "@/features/communications/services/resolve-task-context";
+import {
+  resolveSampleContext,
+  resolveTaskContext,
+} from "@/features/communications/services/resolve-task-context";
 import { Composer } from "@/features/followup/components/composer";
 import { requireSession } from "@/server/auth/session";
 import { brandScopeFor, homeStoreFor } from "@/server/auth/scope";
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { storeRepository } from "@/server/repositories/store.repository";
 import { templateRepository } from "@/server/repositories/template.repository";
+import type { ClientId } from "@/types/client";
 import type { FollowupTaskId } from "@/types/followup-task";
 import type { LifeEventKind } from "@/types/life-event";
 import type { TemplateCategory } from "@/types/template";
@@ -55,7 +59,7 @@ export default async function NewMessagePage({
   searchParams,
 }: {
   params: Promise<{ clientId: string }>;
-  searchParams: Promise<{ taskId?: string; intent?: string }>;
+  searchParams: Promise<{ taskId?: string; intent?: string; sampleId?: string }>;
 }) {
   const { clientId } = await params;
   const { staff } = await requireSession();
@@ -81,9 +85,24 @@ export default async function NewMessagePage({
   // Intent de evento → categoría de plantilla + contexto extra (años
   // cumplidos para Aniversario). Solo se aplica si NO viene task.
   const intent = !initialTask && isLifeEventKind(sp.intent) ? sp.intent : null;
+
+  // Intent de muestra → la BA hizo clic en "Seguir" desde la lista de
+  // muestras del Home. Pre-selecciona la plantilla "Muestra" y resuelve
+  // el contexto anclado al sampleId clickeado (no la heurística "última
+  // muestra del cliente", que podría apuntar a otra distinta).
+  const sampleIntent =
+    !initialTask && !intent && sp.intent === "sample" && Boolean(sp.sampleId)
+      ? sp.sampleId
+      : null;
+  const sampleContext: TemplateContext | undefined = sampleIntent
+    ? await resolveSampleContext(clientId as ClientId, sampleIntent)
+    : undefined;
+
   const initialCategory: TemplateCategory | undefined = intent
     ? INTENT_TO_CATEGORY[intent]
-    : undefined;
+    : sampleIntent
+      ? "Muestra"
+      : undefined;
   const intentContext: TemplateContext | undefined = (() => {
     if (intent === "anniversary") {
       const years = yearsSince(client.since, new Date());
@@ -92,7 +111,7 @@ export default async function NewMessagePage({
     return undefined;
   })();
 
-  const taskContext = taskContextFromTask ?? intentContext;
+  const taskContext = taskContextFromTask ?? sampleContext ?? intentContext;
 
   return (
     <section className="flex flex-col gap-4">

@@ -86,11 +86,17 @@ export function SamplesScreen({
                   <Chip variant={s.converted ? "ok" : "warn"} size="sm">
                     {s.converted ? t("samples.status.converted") : t("samples.status.pending")}
                   </Chip>
-                  <Link href={`/ba/clients/${s.clientId}`}>
-                    <Button variant="ghost" size="sm">
-                      {t("samples.follow")}
-                    </Button>
-                  </Link>
+                  {s.converted ? (
+                    <span aria-hidden />
+                  ) : (
+                    <Link
+                      href={`/ba/clients/${s.clientId}/message/new?intent=sample&sampleId=${encodeURIComponent(s.id as unknown as string)}`}
+                    >
+                      <Button variant="ghost" size="sm">
+                        {t("samples.follow")}
+                      </Button>
+                    </Link>
+                  )}
                 </li>
               );
             })}
