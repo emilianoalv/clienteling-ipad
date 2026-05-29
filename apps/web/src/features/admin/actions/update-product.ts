@@ -54,6 +54,9 @@ export async function updateProductAction(
     // Merge `attrs.tipo` sin perder el resto de attrs (concerns, piel,
     // vegano, etc.) que vienen del seed y no se editan acá.
     attrs: { ...current.attrs, tipo: input.category },
+    // image se pasa siempre — si el form lo dejó vacío, pasamos undefined
+    // para que el repo merge mantenga el path previo (no borra accidentalmente).
+    ...(input.image ? { image: input.image } : {}),
   });
 
   if (!updated) return { ok: false, message: "Producto no encontrado" };

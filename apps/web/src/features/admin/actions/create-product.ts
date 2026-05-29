@@ -50,6 +50,7 @@ export async function createProductAction(
     howTo: "",
     selling: [],
     lifecycleDays: input.lifecycleDays,
+    ...(input.image ? { image: input.image } : {}),
   };
 
   await productRepository.create(product);

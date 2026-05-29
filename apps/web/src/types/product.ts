@@ -44,4 +44,10 @@ export interface Product {
    * correctores y labiales típicamente no tienen sample formal.
    */
   sampleSku?: Sku;
+  /**
+   * Path relativo a `/public` con la foto del producto. Ej. `/products/lc-gen-50.jpg`.
+   * Servida estáticamente por Next desde `apps/web/public/products/`.
+   * Si está vacío o el archivo no existe, la UI cae a un placeholder.
+   */
+  image?: string;
 }

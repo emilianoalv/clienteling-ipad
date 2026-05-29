@@ -68,7 +68,13 @@ export function ProductDetail({
         </div>
       </div>
 
-      <ProductThumb brand={product.brand} initial={product.line.charAt(0)} height={160} />
+      <ProductThumb
+        brand={product.brand}
+        initial={product.line.charAt(0)}
+        height={160}
+        {...(product.image ? { image: product.image } : {})}
+        alt={product.line}
+      />
 
       <div className="font-display text-[30px] leading-none tabular">
         {formatCurrency(product.price)}

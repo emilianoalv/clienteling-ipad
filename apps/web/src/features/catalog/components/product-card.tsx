@@ -56,7 +56,13 @@ export function ProductCard({
         selected ? "border-ink shadow-lift" : "border-line hover:border-ink/30"
       }`}
     >
-      <ProductThumb brand={product.brand} initial={product.line.charAt(0)} height={120} />
+      <ProductThumb
+        brand={product.brand}
+        initial={product.line.charAt(0)}
+        height={120}
+        {...(product.image ? { image: product.image } : {})}
+        alt={product.line}
+      />
       <div className="mt-3 mb-1.5">
         <BrandTag brand={product.brand} alwaysShow />
       </div>

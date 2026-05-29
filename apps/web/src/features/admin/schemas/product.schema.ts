@@ -27,6 +27,17 @@ export const productSchema = z.object({
     .int()
     .positive("Días de vida útil debe ser positivo")
     .max(3_650),
+  /**
+   * Path relativo a /public donde está la foto. Debe empezar con
+   * `/products/` para mantener el contrato con `next/image` y los
+   * assets versionados con git. Opcional — si no hay foto, la UI
+   * cae al placeholder de marca.
+   */
+  image: z
+    .string()
+    .trim()
+    .regex(/^\/products\/[a-z0-9-]+\.(jpg|jpeg|png|webp)$/, "Usa el formato /products/sku.jpg")
+    .optional(),
 });
 
 export type ProductInput = z.infer<typeof productSchema>;

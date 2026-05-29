@@ -19,6 +19,7 @@ const SEED: Product[] = [
   // ── Lancôme · Skincare · Sérums ──────────────────────────────────────────
   {
     sku: "LC-GEN-50" as Sku,
+    image: "/products/lc-gen-50.jpg",
     brand: "Lancôme",
     line: "Advanced Génifique",
     name: "Serum activador de juventud",
@@ -42,6 +43,7 @@ const SEED: Product[] = [
   },
   {
     sku: "LC-REN-50" as Sku,
+    image: "/products/lc-ren-50.jpg",
     brand: "Lancôme",
     line: "Rénergie H.C.F. Triple Serum",
     name: "Suero antiedad de alto rendimiento",
@@ -67,6 +69,7 @@ const SEED: Product[] = [
   // ── Lancôme · Skincare · Cremas ──────────────────────────────────────────
   {
     sku: "LC-ABS-50" as Sku,
+    image: "/products/lc-abs-50.jpg",
     brand: "Lancôme",
     line: "Absolue",
     name: "Soft Cream — crema revitalizante",
@@ -90,6 +93,7 @@ const SEED: Product[] = [
   },
   {
     sku: "LC-AEC-20" as Sku,
+    image: "/products/lc-aec-20.jpg",
     brand: "Lancôme",
     line: "Absolue",
     name: "Revitalizing Eye Cream — contorno antiedad",
@@ -113,6 +117,7 @@ const SEED: Product[] = [
   },
   {
     sku: "LC-HZN-50" as Sku,
+    image: "/products/lc-hzn-50.jpg",
     brand: "Lancôme",
     line: "Hydra Zen",
     name: "Gel Cream — hidratación calmante",
@@ -138,6 +143,7 @@ const SEED: Product[] = [
   // ── Lancôme · Maquillaje · Bases & Corrector ─────────────────────────────
   {
     sku: "LC-TID-30" as Sku,
+    image: "/products/lc-tid-30.jpg",
     brand: "Lancôme",
     line: "Teint Idole Ultra Wear",
     name: "Foundation 24H — base cobertura completa",
@@ -161,6 +167,7 @@ const SEED: Product[] = [
   },
   {
     sku: "LC-TCG-30" as Sku,
+    image: "/products/lc-tcg-30.jpg",
     brand: "Lancôme",
     line: "Teint Idole Ultra Wear",
     name: "Care & Glow — base infusionada con serum",
@@ -184,6 +191,7 @@ const SEED: Product[] = [
   },
   {
     sku: "LC-TIC-13" as Sku,
+    image: "/products/lc-tic-13.jpg",
     brand: "Lancôme",
     line: "Teint Idole Ultra Wear",
     name: "All Over Concealer — corrector líquido 24H",
@@ -209,6 +217,7 @@ const SEED: Product[] = [
   // ── Lancôme · Maquillaje · Labios ────────────────────────────────────────
   {
     sku: "LC-LAR-34" as Sku,
+    image: "/products/lc-lar-34.jpg",
     brand: "Lancôme",
     line: "L'Absolu Rouge",
     name: "Cream — labial cremoso de larga duración",
@@ -233,6 +242,7 @@ const SEED: Product[] = [
   // ── Lancôme · Fragancias ─────────────────────────────────────────────────
   {
     sku: "LC-IDP-50" as Sku,
+    image: "/products/lc-idp-50.jpg",
     brand: "Lancôme",
     line: "Idôle",
     name: "Le Parfum — Eau de Parfum",
@@ -251,6 +261,7 @@ const SEED: Product[] = [
   },
   {
     sku: "LC-LVE-100" as Sku,
+    image: "/products/lc-lve-100.jpg",
     brand: "Lancôme",
     line: "La Vie Est Belle",
     name: "Eau de Parfum",
@@ -269,6 +280,7 @@ const SEED: Product[] = [
   },
   {
     sku: "LC-LIA-100" as Sku,
+    image: "/products/lc-lia-100.jpg",
     brand: "Lancôme",
     line: "La Vie Est Belle",
     name: "Iris Absolu — Eau de Parfum",
@@ -287,6 +299,7 @@ const SEED: Product[] = [
   },
   {
     sku: "LC-TRE-100" as Sku,
+    image: "/products/lc-tre-100.jpg",
     brand: "Lancôme",
     line: "Trésor",
     name: "Eau de Parfum — fragancia icónica desde 1990",
@@ -305,6 +318,7 @@ const SEED: Product[] = [
   },
   {
     sku: "LC-MIR-100" as Sku,
+    image: "/products/lc-mir-100.jpg",
     brand: "Lancôme",
     line: "Miracle",
     name: "Eau de Parfum — fragancia floral luminosa",
@@ -328,6 +342,7 @@ const SEED: Product[] = [
   // las cruce con los intereses del cliente (Aromática para masculinas).
   {
     sku: "YS-LIB-90" as Sku,
+    image: "/products/ys-lib-90.jpg",
     brand: "YSL",
     line: "Libre",
     name: "Eau de Parfum",
@@ -346,6 +361,7 @@ const SEED: Product[] = [
   },
   {
     sku: "YS-BO-50" as Sku,
+    image: "/products/ys-bo-50.jpg",
     brand: "YSL",
     line: "Black Opium",
     name: "Eau de Parfum",
@@ -364,6 +380,7 @@ const SEED: Product[] = [
   },
   {
     sku: "YS-Y-60" as Sku,
+    image: "/products/ys-y-60.jpg",
     brand: "YSL",
     line: "Y",
     name: "Eau de Parfum",
@@ -382,6 +399,7 @@ const SEED: Product[] = [
   },
   {
     sku: "YS-MYS-60" as Sku,
+    image: "/products/ys-mys-60.jpg",
     brand: "YSL",
     line: "MYSLF",
     name: "Eau de Parfum",
@@ -402,6 +420,7 @@ const SEED: Product[] = [
   // ── YSL · Maquillaje · Labios ────────────────────────────────────────────
   {
     sku: "YS-RPC-01" as Sku,
+    image: "/products/ys-rpc-01.jpg",
     brand: "YSL",
     line: "Rouge Pur Couture",
     name: "Labial The Bold",
@@ -419,6 +438,7 @@ const SEED: Product[] = [
   },
   {
     sku: "YS-TC-01" as Sku,
+    image: "/products/ys-tc-01.jpg",
     brand: "YSL",
     line: "Tatouage Couture",
     name: "Velvet Cream — labial mate líquido",
@@ -436,6 +456,7 @@ const SEED: Product[] = [
   },
   {
     sku: "YS-LS-01" as Sku,
+    image: "/products/ys-ls-01.jpg",
     brand: "YSL",
     line: "Loveshine",
     name: "Candy Glaze — gloss con cuidado",
@@ -455,6 +476,7 @@ const SEED: Product[] = [
   // ── YSL · Maquillaje · Rostro ────────────────────────────────────────────
   {
     sku: "YS-AHF-25" as Sku,
+    image: "/products/ys-ahf-25.jpg",
     brand: "YSL",
     line: "All Hours",
     name: "Foundation 24H — base larga duración",
@@ -474,6 +496,7 @@ const SEED: Product[] = [
   },
   {
     sku: "YS-NPR-30" as Sku,
+    image: "/products/ys-npr-30.jpg",
     brand: "YSL",
     line: "Nu Bare Look Tint",
     name: "Base ligera infusionada con serum",
@@ -493,6 +516,7 @@ const SEED: Product[] = [
   },
   {
     sku: "YS-TCL-02" as Sku,
+    image: "/products/ys-tcl-02.jpg",
     brand: "YSL",
     line: "Touche Éclat",
     name: "Iluminador corrector",
@@ -513,6 +537,7 @@ const SEED: Product[] = [
   // ── YSL · Maquillaje · Ojos ──────────────────────────────────────────────
   {
     sku: "YS-LC-01" as Sku,
+    image: "/products/ys-lc-01.jpg",
     brand: "YSL",
     line: "Lash Clash",
     name: "Volumizing Mascara — máscara de volumen extremo",
@@ -535,6 +560,7 @@ const SEED: Product[] = [
   // completa sino solución a concerns específicos.
   {
     sku: "YS-OR-100" as Sku,
+    image: "/products/ys-or-100.jpg",
     brand: "YSL",
     line: "Or Rouge",
     name: "Sérum iluminador con azafrán",
@@ -554,6 +580,7 @@ const SEED: Product[] = [
   },
   {
     sku: "YS-PSE-15" as Sku,
+    image: "/products/ys-pse-15.jpg",
     brand: "YSL",
     line: "Pure Shots",
     name: "Y-Shape Targeted Eye — contorno antiedad",

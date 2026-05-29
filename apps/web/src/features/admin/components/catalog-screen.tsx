@@ -24,6 +24,7 @@ interface FormState {
   price: string;
   category: string;
   lifecycleDays: string;
+  image: string;
 }
 
 const INITIAL_FORM: FormState = {
@@ -35,6 +36,7 @@ const INITIAL_FORM: FormState = {
   price: "",
   category: "",
   lifecycleDays: "120",
+  image: "",
 };
 
 function fromProduct(p: Product): FormState {
@@ -47,6 +49,7 @@ function fromProduct(p: Product): FormState {
     price: String(p.price),
     category: p.attrs.tipo ?? "",
     lifecycleDays: String(p.lifecycleDays),
+    image: p.image ?? "",
   };
 }
 
@@ -123,6 +126,7 @@ export function CatalogScreen({ products }: CatalogScreenProps) {
   function buildInput() {
     const price = Number(form.price);
     const lifecycle = Number(form.lifecycleDays);
+    const image = form.image.trim();
     return {
       sku: form.sku,
       brand: form.brand,
@@ -132,6 +136,7 @@ export function CatalogScreen({ products }: CatalogScreenProps) {
       price: Number.isNaN(price) ? 0 : price,
       category: form.category,
       lifecycleDays: Number.isNaN(lifecycle) ? 0 : lifecycle,
+      ...(image ? { image } : {}),
     };
   }
 
@@ -248,8 +253,25 @@ export function CatalogScreen({ products }: CatalogScreenProps) {
           {filtered.map((p) => (
             <li
               key={p.sku as unknown as string}
-              className="grid grid-cols-[auto_1.6fr_1fr_auto_auto] gap-3 items-center py-3 border-b border-dashed border-line last:border-b-0"
+              className="grid grid-cols-[48px_auto_1.6fr_1fr_auto_auto] gap-3 items-center py-3 border-b border-dashed border-line last:border-b-0"
             >
+              <div
+                className="w-12 h-12 rounded-md bg-bone overflow-hidden flex items-center justify-center"
+                aria-hidden
+              >
+                {p.image ? (
+                  <img
+                    src={p.image}
+                    alt={p.line}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-[13px] font-display text-ink/40">
+                    {p.line.charAt(0)}
+                  </span>
+                )}
+              </div>
               <BrandTag brand={p.brand} alwaysShow />
               <div className="min-w-0 flex flex-col gap-0.5">
                 <div className="text-[16px] font-semibold leading-tight">
@@ -414,6 +436,28 @@ export function CatalogScreen({ products }: CatalogScreenProps) {
                 ? { error: errors.lifecycleDays[0] }
                 : {})}
             />
+          </div>
+
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <Input
+                label="Foto del producto"
+                value={form.image}
+                onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
+                placeholder="/products/lc-gen-50.jpg"
+                hint="Sube el archivo a /apps/web/public/products/ y pon aquí el path."
+                {...(errors.image?.[0] ? { error: errors.image[0] } : {})}
+              />
+            </div>
+            {form.image ? (
+              <div className="w-16 h-16 rounded-md bg-bone overflow-hidden shrink-0">
+                <img
+                  src={form.image}
+                  alt="preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : null}
           </div>
 
           {error ? (
