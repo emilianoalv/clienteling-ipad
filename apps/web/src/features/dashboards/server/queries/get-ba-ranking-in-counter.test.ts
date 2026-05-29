@@ -4,7 +4,7 @@ import { getBaRankingInCounter } from "./get-ba-ranking-in-counter";
 import {
   admin,
   aprilPeriod,
-  baKiehlsAlone,
+  baYslAlone,
   baLcmPol,
   baLcmPol2,
   baLcmStf,
@@ -65,12 +65,12 @@ describe("getBaRankingInCounter", () => {
     expect(r.myRank).toBe(1);
   });
 
-  it("Counter con 1 BA (Kiehl's sintético): myRank=1, total=1, topThree=[staff]", async () => {
-    const r = await getBaRankingInCounter(baKiehlsAlone, { period: aprilPeriod });
+  it("Counter con 1 BA (tienda sintética): myRank=1, total=1, topThree=[staff]", async () => {
+    const r = await getBaRankingInCounter(baYslAlone, { period: aprilPeriod });
     expect(r.totalInCounter).toBe(1);
     expect(r.myRank).toBe(1);
     expect(r.topThree).toHaveLength(1);
-    expect(r.topThree[0]!.baId).toBe(baKiehlsAlone.id);
+    expect(r.topThree[0]!.baId).toBe(baYslAlone.id);
     expect(r.topThree[0]!.salesAmount).toBe(0);
   });
 

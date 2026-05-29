@@ -4,7 +4,7 @@ import { getCounterAverages } from "./get-counter-averages";
 import {
   admin,
   aprilPeriod,
-  baKiehlsAlone,
+  baYslAlone,
   baLcmPol,
   baLcmPol2,
   baLcmStf,
@@ -69,8 +69,8 @@ describe("getCounterAverages", () => {
     expect(a.avgTicket).toBe(12_195); // (21900 + 2490) / 2
   });
 
-  it("Counter con 1 BA (Kiehl's sintético): counterHasPeers=false, todos 0", async () => {
-    const a = await getCounterAverages(baKiehlsAlone, { period: aprilPeriod });
+  it("Counter con 1 BA (tienda sintética): counterHasPeers=false, todos 0", async () => {
+    const a = await getCounterAverages(baYslAlone, { period: aprilPeriod });
     expect(a.counterHasPeers).toBe(false);
     expect(a.avgTicket).toBe(0);
     expect(a.avgReco2PurchaseRate).toBe(0);

@@ -93,17 +93,21 @@ export const baYslPol2: Staff = {
 };
 
 /**
- * Synthetic BA with a brand (`Kiehl's`) that no other user in the seed
- * shares. Useful for testing "counter with only this BA" edge cases without
- * polluting the production seed.
+ * Synthetic BA en una tienda sintética (`st-synthetic`) que ningún
+ * usuario del seed comparte. Sirve para probar "counter con un solo
+ * BA" sin contaminar el seed productivo. La marca es real (YSL) — el
+ * aislamiento se logra ahora vía storeId inexistente, no via brand,
+ * porque Lancôme y YSL son las únicas marcas válidas en el alcance.
  */
-export const baKiehlsAlone: Staff = {
-  id: "us-ba-pol-kls-solo" as StaffId,
-  name: "BA Solo Kiehl's",
+export const ST_SYN = "st-synthetic" as StoreId;
+
+export const baYslAlone: Staff = {
+  id: "us-ba-syn-ysl-solo" as StaffId,
+  name: "BA Solo Synthetic",
   initials: "BS",
   role: "BA",
-  storeId: ST_POL,
-  brand: "Kiehl's",
+  storeId: ST_SYN,
+  brand: "YSL",
 };
 
 export const gerentePol: Staff = {
