@@ -37,6 +37,16 @@ export interface SampleRepository {
   listByClient(clientId: ClientId): Promise<Sample[]>;
   findById(id: SampleId): Promise<Sample | null>;
   listInventory(filter?: { brands?: readonly BrandId[] }): Promise<SampleInventoryItem[]>;
+  /**
+   * Ajusta `have` y/o `capacity` de un SKU del inventario. Para "recibir
+   * lote nuevo" la UI suma la cantidad recibida al `have` actual antes de
+   * llamar acá (no exponemos un increment para no tener que doblar la
+   * semántica de la API). Devuelve null si el SKU no existe.
+   */
+  updateInventory(
+    sku: string,
+    patch: { have?: number; capacity?: number },
+  ): Promise<SampleInventoryItem | null>;
   create(input: Omit<Sample, "id">): Promise<Sample>;
   markConverted(id: SampleId, purchaseId: PurchaseId): Promise<Sample | null>;
   /** ARCO cascade — borra todas las muestras dadas a un cliente. */
@@ -105,6 +115,21 @@ export const sampleRepository: SampleRepository = {
     const scope = filter.brands;
     if (!scope || scope.length === 0) return [...INVENTORY];
     return INVENTORY.filter((i) => scope.includes(i.brand));
+  },
+
+  async updateInventory(sku, patch) {
+    const idx = INVENTORY.findIndex((i) => i.sku === sku);
+    if (idx < 0) return null;
+    const current = INVENTORY[idx]!;
+    const next: SampleInventoryItem = {
+      ...current,
+      ...(patch.have !== undefined ? { have: Math.max(0, patch.have) } : {}),
+      ...(patch.capacity !== undefined
+        ? { capacity: Math.max(0, patch.capacity) }
+        : {}),
+    };
+    INVENTORY[idx] = next;
+    return next;
   },
 
   async create(input) {

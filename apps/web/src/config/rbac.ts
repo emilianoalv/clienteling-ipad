@@ -20,6 +20,7 @@ export type Permission =
   | "integrations:write"
   | "stores:write"
   | "products:write"
+  | "samples:write"
   | "admin:read";
 
 const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
@@ -52,6 +53,7 @@ const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
     "reports:read",
     "devices:read",
     "devices:write",
+    "samples:write",
   ]),
   Supervisor: new Set<Permission>([
     "clients:read",
@@ -84,6 +86,7 @@ const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
     "integrations:write",
     "stores:write",
     "products:write",
+    "samples:write",
     "admin:read",
   ]),
 };

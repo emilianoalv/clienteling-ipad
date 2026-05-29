@@ -27,6 +27,7 @@ export const NAV_BY_ROLE: Record<Role, readonly NavItem[]> = {
     { id: "team", href: "/gerente/team", labelKey: "rail.team", icon: "users" },
     { id: "segments", href: "/gerente/segments", labelKey: "rail.segments", icon: "chart" },
     { id: "appointments", href: "/gerente/appointments", labelKey: "rail.appointments", icon: "calendar" },
+    { id: "sample-stock", href: "/gerente/sample-stock", labelKey: "rail.sample_stock", icon: "gift" },
     { id: "devices", href: "/gerente/devices", labelKey: "rail.devices", icon: "device" },
     { id: "reports", href: "/gerente/reports", labelKey: "rail.reports", icon: "pdf" },
   ],

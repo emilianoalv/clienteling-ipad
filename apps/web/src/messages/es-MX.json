@@ -33,7 +33,8 @@
     "integrations": "Integraciones",
     "users": "Usuarios",
     "audit": "Auditoría",
-    "privacy": "Aviso"
+    "privacy": "Aviso",
+    "sample_stock": "Stock muestras"
   },
   "auth": {
     "welcome": "Bienvenida",
