@@ -221,7 +221,21 @@ function PurchaseRow({ purchase, clientId, baName, productBySku, basePath }: Pur
               key={`${item.sku}-${idx}`}
               className="flex items-center gap-3 bg-bone/60 rounded-md p-2.5"
             >
-              <Avatar initials={initial} size={36} tone={avatarTone(product?.brand)} />
+              {product?.image ? (
+                <span
+                  aria-hidden
+                  className="inline-block w-9 h-9 rounded-md bg-white overflow-hidden flex items-center justify-center"
+                >
+                  <img
+                    src={product.image}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-contain p-1"
+                  />
+                </span>
+              ) : (
+                <Avatar initials={initial} size={36} tone={avatarTone(product?.brand)} />
+              )}
               <div className="flex-1 min-w-0">
                 <div className="text-[15px] font-semibold leading-tight truncate">
                   {product?.line ?? item.sku}

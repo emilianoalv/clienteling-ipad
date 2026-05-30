@@ -264,7 +264,7 @@ export function CatalogScreen({ products }: CatalogScreenProps) {
                     src={p.image}
                     alt={p.line}
                     loading="lazy"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-1"
                   />
                 ) : (
                   <span className="text-[13px] font-display text-ink/40">
@@ -454,7 +454,7 @@ export function CatalogScreen({ products }: CatalogScreenProps) {
                 <img
                   src={form.image}
                   alt="preview"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-1"
                 />
               </div>
             ) : null}

@@ -83,7 +83,7 @@ export function RecsPreview({
                     src={thumb}
                     alt=""
                     loading="lazy"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-1"
                   />
                 </span>
               ) : (

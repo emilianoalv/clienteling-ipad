@@ -64,7 +64,21 @@ export function SampleDetail({
       <Card variant="luxe" className="flex flex-col gap-5">
         <header className="flex items-start gap-4 justify-between flex-wrap">
           <div className="flex items-center gap-4">
-            <Avatar initials={initial} size={56} tone={avatarTone(sample.brand)} />
+            {fullProduct?.image ? (
+              <span
+                aria-hidden
+                className="inline-block w-14 h-14 rounded-md bg-bone overflow-hidden flex items-center justify-center"
+              >
+                <img
+                  src={fullProduct.image}
+                  alt=""
+                  loading="lazy"
+                  className="w-full h-full object-contain p-1"
+                />
+              </span>
+            ) : (
+              <Avatar initials={initial} size={56} tone={avatarTone(sample.brand)} />
+            )}
             <div>
               <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
                 {client.name}
@@ -123,11 +137,25 @@ export function SampleDetail({
               Producto completo
             </div>
             <div className="grid grid-cols-[48px_minmax(0,1fr)_auto] gap-3.5 items-center bg-bone/60 rounded-md p-3">
-              <Avatar
-                initials={(fullProduct.line[0] ?? "•").toUpperCase()}
-                size={44}
-                tone={avatarTone(fullProduct.brand)}
-              />
+              {fullProduct.image ? (
+                <span
+                  aria-hidden
+                  className="inline-block w-11 h-11 rounded-md bg-white overflow-hidden flex items-center justify-center"
+                >
+                  <img
+                    src={fullProduct.image}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-contain p-1"
+                  />
+                </span>
+              ) : (
+                <Avatar
+                  initials={(fullProduct.line[0] ?? "•").toUpperCase()}
+                  size={44}
+                  tone={avatarTone(fullProduct.brand)}
+                />
+              )}
               <div className="min-w-0 flex flex-col gap-0.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[16px] font-semibold leading-tight">{fullProduct.line}</span>

@@ -26,19 +26,20 @@ export function ProductThumb({
 }) {
   if (image) {
     return (
-      // next/image queda fuera porque ProductThumb se usa en árboles SSR/RSC
-      // que ya están renderizados en Card variants distintos; un <img> simple
-      // sirve sin reservar layout shift especial: object-cover + fondo bone
-      // garantizan que cualquier proporción se vea limpia.
+      // `object-contain` en lugar de `cover` para mostrar el frasco
+      // completo — los recortes "cortaban" la tapa o la base de los
+      // productos altos (perfumes 100ml). El fondo bone funciona como
+      // padding visual neutral cuando la proporción del producto no
+      // coincide con el cuadrado del thumb.
       <div
-        className="overflow-hidden rounded-md bg-bone"
+        className="overflow-hidden rounded-md bg-bone flex items-center justify-center"
         style={{ height }}
       >
         <img
           src={image}
           alt={alt ?? `${brand}`}
           loading="lazy"
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-contain object-center p-2"
         />
       </div>
     );

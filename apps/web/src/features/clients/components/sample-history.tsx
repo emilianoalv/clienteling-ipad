@@ -302,7 +302,21 @@ function SampleRow({
       className="block p-5 text-ink no-underline transition-colors hover:bg-bone/40"
     >
       <div className="grid grid-cols-[44px_minmax(0,1fr)_auto] gap-3.5 items-center">
-        <Avatar initials={initial} size={40} tone={avatarTone(sample.brand)} />
+        {fullProduct?.image ? (
+          <span
+            aria-hidden
+            className="inline-block w-10 h-10 rounded-md bg-bone overflow-hidden flex items-center justify-center"
+          >
+            <img
+              src={fullProduct.image}
+              alt=""
+              loading="lazy"
+              className="w-full h-full object-contain p-1"
+            />
+          </span>
+        ) : (
+          <Avatar initials={initial} size={40} tone={avatarTone(sample.brand)} />
+        )}
         <div className="min-w-0 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span className="font-display text-[20px] leading-none">{sample.name}</span>
           <BrandTag brand={sample.brand} alwaysShow />

@@ -78,7 +78,21 @@ export function PurchaseDetail({
                   key={`${item.sku}-${idx}`}
                   className="grid grid-cols-[80px_minmax(0,1fr)_auto] gap-4 items-center p-3.5 bg-bone/60 rounded-lg"
                 >
-                  <Avatar initials={initial} size={72} tone={avatarTone(product?.brand)} />
+                  {product?.image ? (
+                    <span
+                      aria-hidden
+                      className="inline-block w-[72px] h-[72px] rounded-md bg-white overflow-hidden flex items-center justify-center"
+                    >
+                      <img
+                        src={product.image}
+                        alt=""
+                        loading="lazy"
+                        className="w-full h-full object-contain p-1.5"
+                      />
+                    </span>
+                  ) : (
+                    <Avatar initials={initial} size={72} tone={avatarTone(product?.brand)} />
+                  )}
                   <div className="min-w-0 flex flex-col gap-1">
                     <div className="text-[12.5px] font-medium text-ink/60 tabular">
                       SKU {item.sku}

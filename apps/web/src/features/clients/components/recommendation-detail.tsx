@@ -154,7 +154,21 @@ export function RecommendationDetail({
                   key={`${sku}-${idx}`}
                   className="grid grid-cols-[56px_minmax(0,1fr)_auto] gap-4 items-center bg-bone/50 border border-line rounded-xl p-4"
                 >
-                  <Avatar initials={initial} size={52} tone={avatarTone(product?.brand)} />
+                  {product?.image ? (
+                    <span
+                      aria-hidden
+                      className="inline-block w-[52px] h-[52px] rounded-md bg-white overflow-hidden flex items-center justify-center"
+                    >
+                      <img
+                        src={product.image}
+                        alt=""
+                        loading="lazy"
+                        className="w-full h-full object-contain p-1"
+                      />
+                    </span>
+                  ) : (
+                    <Avatar initials={initial} size={52} tone={avatarTone(product?.brand)} />
+                  )}
                   <div className="min-w-0 flex flex-col gap-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[18px] font-semibold leading-tight">
