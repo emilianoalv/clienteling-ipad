@@ -2,6 +2,7 @@ import { SectionHeader } from "@/components/patterns";
 import { SampleStockScreen } from "@/features/gerente/components/sample-stock-screen";
 import { brandScopeFor } from "@/server/auth/scope";
 import { requireSession } from "@/server/auth/session";
+import { productRepository } from "@/server/repositories/product.repository";
 import { sampleRepository } from "@/server/repositories/sample.repository";
 
 /**
@@ -22,13 +23,28 @@ export default async function GerenteSampleStockPage() {
     throw new Error("Esta vista solo está disponible para el rol Gerente.");
   }
   const brands = brandScopeFor(staff);
-  const inventory = await sampleRepository.listInventory(
-    brands ? { brands } : {},
-  );
+  const [inventory, products] = await Promise.all([
+    sampleRepository.listInventory(brands ? { brands } : {}),
+    productRepository.list(brands ? { brands } : {}),
+  ]);
+
+  // Reverse lookup sampleSku → image. Los SKUs de mini (LC-GEN-7) no
+  // coinciden con los del producto comercial (LC-GEN-50), así que
+  // resolvemos por el campo `product.sampleSku`.
+  const imageBySampleSku: Record<string, string> = {};
+  for (const p of products) {
+    if (p.sampleSku && p.image) {
+      imageBySampleSku[p.sampleSku as unknown as string] = p.image;
+    }
+  }
+
   return (
     <section className="flex flex-col gap-4">
       <SectionHeader title="Stock de muestras" eyebrow="Mi tienda" />
-      <SampleStockScreen inventory={inventory} />
+      <SampleStockScreen
+        inventory={inventory}
+        imageBySampleSku={imageBySampleSku}
+      />
     </section>
   );
 }

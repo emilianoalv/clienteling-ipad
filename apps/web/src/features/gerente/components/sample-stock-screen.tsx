@@ -21,6 +21,12 @@ interface FormState {
 
 export interface SampleStockScreenProps {
   inventory: readonly SampleInventoryItem[];
+  /**
+   * sampleSku → path de imagen del producto completo. Lo arma la page con
+   * un reverse lookup sobre el catálogo, así la mini muestra la misma
+   * foto que el frasco grande sin tener que fotografiar la mini aparte.
+   */
+  imageBySampleSku?: Record<string, string>;
 }
 
 /**
@@ -32,7 +38,10 @@ export interface SampleStockScreenProps {
  * sistema no decrementa automático (eso requiere refactor de
  * register-visit); la Gerente hace conteo físico semanal y ajusta.
  */
-export function SampleStockScreen({ inventory }: SampleStockScreenProps) {
+export function SampleStockScreen({
+  inventory,
+  imageBySampleSku,
+}: SampleStockScreenProps) {
   const [editing, setEditing] = useState<SampleInventoryItem | null>(null);
   const [form, setForm] = useState<FormState>({ have: "", capacity: "", receive: "" });
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -187,11 +196,32 @@ export function SampleStockScreen({ inventory }: SampleStockScreenProps) {
           {filtered.map((row) => {
             const ratio = row.capacity > 0 ? row.have / row.capacity : 0;
             const tone = ratio < 0.2 ? "danger" : ratio < 0.4 ? "warn" : "neutral";
+            const thumb = imageBySampleSku?.[row.sku];
             return (
               <li
                 key={row.sku}
-                className="grid grid-cols-[auto_1.4fr_auto_1fr_auto] gap-3 items-center py-2.5 border-b border-dashed border-line last:border-b-0"
+                className="grid grid-cols-[40px_auto_1.4fr_auto_1fr_auto] gap-3 items-center py-2.5 border-b border-dashed border-line last:border-b-0"
               >
+                {thumb ? (
+                  <span
+                    aria-hidden
+                    className="inline-block w-10 h-10 rounded-md bg-bone overflow-hidden"
+                  >
+                    <img
+                      src={thumb}
+                      alt=""
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  </span>
+                ) : (
+                  <span
+                    aria-hidden
+                    className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/40"
+                  >
+                    <Icon name="gift" size={16} />
+                  </span>
+                )}
                 <BrandTag brand={row.brand} alwaysShow />
                 <div className="min-w-0">
                   <div className="text-[16px] font-semibold leading-tight truncate">

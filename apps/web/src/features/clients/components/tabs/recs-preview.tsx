@@ -59,18 +59,41 @@ export function RecsPreview({
       </header>
 
       <ul className="list-none m-0 p-0 flex flex-col">
-        {recommendations.slice(0, PREVIEW_COUNT).map((r) => (
+        {recommendations.slice(0, PREVIEW_COUNT).map((r) => {
+          // Foto del primer SKU recomendado que tenga imagen. Fallback al
+          // ícono sparkle (heredado) cuando ningún SKU tiene foto.
+          const firstWithImage = r.items.find(
+            (sku) => productBySku[sku as unknown as string]?.image,
+          );
+          const thumb = firstWithImage
+            ? productBySku[firstWithImage as unknown as string]?.image
+            : undefined;
+          return (
           <li key={r.id} className="border-b border-line last:border-b-0">
             <Link
               href={`${basePath}/${clientId}/recommendations/${r.id}`}
               className="grid grid-cols-[40px_minmax(0,1fr)_auto_auto] items-start gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
             >
-              <span
-                aria-hidden
-                className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60 mt-0.5"
-              >
-                <Icon name="sparkle" size={18} />
-              </span>
+              {thumb ? (
+                <span
+                  aria-hidden
+                  className="inline-block w-10 h-10 rounded-md bg-bone overflow-hidden mt-0.5"
+                >
+                  <img
+                    src={thumb}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                </span>
+              ) : (
+                <span
+                  aria-hidden
+                  className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60 mt-0.5"
+                >
+                  <Icon name="sparkle" size={18} />
+                </span>
+              )}
               <div className="min-w-0 flex flex-col gap-1.5">
                 <RecItemList items={r.items} productBySku={productBySku} />
                 <span className="text-[12.5px] text-ink/50 tabular tracking-[0.04em]">
@@ -84,7 +107,8 @@ export function RecsPreview({
               </span>
             </Link>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import type { Product } from "@/types/product";
 import type { Purchase } from "@/types/purchase";
 import { BrandTag, Icon } from "@/components/primitives";
 import { formatCurrency } from "@/lib/format/format-currency";
@@ -12,6 +13,8 @@ export interface PurchasesPreviewProps {
   clientId: string;
   /** Prefijo de ruta para deep-links. Default `/ba/clients`. */
   basePath?: string;
+  /** SKU → Product. Se usa para mostrar la foto del primer item del ticket. */
+  productBySku?: Record<string, Product>;
 }
 
 const PREVIEW_COUNT = 4;
@@ -25,6 +28,7 @@ export function PurchasesPreview({
   purchases,
   clientId,
   basePath = "/ba/clients",
+  productBySku,
 }: PurchasesPreviewProps) {
   const t = useTranslations();
   if (purchases.length === 0) {
@@ -59,18 +63,39 @@ export function PurchasesPreview({
         {purchases.slice(0, PREVIEW_COUNT).map((p) => {
           const ticketLabel = p.ticketRef ?? `MAN-${p.id.toUpperCase().slice(-8)}`;
           const ba = "Valentina Ríos";
+          // Foto del primer item del ticket que tenga imagen. Caemos al
+          // icono de bag genérico cuando no hay match — productos manuales
+          // o SKUs descontinuados.
+          const firstImage = productBySku
+            ? p.items.find((i) => productBySku[i.sku]?.image)?.sku
+            : undefined;
+          const thumb = firstImage ? productBySku?.[firstImage]?.image : undefined;
           return (
             <li key={p.id} className="border-b border-line last:border-b-0">
               <Link
                 href={`${basePath}/${clientId}/purchases/${p.id}`}
                 className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
               >
-                <span
-                  aria-hidden
-                  className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60"
-                >
-                  <Icon name="bag" size={18} />
-                </span>
+                {thumb ? (
+                  <span
+                    aria-hidden
+                    className="inline-block w-10 h-10 rounded-md bg-bone overflow-hidden"
+                  >
+                    <img
+                      src={thumb}
+                      alt=""
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  </span>
+                ) : (
+                  <span
+                    aria-hidden
+                    className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60"
+                  >
+                    <Icon name="bag" size={18} />
+                  </span>
+                )}
                 <div className="min-w-0 flex flex-col gap-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[15px] font-semibold leading-tight">

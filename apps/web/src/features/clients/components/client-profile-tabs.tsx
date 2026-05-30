@@ -124,6 +124,7 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
             purchases={props.purchases}
             clientId={props.clientId}
             basePath={basePath}
+            productBySku={props.productBySku}
           />
         )}
         {tab === "recs" && (
@@ -139,6 +140,7 @@ export function ClientProfileTabs(props: ClientProfileTabsProps) {
             samples={props.samples}
             clientId={props.clientId}
             basePath={basePath}
+            productBySku={props.productBySku}
           />
         )}
         {tab === "appointments" && (

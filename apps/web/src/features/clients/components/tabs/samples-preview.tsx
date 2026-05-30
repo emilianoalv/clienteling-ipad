@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
+import type { Product } from "@/types/product";
 import type { Sample } from "@/types/sample";
 import { BrandTag, Chip, Icon } from "@/components/primitives";
 import { formatDate } from "@/lib/format/format-date";
@@ -12,6 +13,13 @@ export interface SamplesPreviewProps {
   clientId: string;
   /** Prefijo de ruta para deep-links. Default `/ba/clients`. */
   basePath?: string;
+  /**
+   * SKU → Product. Se usa para resolver la foto de la mini vía el
+   * mapping reverso `sampleSku → product`. El sample.sku no es el
+   * mismo que product.sku (la mini es un SKU aparte) — por eso el
+   * reverse lookup.
+   */
+  productBySku?: Record<string, Product>;
 }
 
 /**
@@ -27,10 +35,26 @@ export function SamplesPreview({
   samples,
   clientId,
   basePath = "/ba/clients",
+  productBySku,
 }: SamplesPreviewProps) {
   const t = useTranslations();
 
   const groups = useMemo(() => groupByDay(samples), [samples]);
+
+  // Reverse lookup: sampleSku → image del producto completo. Se construye
+  // una sola vez por render del tab. Los SKUs de mini no son los mismos
+  // que los de producto comercial (LC-GEN-7 vs LC-GEN-50), por eso se
+  // necesita esta vuelta.
+  const imageBySampleSku = useMemo(() => {
+    const out: Record<string, string> = {};
+    if (!productBySku) return out;
+    for (const product of Object.values(productBySku)) {
+      if (product.sampleSku && product.image) {
+        out[product.sampleSku as unknown as string] = product.image;
+      }
+    }
+    return out;
+  }, [productBySku]);
 
   if (samples.length === 0) {
     return (
@@ -76,18 +100,34 @@ export function SamplesPreview({
               </span>
             </header>
             <ul className="list-none m-0 p-0 flex flex-col">
-              {group.samples.map((s) => (
+              {group.samples.map((s) => {
+                const thumb = imageBySampleSku[s.sku as unknown as string];
+                return (
                 <li key={s.id} className="border-b border-line last:border-b-0">
                   <Link
                     href={`${basePath}/${clientId}/samples/${s.id}`}
                     className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3.5 py-3 px-4 text-ink no-underline transition-colors hover:bg-bone/40"
                   >
-                    <span
-                      aria-hidden
-                      className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60"
-                    >
-                      <Icon name="gift" size={18} />
-                    </span>
+                    {thumb ? (
+                      <span
+                        aria-hidden
+                        className="inline-block w-10 h-10 rounded-md bg-bone overflow-hidden"
+                      >
+                        <img
+                          src={thumb}
+                          alt=""
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                      </span>
+                    ) : (
+                      <span
+                        aria-hidden
+                        className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60"
+                      >
+                        <Icon name="gift" size={18} />
+                      </span>
+                    )}
                     <div className="min-w-0 flex flex-col gap-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[15px] font-semibold leading-tight">{s.name}</span>
@@ -108,7 +148,8 @@ export function SamplesPreview({
                     )}
                   </Link>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </section>
         ))}
