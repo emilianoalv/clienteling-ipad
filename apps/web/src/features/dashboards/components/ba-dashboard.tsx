@@ -7,7 +7,7 @@ import {
 } from "@/components/charts";
 import { Icon, ProgressBar } from "@/components/primitives";
 import { cn } from "@/lib/cn";
-import { formatDateRelative, formatDateShort, smartFormatDate } from "@/lib/format/date";
+import { formatDateRelative, smartFormatDate } from "@/lib/format/date";
 import {
   buildXAxisLabels,
   formatPeriodTitle,
@@ -742,108 +742,163 @@ function TopClientsList({ clients }: { clients: readonly TopClient[] }) {
 
 type TimelineEvent = {
   date: Date;
-  daysAway: number;
-  kind: "birthday" | "anniversary" | "replenishment";
-  label: string;
+  kind: "birthday" | "anniversary";
+  fullName: string;
   clientId: string;
 };
+
+const MONTH_NAMES_ES = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+] as const;
+
+function displayName(fullName: string): string {
+  const first = fullName.split(" ")[0] ?? fullName;
+  return first.length <= 12 ? first : first.slice(0, 11) + "…";
+}
 
 function EventTimeline({
   birthdays,
   anniversaries,
-  replenishments,
 }: {
   birthdays: readonly UpcomingBirthday[];
   anniversaries: readonly UpcomingAnniversary[];
   replenishments: readonly EstimatedReplenishment[];
 }) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const startOfMonth = new Date(year, month, 1);
+  const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayDay = today.getDate();
+  const monthShort = MONTH_NAMES_ES[month];
+  const monthName = `${monthShort} ${year}`;
+
   const events: TimelineEvent[] = [
     ...birthdays.map((b) => ({
-      date: b.birthdayDate,
-      daysAway: b.daysAway,
+      date: new Date(b.birthdayDate),
       kind: "birthday" as const,
-      label: `${b.name} · cumpleaños`,
+      fullName: b.name,
       clientId: b.clientId as unknown as string,
     })),
     ...anniversaries.map((a) => ({
-      date: a.anniversaryDate,
-      daysAway: a.daysAway,
+      date: new Date(a.anniversaryDate),
       kind: "anniversary" as const,
-      label: `${a.name} · ${a.yearsAsClient}° aniversario`,
+      fullName: a.name,
       clientId: a.clientId as unknown as string,
     })),
-    ...replenishments.map((r) => ({
-      date: r.estimatedDate,
-      daysAway: r.daysAway,
-      kind: "replenishment" as const,
-      label: `${r.name} · reposición ${r.productName}`,
-      clientId: r.clientId as unknown as string,
-    })),
-  ].sort((a, b) => a.daysAway - b.daysAway);
+  ]
+    .filter((e) => e.date >= startOfMonth && e.date <= endOfMonth)
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  if (events.length === 0) {
-    return (
-      <EmptyState message="No hay cumpleaños ni aniversarios en los próximos 30 días." />
-    );
-  }
+  const positionPct = (day: number) =>
+    daysInMonth > 1 ? ((day - 1) / (daysInMonth - 1)) * 100 : 50;
+
+  const headerCount =
+    events.length === 0
+      ? "Sin eventos"
+      : `${events.length} evento${events.length > 1 ? "s" : ""}`;
+
+  const dayLabels = Array.from(
+    new Set([1, 7, 14, 21, 28, daysInMonth].filter((d) => d <= daysInMonth)),
+  );
 
   return (
     <div>
       <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-3">
-        Próximos 30 días · {formatCount(events.length)} eventos
+        {monthName} · {headerCount}
       </div>
-      <div className="relative h-2 bg-ink/[0.06] rounded-full mb-4">
+
+      {/* Nombres encima de los dots */}
+      <div className="relative h-5 mb-1">
         {events.map((e, i) => (
           <span
-            key={`${e.kind}-${e.clientId}-${i}`}
-            className={cn(
-              "absolute top-[-4px] w-3 h-3 rounded-full -translate-x-1/2 border border-white",
-              e.kind === "birthday"
-                ? "bg-lancome-rose-deep"
-                : e.kind === "anniversary"
-                ? "bg-ink"
-                : "bg-warn",
-            )}
-            style={{ left: `${Math.min(100, (e.daysAway / 30) * 100)}%` }}
-            title={`${e.label} · ${formatDateShort(e.date)}`}
-          />
+            key={`name-${e.kind}-${e.clientId}-${i}`}
+            className="absolute -translate-x-1/2 text-[11px] font-medium text-lancome-rose-deep whitespace-nowrap"
+            style={{ left: `${positionPct(e.date.getDate())}%` }}
+          >
+            {displayName(e.fullName)}
+          </span>
         ))}
       </div>
-      <ul className="list-none m-0 p-0 divide-y divide-line">
-        {events.slice(0, 8).map((e, i) => (
-          <li
-            key={`${e.kind}-${e.clientId}-${i}`}
-            className="grid grid-cols-[24px_1fr_auto] gap-3 items-center py-2"
-          >
-            <Icon
-              name={
-                e.kind === "birthday"
-                  ? "gift"
-                  : e.kind === "anniversary"
-                  ? "heart"
-                  : "bag"
-              }
-              size={16}
-              className={cn(
-                e.kind === "birthday"
-                  ? "text-lancome-rose-deep"
-                  : e.kind === "anniversary"
-                  ? "text-ink"
-                  : "text-warn",
-              )}
+
+      {/* Timeline bar */}
+      <div className="relative h-3">
+        {/* Línea base */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-ink/15" />
+
+        {/* Tick marks (días impares) */}
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1)
+          .filter((d) => d % 2 === 1)
+          .map((day) => (
+            <div
+              key={`tick-${day}`}
+              aria-hidden
+              className="absolute top-1/2 w-px h-1.5 bg-ink/20"
+              style={{
+                left: `${positionPct(day)}%`,
+                transform: "translate(-50%, -50%)",
+              }}
             />
-            <Link
-              href={`/ba/clients/${e.clientId}`}
-              className="text-[16px] text-ink no-underline hover:underline"
-            >
-              {e.label}
-            </Link>
-            <span className="text-[14px] text-ink/60 tabular">
-              {smartFormatDate(e.date)}
-            </span>
-          </li>
+          ))}
+
+        {/* Marcador "hoy" */}
+        <div
+          aria-label={`Hoy, ${todayDay} de ${monthShort}`}
+          className="absolute top-1/2 w-0.5 h-4 bg-ink"
+          style={{
+            left: `${positionPct(todayDay)}%`,
+            transform: "translate(-50%, -50%)",
+          }}
+        />
+
+        {/* Dots de eventos (todos del mismo color) */}
+        {events.map((e, i) => {
+          const day = e.date.getDate();
+          return (
+            <span
+              key={`dot-${e.kind}-${e.clientId}-${i}`}
+              className="absolute top-1/2 w-3 h-3 rounded-full bg-lancome-rose-deep ring-2 ring-white"
+              style={{
+                left: `${positionPct(day)}%`,
+                transform: "translate(-50%, -50%)",
+              }}
+              title={`${e.fullName} · ${e.kind === "birthday" ? "cumpleaños" : "aniversario"} · ${day} ${monthShort}`}
+            />
+          );
+        })}
+      </div>
+
+      {/* Labels de días */}
+      <div className="relative h-4 mt-1 text-[10px] text-ink/45">
+        {dayLabels.map((day) => (
+          <span
+            key={`label-${day}`}
+            className="absolute -translate-x-1/2"
+            style={{ left: `${positionPct(day)}%` }}
+          >
+            {day}
+          </span>
         ))}
-      </ul>
+      </div>
+
+      {/* Empty state */}
+      {events.length === 0 && (
+        <p className="text-[14px] text-ink/55 italic mt-4 text-center">
+          Sin cumpleaños ni aniversarios en {monthName}.
+        </p>
+      )}
     </div>
   );
 }
