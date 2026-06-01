@@ -1,5 +1,7 @@
 import { BaDashboard } from "@/features/dashboards/components/ba-dashboard";
 import { eventsLookAhead, parseFilters } from "@/features/dashboards/lib/parse-filters";
+import { computeWoWDelta } from "@/features/dashboards/lib/wow-delta";
+import { last7Days } from "@/features/dashboards/server/utils/date-ranges";
 import {
   getActiveClients,
   getAtRiskClients,
@@ -62,6 +64,7 @@ export default async function BaPerformancePage({
   ]);
 
   const upcomingFilters = { ...filters, period: eventsLookAhead() };
+  const wowFilters = { ...filters, period: last7Days() };
 
   const [
     salesAmount,
@@ -91,6 +94,8 @@ export default async function BaPerformancePage({
     upcomingAnniversaries,
     estimatedReplenishments,
     operationalAlerts,
+    ticketWoWRaw,
+    recoWoWRaw,
   ] = await Promise.all([
     getSalesAmount(staff, filters),
     getPeriodDelta(staff, filters, getSalesAmount),
@@ -119,7 +124,12 @@ export default async function BaPerformancePage({
     getUpcomingAnniversaries(staff, upcomingFilters, { windowDays: 30 }),
     getEstimatedReplenishments(staff, upcomingFilters, { windowDays: 30 }),
     getOperationalAlerts(staff, filters),
+    getPeriodDelta(staff, wowFilters, getAverageTicket),
+    getPeriodDelta(staff, wowFilters, getRecoToPurchaseRate),
   ]);
+
+  const ticketWoW = computeWoWDelta(ticketWoWRaw.current, ticketWoWRaw.previous);
+  const recoWoW = computeWoWDelta(recoWoWRaw.current, recoWoWRaw.previous);
 
   return (
     <BaDashboard
@@ -155,6 +165,8 @@ export default async function BaPerformancePage({
         upcomingAnniversaries,
         estimatedReplenishments,
         operationalAlerts,
+        ticketWoW,
+        recoWoW,
       }}
     />
   );

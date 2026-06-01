@@ -7,6 +7,7 @@ import {
 } from "@/components/charts";
 import { Icon, ProgressBar } from "@/components/primitives";
 import { cn } from "@/lib/cn";
+import type { WoWDelta } from "../lib/wow-delta";
 import { formatDateRelative, smartFormatDate } from "@/lib/format/date";
 import {
   buildXAxisLabels,
@@ -86,6 +87,8 @@ export interface BaDashboardData {
   upcomingAnniversaries: readonly UpcomingAnniversary[];
   estimatedReplenishments: readonly EstimatedReplenishment[];
   operationalAlerts: readonly OperationalAlert[];
+  ticketWoW: WoWDelta;
+  recoWoW: WoWDelta;
 }
 
 export interface BaDashboardProps {
@@ -160,12 +163,14 @@ export function BaDashboard({
               key="ticket"
               averageTicket={data.averageTicket}
               ticketDelta={data.ticketDelta}
+              wow={data.ticketWoW}
             />,
             <HeroConversion
               key="conv"
               recoToPurchaseRate={data.recoToPurchaseRate}
               counterAvg={data.counterAverages.avgReco2PurchaseRate * 100}
               hasPeers={data.counterAverages.counterHasPeers}
+              wow={data.recoWoW}
             />,
           ]}
         />
@@ -372,9 +377,11 @@ function HeroRank({ ranking }: { ranking: BaRankingResult }) {
 function HeroTicket({
   averageTicket,
   ticketDelta,
+  wow,
 }: {
   averageTicket: number;
   ticketDelta: PeriodDeltaResult;
+  wow: WoWDelta;
 }) {
   const tone =
     ticketDelta.deltaPct > 0
@@ -387,9 +394,12 @@ function HeroTicket({
       <span className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
         Ticket promedio
       </span>
-      <span className="font-display text-[32px] leading-none tabular">
-        {formatCurrencyCompact(averageTicket)}
-      </span>
+      <div className="flex items-center gap-4">
+        <span className="font-display text-[32px] leading-none tabular">
+          {formatCurrencyCompact(averageTicket)}
+        </span>
+        <WoWBadge delta={wow} />
+      </div>
       <span className={cn("text-[14px] font-semibold tabular", tone)}>
         {formatPercentChange(ticketDelta.deltaPct)} vs período anterior
       </span>
@@ -401,25 +411,53 @@ function HeroConversion({
   recoToPurchaseRate,
   counterAvg,
   hasPeers,
+  wow,
 }: {
   recoToPurchaseRate: number;
   counterAvg: number;
   hasPeers: boolean;
+  wow: WoWDelta;
 }) {
   return (
     <article className="bg-white border border-line rounded-lg p-4 flex flex-col gap-2 h-full">
       <span className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60">
         Conv reco → compra
       </span>
-      <span className="font-display text-[32px] leading-none tabular">
-        {formatPercent(recoToPurchaseRate)}
-      </span>
+      <div className="flex items-center gap-4">
+        <span className="font-display text-[32px] leading-none tabular">
+          {formatPercent(recoToPurchaseRate)}
+        </span>
+        <WoWBadge delta={wow} />
+      </div>
       <span className="text-[14px] text-ink/60">
         {hasPeers
           ? `vs counter ${formatPercent(counterAvg)}`
           : "Sin peers para comparar"}
       </span>
     </article>
+  );
+}
+
+function WoWBadge({ delta }: { delta: WoWDelta }) {
+  if (delta.direction === "new") {
+    return <span className="text-sm text-ink/55">· período nuevo</span>;
+  }
+  if (delta.direction === "flat") {
+    return (
+      <span className="text-sm text-ink/55">→ sin cambios esta semana</span>
+    );
+  }
+  const isUp = delta.direction === "up";
+  return (
+    <span
+      className={cn(
+        "text-sm font-medium",
+        isUp ? "text-ok" : "text-err",
+      )}
+    >
+      {isUp ? "↗" : "↘"} {isUp ? "+" : ""}
+      {delta.deltaPct}% esta semana
+    </span>
   );
 }
 
