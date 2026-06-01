@@ -77,6 +77,9 @@ export interface BaDashboardData {
   topProducts: readonly TopProduct[];
   activeClients: number;
   atRiskClients: number;
+  carteraSize: number;
+  vipsInCartera: number;
+  newClientsThisMonth: number;
   topClients: readonly TopClient[];
   pendingFollowups: readonly PendingFollowup[];
   upcomingBirthdays: readonly UpcomingBirthday[];
@@ -224,6 +227,9 @@ export function BaDashboard({
             <CarteraStats
               activeClients={data.activeClients}
               atRiskClients={data.atRiskClients}
+              carteraSize={data.carteraSize}
+              vipsInCartera={data.vipsInCartera}
+              newClientsThisMonth={data.newClientsThisMonth}
             />
             <TopClientsList clients={data.topClients} />
           </div>
@@ -560,46 +566,132 @@ function TopProductsList({ products }: { products: readonly TopProduct[] }) {
 function CarteraStats({
   activeClients,
   atRiskClients,
+  carteraSize,
+  vipsInCartera,
+  newClientsThisMonth,
 }: {
   activeClients: number;
   atRiskClients: number;
+  carteraSize: number;
+  vipsInCartera: number;
+  newClientsThisMonth: number;
 }) {
+  const hasCartera = carteraSize > 0;
+  const coveragePct = hasCartera
+    ? Math.min(100, Math.round((activeClients / carteraSize) * 100))
+    : 0;
+  const atRiskPct = hasCartera
+    ? Math.min(100, Math.round((atRiskClients / carteraSize) * 100))
+    : 0;
+
+  const activeContext = hasCartera
+    ? `Atiendes el ${coveragePct}% de tu cartera asignada`
+    : "Sin cartera asignada todavía";
+  const atRiskContext = !hasCartera
+    ? "Sin cartera asignada todavía"
+    : atRiskClients === 0
+      ? "Tu cartera está saludable"
+      : `${atRiskPct}% de tu cartera requiere atención`;
+
   return (
-    <div className="flex flex-col gap-4 justify-center">
-      <Stat label="clientes activos" value={formatCount(activeClients)} />
-      <Stat
+    <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+      <StatWithContext
+        value={activeClients}
+        label="clientes activos"
+        context={activeContext}
+        progressPct={coveragePct}
+        tone="ok"
+      />
+      <StatWithContext
+        value={atRiskClients}
         label="en riesgo"
-        value={formatCount(atRiskClients)}
-        dotTone={atRiskClients > 0 ? "warn" : null}
+        context={atRiskContext}
+        progressPct={atRiskPct}
+        tone={atRiskClients > 0 ? "warn" : "ok"}
+      />
+      <StatSimple
+        value={vipsInCartera}
+        label="VIPs en cartera"
+        context={contextForVips(vipsInCartera, carteraSize)}
+      />
+      <StatSimple
+        value={newClientsThisMonth}
+        label="nuevos este mes"
+        context={contextForNewClients(newClientsThisMonth, carteraSize)}
       />
     </div>
   );
 }
 
-function Stat({
-  label,
+function contextForVips(vips: number, cartera: number): string {
+  if (vips === 0) return "Tu cartera está creciendo · sin VIPs aún";
+  if (cartera === 0) return "";
+  const pct = Math.round((vips / cartera) * 100);
+  return `${pct}% de tu cartera · clientes más valiosos`;
+}
+
+function contextForNewClients(newCount: number, cartera: number): string {
+  if (newCount === 0) return "Sin nuevos registros este mes";
+  if (cartera === 0) return "";
+  const pct = Math.round((newCount / cartera) * 100);
+  return `+${newCount} clientas · ${pct}% crecimiento mensual`;
+}
+
+function StatWithContext({
   value,
-  dotTone,
+  label,
+  context,
+  progressPct,
+  tone,
 }: {
+  value: number;
   label: string;
-  value: string;
-  dotTone?: "warn" | "err" | null;
+  context: string;
+  progressPct: number;
+  tone: "ok" | "warn";
 }) {
   return (
-    <div>
-      <div className="flex items-baseline gap-2">
-        <span className="font-display text-[40px] leading-none tabular">{value}</span>
-        {dotTone ? (
-          <span
-            aria-hidden
-            className={cn(
-              "w-2.5 h-2.5 rounded-full",
-              dotTone === "warn" ? "bg-warn" : "bg-err",
-            )}
-          />
-        ) : null}
-      </div>
+    <div className="flex flex-col gap-1">
+      <span className="font-display text-[40px] leading-none tabular">
+        {formatCount(value)}
+      </span>
       <span className="text-[15px] text-ink/60">{label}</span>
+      <span className="text-[12.5px] text-ink/55 mt-1">{context}</span>
+      <div
+        className="w-full h-1 bg-bone rounded-full overflow-hidden mt-1"
+        role="progressbar"
+        aria-valuenow={progressPct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div
+          className={cn(
+            "h-full transition-all",
+            tone === "warn" ? "bg-warn" : "bg-ok",
+          )}
+          style={{ width: `${progressPct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StatSimple({
+  value,
+  label,
+  context,
+}: {
+  value: number;
+  label: string;
+  context: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="font-display text-[40px] leading-none tabular">
+        {formatCount(value)}
+      </span>
+      <span className="text-[15px] text-ink/60">{label}</span>
+      <span className="text-[12.5px] text-ink/55 mt-1">{context}</span>
     </div>
   );
 }

@@ -7,6 +7,7 @@ export {
   getBaRankingInCounter,
   type BaRankingResult,
 } from "./get-ba-ranking-in-counter";
+export { getCarteraSize } from "./get-cartera-size";
 export {
   getCounterAverages,
   type CounterAveragesResult,
@@ -18,6 +19,7 @@ export {
 export { getFollowUpsCount } from "./get-follow-ups-count";
 export { getFollowUpToRevisitRate } from "./get-followup-to-revisit-rate";
 export { getNewClientsCount } from "./get-new-clients-count";
+export { getNewClientsThisMonth } from "./get-new-clients-this-month";
 export {
   getOperationalAlerts,
   type AlertCategory,
@@ -68,3 +70,4 @@ export {
   getUpcomingBirthdays,
   type UpcomingBirthday,
 } from "./get-upcoming-birthdays";
+export { getVipsInCartera } from "./get-vips-in-cartera";
