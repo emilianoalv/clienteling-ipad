@@ -9,6 +9,7 @@ import type { ProductTech } from "@/types/product-tech";
 import type { SampleInventoryItem } from "@/server/repositories/sample.repository";
 import { VISIT_ONLY_MOTIVES, type VisitMotive } from "@/types/visit-motive";
 import { FOLLOWUP_TYPES, type FollowupType } from "@/types/followup-task";
+import { BarcodeScanner } from "@/components/feedback/barcode-scanner";
 import { registerVisit } from "../actions/register-visit";
 import type { RegisterVisitInput } from "../schemas/register-visit.schema";
 import { CompatibilityPicker } from "./compatibility-picker";
@@ -406,24 +407,74 @@ function StepRecs({
   selected: readonly string[];
   onChange: (next: string[]) => void;
 }) {
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanWarning, setScanWarning] = useState<string | null>(null);
+
+  function handleScan(code: string) {
+    setScannerOpen(false);
+    // Match case-insensitive y sin espacios — los códigos físicos a veces
+    // tienen el formato con guiones, a veces sin.
+    const found = products.find(
+      (p) =>
+        (p.sku as unknown as string).toLowerCase() === code.toLowerCase() ||
+        (p.sku as unknown as string).replace(/\s/g, "") === code,
+    );
+    if (!found) {
+      setScanWarning(`SKU "${code}" no está en tu catálogo de marca`);
+      window.setTimeout(() => setScanWarning(null), 4000);
+      return;
+    }
+    const sku = found.sku as unknown as string;
+    if (selected.includes(sku)) {
+      setScanWarning(`${found.line} ya está en tus recomendaciones`);
+      window.setTimeout(() => setScanWarning(null), 4000);
+      return;
+    }
+    onChange([...selected, sku]);
+  }
+
   return (
     <section className="flex flex-col gap-3">
-      <div>
-        <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-1.5">
-          ¿Qué le recomendaste?
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="text-[14.5px] font-semibold tracking-[0.12em] uppercase text-ink/60 mb-1.5">
+            ¿Qué le recomendaste?
+          </div>
+          <p className="m-0 text-[14px] text-ink/55 leading-snug">
+            Productos que sugeriste para que vea más adelante. La app rankea por compatibilidad con su
+            perfil; abre la ficha técnica desde la card del producto en el catálogo para ver claims
+            clínicos y activos. Si no hubo recomendaciones, salta este paso.
+          </p>
         </div>
-        <p className="m-0 text-[14px] text-ink/55 leading-snug">
-          Productos que sugeriste para que vea más adelante. La app rankea por compatibilidad con su
-          perfil; abre la ficha técnica desde la card del producto en el catálogo para ver claims
-          clínicos y activos. Si no hubo recomendaciones, salta este paso.
-        </p>
+        {/* Atajo físico: la BA escanea el código del frasco que tiene en
+            la mano y lo agrega a las recomendaciones sin buscar por nombre.
+            Cumple RF-14 en este flujo, paralelo a register-sale. */}
+        <Button
+          variant="outline"
+          leading={<Icon name="scan" size={14} />}
+          onClick={() => setScannerOpen(true)}
+          className="shrink-0"
+        >
+          Escanear
+        </Button>
       </div>
+      {scanWarning ? (
+        <span className="text-[14.5px] text-warn font-medium leading-snug">
+          {scanWarning}
+        </span>
+      ) : null}
       <CompatibilityPicker
         client={client}
         products={products}
         techs={techs}
         selected={selected}
         onChange={onChange}
+      />
+      <BarcodeScanner
+        open={scannerOpen}
+        onScan={handleScan}
+        onClose={() => setScannerOpen(false)}
+        hint="Apunta al código del frasco. Si no está en tu catálogo, se ignora."
       />
     </section>
   );
