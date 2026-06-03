@@ -6,7 +6,6 @@ import type { StoreId } from "@/types/store";
 import { generateId } from "@/lib/id/generate-id";
 import { SEED_PURCHASES } from "./seed";
 import { MAY_2026_PURCHASES } from "./seed-may-2026";
-import { WEEK_JUN_2026_PURCHASES } from "./seed-week-jun-2026";
 import { DEEP_2026_PURCHASES } from "./seed-deep-2026";
 import { persistent } from "./_persist";
 
@@ -33,10 +32,9 @@ export interface PurchaseRepository {
   deleteByClient(clientId: ClientId): Promise<number>;
 }
 
-const PURCHASES: Purchase[] = persistent("__clienteling.purchases.v6", () => [
+const PURCHASES: Purchase[] = persistent("__clienteling.purchases.v7", () => [
   ...SEED_PURCHASES,
   ...MAY_2026_PURCHASES,
-  ...WEEK_JUN_2026_PURCHASES,
   ...DEEP_2026_PURCHASES,
 ]);
 

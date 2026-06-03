@@ -54,10 +54,13 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
         ? "consultation"
         : "courtesy";
 
-  // Pick the dominant brand for the interaction from sampled/recommended products,
-  // falling back to the client's primary brand or the BA default.
+  // Para una BA, la atribución de la interacción SIEMPRE es su marca asignada,
+  // aunque el cliente sea multi-brand. Antes caíamos a `client.brands[0]` que
+  // podía ser la marca amiga (Lancôme para una BA YSL), atribuyendo la visita
+  // al lado equivocado. Para Gerente/Admin (demo) usamos el primer brand del
+  // cliente como antes.
   const brand =
-    client.brands[0] ?? DEFAULT_BRAND;
+    homeBrandFor(staff) ?? client.brands[0] ?? DEFAULT_BRAND;
 
   const interaction = await interactionRepository.create({
     clientId,

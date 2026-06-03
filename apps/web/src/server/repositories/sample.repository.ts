@@ -6,7 +6,6 @@ import type { Sample, SampleId } from "@/types/sample";
 import type { StoreId } from "@/types/store";
 import { SEED_SAMPLES } from "./seed";
 import { MAY_2026_SAMPLES } from "./seed-may-2026";
-import { WEEK_JUN_2026_SAMPLES } from "./seed-week-jun-2026";
 import { DEEP_2026_SAMPLES } from "./seed-deep-2026";
 import { persistent } from "./_persist";
 import { generateId } from "@/lib/id/generate-id";
@@ -55,10 +54,9 @@ export interface SampleRepository {
   deleteByClient(clientId: ClientId): Promise<number>;
 }
 
-const SAMPLES: Sample[] = persistent("__clienteling.samples.v5", () => [
+const SAMPLES: Sample[] = persistent("__clienteling.samples.v6", () => [
   ...SEED_SAMPLES,
   ...MAY_2026_SAMPLES,
-  ...WEEK_JUN_2026_SAMPLES,
   ...DEEP_2026_SAMPLES,
 ]);
 

@@ -26,7 +26,9 @@ export interface ConsentRepository {
   deleteByClient(clientId: ClientId): Promise<number>;
 }
 
-const CONSENTS: Consent[] = persistent("__clienteling.consents", () => [...SEED_CONSENTS]);
+// v2: SEED_CONSENTS pasó de 2 entradas (solo Constanza) a 99 (todos los
+// clientes × 3 canales). Bumpear invalida el caché HMR del browser.
+const CONSENTS: Consent[] = persistent("__clienteling.consents.v2", () => [...SEED_CONSENTS]);
 
 export const consentRepository: ConsentRepository = {
   async listByClient(clientId) {

@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
-import { homeStoreFor, isStoreInScope } from "@/server/auth/scope";
+import { homeBrandFor, homeStoreFor, isStoreInScope } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { clientRepository } from "@/server/repositories/client.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
@@ -46,10 +46,17 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
   const total = input.items.reduce((acc, i) => acc + i.qty * i.unitPrice, 0);
   const at = new Date(`${input.purchaseDate}T${input.purchaseTime}:00`).toISOString();
 
+  // Marca de atribución: para BA es su marca asignada; para Gerente/Admin
+  // (demo en pantalla) caemos al brand dominante del primer item del ticket
+  // o al primer brand del cliente como último recurso.
+  const brand =
+    homeBrandFor(staff) ?? client.brands[0] ?? DEFAULT_BRAND;
+
   const purchase = await purchaseRepository.create({
     clientId,
     baId: staff.id,
     storeId,
+    brand,
     at,
     items: input.items.map((i) => ({ sku: i.sku as Sku, qty: i.qty, unitPrice: i.unitPrice })),
     total,
@@ -62,7 +69,7 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
   const interaction = await interactionRepository.create({
     clientId,
     baId: staff.id,
-    brand: DEFAULT_BRAND,
+    brand,
     storeId,
     kind: "purchase",
     at,
