@@ -144,6 +144,44 @@ function isLifeEventKind(value: string | undefined): value is LifeEventKind {
   return value === "birthday" || value === "anniversary";
 }
 
+/**
+ * Devuelve la TemplateCategory más adecuada para una tarea.
+ *
+ * Para categorías altamente específicas (sample-feedback, birthday,
+ * replenishment, 3/6-month-check) la categoría manda directo — la
+ * descripción no se inspecciona. Razón: una tarea "Pedir feedback de
+ * Hydra Zen a Constanza" (category sample-feedback) tiene "feedback"
+ * en el texto, lo cual antes la mapeaba a Seguimiento. Pero la
+ * tarea es claramente de muestra, así que debe ir a Muestra.
+ *
+ * Para categorías genéricas (post-purchase, special-event, general)
+ * la descripción tiene prioridad porque la categoría es muy amplia
+ * y la intención real (cumpleaños, aniversario, promo, etc.) suele
+ * estar escrita en el texto.
+ */
+function categoryForTask(task: { category: FollowupCategory; description: string }):
+  | TemplateCategory
+  | undefined {
+  switch (task.category) {
+    case "sample-feedback":
+      return "Muestra";
+    case "birthday":
+      return "Cumpleaños";
+    case "replenishment":
+    case "6-month-check":
+      return "Reposición";
+    case "3-month-check":
+      return "Seguimiento";
+    case "post-purchase":
+    case "special-event":
+    case "general":
+      return (
+        categoryFromTaskDescription(task.description) ??
+        TASK_CATEGORY_TO_TEMPLATE[task.category]
+      );
+  }
+}
+
 /** Años cumplidos desde `iso` hasta `now`. 0 si la fecha es inválida o futura. */
 function yearsSince(iso: string | undefined, now: Date): number {
   if (!iso) return 0;
@@ -204,18 +242,17 @@ export default async function NewMessagePage({
   // Orden de prioridad para pre-seleccionar plantilla:
   //   1. Intent de evento (cumple / aniversario)
   //   2. Intent de muestra (sample)
-  //   3. Task category (Responder desde inbox) — heurística por descripción
-  //      tiene prioridad sobre el mapping de la categoría porque captura
-  //      casos especiales (aniversario etiquetado como special-event).
+  //   3. Task: si la categoría es ALTAMENTE ESPECÍFICA (sample-feedback,
+  //      birthday, replenishment, 3/6-month-check) usamos la categoría
+  //      directo — no la descripción. Antes la heurística por descripción
+  //      tenía prioridad, lo cual causaba que una tarea sample-feedback
+  //      con descripción "Pedir FEEDBACK de X" se mapeara a Seguimiento
+  //      (porque "feedback") en vez de Muestra. La descripción solo
+  //      manda para categorías genéricas donde la intención está oculta.
   const initialCategory: TemplateCategory | undefined = (() => {
     if (intent) return INTENT_TO_CATEGORY[intent];
     if (sampleIntent) return "Muestra";
-    if (initialTask) {
-      return (
-        categoryFromTaskDescription(initialTask.description) ??
-        TASK_CATEGORY_TO_TEMPLATE[initialTask.category]
-      );
-    }
+    if (initialTask) return categoryForTask(initialTask);
     return undefined;
   })();
   const intentContext: TemplateContext | undefined = (() => {

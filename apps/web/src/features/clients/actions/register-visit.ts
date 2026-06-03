@@ -176,12 +176,21 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
       sampleNames.length === 1
         ? sampleNames[0]
         : `${sampleNames.slice(0, -1).join(", ")} y ${sampleNames[sampleNames.length - 1]}`;
+    // Descripción explícita ("muestra de X") — sin ambigüedad para la BA
+    // que vea la tarea en el inbox semanas después, y permite que la
+    // heurística por palabras-clave del composer la matchee a la plantilla
+    // de Muestra como defensa en profundidad (la categoría también la
+    // resuelve directo, pero esto es belt-and-suspenders).
+    const muestraDesc =
+      sampleNames.length === 1
+        ? `Pedir feedback de la muestra de ${productList} a ${firstName}`
+        : `Pedir feedback de las muestras de ${productList} a ${firstName}`;
     await followupTaskRepository.create({
       clientId,
       baId: staff.id,
       type: "whatsapp",
       category: "sample-feedback",
-      description: `Pedir feedback de ${productList} a ${firstName}`,
+      description: muestraDesc,
       dueAt: addDaysISO(14),
       sourceInteractionId: interaction.id,
     });

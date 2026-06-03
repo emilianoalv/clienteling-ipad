@@ -28,10 +28,14 @@ import type { FollowupTask } from "@/types/followup-task";
  * En producción real esto se reemplaza por Vercel KV / Postgres.
  */
 
-const MAX_PER_TYPE = 10;
-// Clients tienen muchos campos (skin profile, preferences, etc.) — el JSON
-// pesa ~800 bytes/cliente. 5 entries caben holgadas en 4KB de cookie.
-const MAX_CLIENTS = 5;
+// Buffer suficientemente alto para una sesión completa de demo donde la BA
+// hace múltiples registros consecutivos. Cada entry ~250-400 bytes; 20 ×
+// 400 = 8KB es el peor caso. Algunos navegadores rechazan cookies > 4KB,
+// pero los modernos (Chrome / Safari ≥ 2024) aceptan hasta ~8KB.
+const MAX_PER_TYPE = 20;
+// Clients pesan ~800 bytes/cliente (skin profile, preferences, etc.).
+// 7 entries × 800 = 5.6KB → todavía dentro de tolerancia browser.
+const MAX_CLIENTS = 7;
 const MAX_AGE_SEC = 60 * 60 * 24 * 7;
 
 type Bucket = "pu" | "rc" | "sp" | "in" | "ft" | "cl" | "co" | "ap";
