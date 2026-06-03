@@ -40,15 +40,24 @@ const INTENT_TO_CATEGORY: Record<LifeEventKind, TemplateCategory> = {
 /**
  * Mapping de FollowupCategory de la tarea → TemplateCategory para
  * pre-seleccionar la plantilla correcta cuando la BA hace click en
- * "Responder" desde el inbox. Antes el composer hacía este mapping
- * internamente, pero algunos casos caían a la primera plantilla
- * cualquiera (por ejemplo Post-visita) en lugar de la de Cumpleaños.
- * Pasarlo explícito desde la page lo hace determinista.
+ * "Responder" desde el inbox. Pasarlo explícito desde la page lo
+ * hace determinista (antes el composer caía a la primera plantilla
+ * cualquiera).
+ *
+ * Decisiones clave:
+ * - "post-purchase" → "Seguimiento" (no "Post-visita"). Post-visita es
+ *   un saludo del MISMO día ("fue un placer atenderte hoy"); para
+ *   pedir feedback días después la plantilla correcta es Seguimiento
+ *   que usa {compra.productos} y {compra.dia}.
+ * - "3-month-check" también va a Seguimiento — semánticamente es lo
+ *   mismo (checar cómo le va con el producto), solo difiere en tiempo.
+ * - "6-month-check" y "replenishment" → Reposición (asume "ya casi se
+ *   acaba" y ofrece reservar).
  */
 const TASK_CATEGORY_TO_TEMPLATE: Partial<Record<FollowupCategory, TemplateCategory>> = {
   birthday: "Cumpleaños",
   "sample-feedback": "Muestra",
-  "post-purchase": "Post-visita",
+  "post-purchase": "Seguimiento",
   "3-month-check": "Seguimiento",
   "6-month-check": "Reposición",
   replenishment: "Reposición",
@@ -58,13 +67,23 @@ const TASK_CATEGORY_TO_TEMPLATE: Partial<Record<FollowupCategory, TemplateCatego
 };
 
 /**
- * Heurística: si la descripción de la task menciona "aniversario" o
- * "años contigo / años como cliente", forzar Aniversario aunque la
- * categoría diga otra cosa. Cubre el caso donde la task se etiquetó
- * como special-event/general pero claramente es saludo de aniversario.
+ * Heurística por descripción — toma prioridad sobre el mapping de
+ * categoría. Cubre dos casos:
+ *
+ * 1. Tareas mal-etiquetadas (special-event/general) que claramente son
+ *    saludos de evento (cumpleaños / aniversario).
+ * 2. Tareas con categoría genérica donde la intención específica está
+ *    en la descripción ("pedir feedback de muestra" → Muestra aunque
+ *    la categoría sea general).
+ *
+ * Lo importante es que la BA reciba el body que mejor encaja con LO
+ * QUE DICE LA TAREA, no con la categoría técnica.
  */
 function categoryFromTaskDescription(description: string): TemplateCategory | undefined {
   const d = description.toLowerCase();
+
+  // Eventos personales — máxima prioridad porque tienen mensajes muy
+  // específicos (felicitación) que no se confunden con otros casos.
   if (
     d.includes("aniversario") ||
     d.includes("años contigo") ||
@@ -75,6 +94,49 @@ function categoryFromTaskDescription(description: string): TemplateCategory | un
   if (d.includes("cumpleaños") || d.includes("cumple ")) {
     return "Cumpleaños";
   }
+
+  // Muestra: la descripción menciona el ciclo de sampling.
+  if (d.includes("muestra") || d.includes("sample") || d.includes("mini ")) {
+    return "Muestra";
+  }
+
+  // Reposición: explícitamente sugiere "ya casi se acaba" o "comprar más".
+  if (
+    d.includes("reposici") ||
+    d.includes("rellenar") ||
+    d.includes("se acaba") ||
+    d.includes("acabar") ||
+    d.includes("reservar uno nuevo")
+  ) {
+    return "Reposición";
+  }
+
+  // Promoción / lanzamiento.
+  if (d.includes("promoci") || d.includes("promo ")) {
+    return "Promoción";
+  }
+  if (d.includes("lanzamiento") || d.includes("nueva línea") || d.includes("nuevo producto")) {
+    return "Lanzamiento";
+  }
+
+  // Feedback / seguimiento post-compra — la categoría más amplia para
+  // "checar cómo le va con lo que se llevó". Cubre "pedir feedback de
+  // primera compra", "ver cómo le fue", "follow up", etc.
+  if (
+    d.includes("feedback") ||
+    d.includes("cómo le fue") ||
+    d.includes("cómo te fue") ||
+    d.includes("cómo le ha ido") ||
+    d.includes("cómo te ha ido") ||
+    d.includes("follow up") ||
+    d.includes("check-in") ||
+    d.includes("checar") ||
+    d.includes("ver cómo va") ||
+    d.includes("primera compra")
+  ) {
+    return "Seguimiento";
+  }
+
   return undefined;
 }
 
