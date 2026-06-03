@@ -24,6 +24,8 @@ export interface PurchasesPreviewProps {
  * múltiples del mismo día queden visualmente juntas. Cada fila linkea
  * al detalle. El histórico con filtros vive en /…/clients/[id]/purchases.
  */
+const PREVIEW_COUNT = 5;
+
 export function PurchasesPreview({
   purchases,
   clientId,
@@ -31,7 +33,14 @@ export function PurchasesPreview({
   productBySku,
 }: PurchasesPreviewProps) {
   const t = useTranslations();
-  const groups = useMemo(() => groupByDay(purchases), [purchases]);
+  // Solo las últimas 5 — antes el tab crecía sin límite y se volvía
+  // inmanejable en clientes con mucha historia. El "Ver todo" del header
+  // expone el historial completo con filtros y KPIs.
+  const recent = useMemo(
+    () => [...purchases].sort((a, b) => b.at.localeCompare(a.at)).slice(0, PREVIEW_COUNT),
+    [purchases],
+  );
+  const groups = useMemo(() => groupByDay(recent), [recent]);
 
   if (purchases.length === 0) {
     return (

@@ -3,7 +3,7 @@ import { Icon } from "@/components/primitives";
 import { listClients } from "@/features/clients";
 import { SaleClientPicker } from "@/features/clients/components/sale-client-picker";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
+import { assignedBaScopeFor, brandScopeFor, storeScopeFor } from "@/server/auth/scope";
 
 /**
  * Punto de entrada para "Registrar venta" desde Hoy / acciones rápidas.
@@ -12,9 +12,15 @@ import { brandScopeFor, storeScopeFor } from "@/server/auth/scope";
  */
 export default async function NewSalePage() {
   const { staff } = await requireSession();
+  // Cuando una BA registra una venta debe poder elegir SOLO sus clientes
+  // asignados — antes mostraba todos los del store + brand, lo que la dejaba
+  // abrir clientes ajenos (que después devolvían 404 en fetchClient porque
+  // isClientOwnedBy fallaba).
+  const assignedBaId = assignedBaScopeFor(staff);
   const clients = await listClients({
     brands: brandScopeFor(staff),
     storeIds: storeScopeFor(staff),
+    ...(assignedBaId ? { assignedBaId } : {}),
   });
 
   return (

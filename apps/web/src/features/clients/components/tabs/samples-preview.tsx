@@ -39,7 +39,12 @@ export function SamplesPreview({
 }: SamplesPreviewProps) {
   const t = useTranslations();
 
-  const groups = useMemo(() => groupByDay(samples), [samples]);
+  // Solo las últimas 5 — el "Ver todo" lleva al historial con KPIs y filtros.
+  const recent = useMemo(
+    () => [...samples].sort((a, b) => b.givenAt.localeCompare(a.givenAt)).slice(0, 5),
+    [samples],
+  );
+  const groups = useMemo(() => groupByDay(recent), [recent]);
 
   // Reverse lookup: sampleSku → image del producto completo. Se construye
   // una sola vez por render del tab. Los SKUs de mini no son los mismos

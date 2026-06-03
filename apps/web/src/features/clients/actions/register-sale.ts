@@ -188,8 +188,15 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
 
   await clientRepository.patchStats(clientId, applyPurchaseToStats(client.stats, total, new Date(at)));
 
+  // Invalidamos en bloque para que el perfil del cliente Y el detalle de la
+  // compra muestren la entrada recién creada sin caché stale. El detalle
+  // antes podía dar 404 si la página estaba pre-renderizada con la lista
+  // anterior.
+  revalidatePath("/ba/clients/[clientId]", "layout");
   revalidatePath(`/ba/clients/${clientId}`);
-  redirect(`/ba/clients/${clientId}?sale=${purchase.id}`);
+  revalidatePath(`/ba/clients/${clientId}/purchases`);
+  revalidatePath(`/ba/clients/${clientId}/purchases/${purchase.id}`);
+  redirect(`/ba/clients/${clientId}/purchases/${purchase.id}`);
 }
 
 /**

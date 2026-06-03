@@ -23,6 +23,8 @@ export interface RecsPreviewProps {
  * dejar varias recomendaciones y agrupar por día las muestra juntas.
  * El historial filtrado vive en /…/clients/[id]/recommendations.
  */
+const PREVIEW_COUNT = 5;
+
 export function RecsPreview({
   recommendations,
   clientId,
@@ -30,7 +32,11 @@ export function RecsPreview({
   basePath = "/ba/clients",
 }: RecsPreviewProps) {
   const t = useTranslations();
-  const groups = useMemo(() => groupByDay(recommendations), [recommendations]);
+  const recent = useMemo(
+    () => [...recommendations].sort((a, b) => b.at.localeCompare(a.at)).slice(0, PREVIEW_COUNT),
+    [recommendations],
+  );
+  const groups = useMemo(() => groupByDay(recent), [recent]);
 
   if (recommendations.length === 0) {
     return (

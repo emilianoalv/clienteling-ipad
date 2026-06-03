@@ -189,6 +189,10 @@ export async function registerVisit(raw: RegisterVisitInput): Promise<RegisterVi
 
   await clientRepository.patchStats(clientId, applyVisitToStats(client.stats));
 
+  // Invalidamos en layout-scope para que las pestañas del perfil
+  // (Recomendaciones / Muestras / Seguimientos) reflejen la nueva visita
+  // sin caché stale.
+  revalidatePath("/ba/clients/[clientId]", "layout");
   revalidatePath(`/ba/clients/${clientId}`);
   redirect(`/ba/clients/${clientId}`);
 }
