@@ -1,5 +1,8 @@
 import "server-only";
 import { cookies } from "next/headers";
+import type { Appointment } from "@/types/appointment";
+import type { Client } from "@/types/client";
+import type { Communication } from "@/types/communication";
 import type { Interaction } from "@/types/interaction";
 import type { Purchase } from "@/types/purchase";
 import type { Recommendation } from "@/types/recommendation";
@@ -26,9 +29,12 @@ import type { FollowupTask } from "@/types/followup-task";
  */
 
 const MAX_PER_TYPE = 10;
+// Clients tienen muchos campos (skin profile, preferences, etc.) — el JSON
+// pesa ~800 bytes/cliente. 5 entries caben holgadas en 4KB de cookie.
+const MAX_CLIENTS = 5;
 const MAX_AGE_SEC = 60 * 60 * 24 * 7;
 
-type Bucket = "pu" | "rc" | "sp" | "in" | "ft";
+type Bucket = "pu" | "rc" | "sp" | "in" | "ft" | "cl" | "co" | "ap";
 
 const COOKIE_NAMES: Record<Bucket, string> = {
   pu: "__cl_ov_pu",
@@ -36,6 +42,9 @@ const COOKIE_NAMES: Record<Bucket, string> = {
   sp: "__cl_ov_sp",
   in: "__cl_ov_in",
   ft: "__cl_ov_ft",
+  cl: "__cl_ov_cl",
+  co: "__cl_ov_co",
+  ap: "__cl_ov_ap",
 };
 
 type BucketType = {
@@ -44,6 +53,20 @@ type BucketType = {
   sp: Sample;
   in: Interaction;
   ft: FollowupTask;
+  cl: Client;
+  co: Communication;
+  ap: Appointment;
+};
+
+const BUCKET_MAX: Record<Bucket, number> = {
+  pu: MAX_PER_TYPE,
+  rc: MAX_PER_TYPE,
+  sp: MAX_PER_TYPE,
+  in: MAX_PER_TYPE,
+  ft: MAX_PER_TYPE,
+  cl: MAX_CLIENTS,
+  co: MAX_PER_TYPE,
+  ap: MAX_PER_TYPE,
 };
 
 async function readBucket<B extends Bucket>(bucket: B): Promise<BucketType[B][]> {
@@ -64,7 +87,7 @@ async function writeBucket<B extends Bucket>(
 ): Promise<void> {
   try {
     const store = await cookies();
-    const trimmed = items.slice(0, MAX_PER_TYPE);
+    const trimmed = items.slice(0, BUCKET_MAX[bucket]);
     store.set(COOKIE_NAMES[bucket], JSON.stringify(trimmed), {
       maxAge: MAX_AGE_SEC,
       path: "/",
@@ -93,6 +116,15 @@ export async function readOverlayInteractions(): Promise<Interaction[]> {
 export async function readOverlayFollowupTasks(): Promise<FollowupTask[]> {
   return readBucket("ft");
 }
+export async function readOverlayClients(): Promise<Client[]> {
+  return readBucket("cl");
+}
+export async function readOverlayCommunications(): Promise<Communication[]> {
+  return readBucket("co");
+}
+export async function readOverlayAppointments(): Promise<Appointment[]> {
+  return readBucket("ap");
+}
 
 export async function appendOverlayPurchase(item: Purchase): Promise<void> {
   const current = await readBucket("pu");
@@ -113,6 +145,18 @@ export async function appendOverlayInteraction(item: Interaction): Promise<void>
 export async function appendOverlayFollowupTask(item: FollowupTask): Promise<void> {
   const current = await readBucket("ft");
   await writeBucket("ft", [item, ...current.filter((t) => t.id !== item.id)]);
+}
+export async function upsertOverlayClient(item: Client): Promise<void> {
+  const current = await readBucket("cl");
+  await writeBucket("cl", [item, ...current.filter((c) => c.id !== item.id)]);
+}
+export async function appendOverlayCommunication(item: Communication): Promise<void> {
+  const current = await readBucket("co");
+  await writeBucket("co", [item, ...current.filter((m) => m.id !== item.id)]);
+}
+export async function upsertOverlayAppointment(item: Appointment): Promise<void> {
+  const current = await readBucket("ap");
+  await writeBucket("ap", [item, ...current.filter((a) => a.id !== item.id)]);
 }
 
 /**

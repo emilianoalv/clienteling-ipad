@@ -7,6 +7,7 @@ import { generateId } from "@/lib/id/generate-id";
 import { SEED_COMMUNICATIONS } from "./seed";
 import { MAY_2026_COMMUNICATIONS } from "./seed-may-2026";
 import { persistent } from "./_persist";
+import { appendOverlayCommunication, readOverlayCommunications } from "./_overlay";
 
 export interface CommunicationListFilter {
   brands?: readonly BrandId[];
@@ -31,11 +32,23 @@ const COMMUNICATIONS: Communication[] = persistent("__clienteling.communications
   ...MAY_2026_COMMUNICATIONS,
 ]);
 
+async function mergedComms(): Promise<Communication[]> {
+  const overlay = await readOverlayCommunications();
+  const seen = new Set<string>(overlay.map((c) => c.id as unknown as string));
+  const merged: Communication[] = [...overlay];
+  for (const c of COMMUNICATIONS) {
+    if (seen.has(c.id as unknown as string)) continue;
+    merged.push(c);
+  }
+  return merged;
+}
+
 export const communicationRepository: CommunicationRepository = {
   async list(filter = {}) {
     const brandScope = filter.brands;
     const storeScope = filter.storeIds;
-    return COMMUNICATIONS.filter((c) => {
+    const all = await mergedComms();
+    return all.filter((c) => {
       if (brandScope && brandScope.length && !brandScope.includes(c.brand)) return false;
       if (storeScope && storeScope.length && !storeScope.includes(c.storeId)) return false;
       if (filter.channel && c.channel !== filter.channel) return false;
@@ -44,7 +57,8 @@ export const communicationRepository: CommunicationRepository = {
   },
 
   async listByClient(clientId) {
-    return COMMUNICATIONS.filter((c) => c.clientId === clientId).sort((a, b) =>
+    const all = await mergedComms();
+    return all.filter((c) => c.clientId === clientId).sort((a, b) =>
       b.at.localeCompare(a.at),
     );
   },
@@ -53,6 +67,7 @@ export const communicationRepository: CommunicationRepository = {
     const id = generateId("co") as CommunicationId;
     const comm: Communication = { ...input, id };
     COMMUNICATIONS.unshift(comm);
+    await appendOverlayCommunication(comm);
     return comm;
   },
 

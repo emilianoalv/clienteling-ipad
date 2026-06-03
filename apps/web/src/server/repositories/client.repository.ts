@@ -6,6 +6,7 @@ import type { StoreId } from "@/types/store";
 import { generateId } from "@/lib/id/generate-id";
 import { SEED_CLIENTS } from "./seed";
 import { persistent } from "./_persist";
+import { readOverlayClients, upsertOverlayClient } from "./_overlay";
 
 export interface ClientListFilter {
   query?: string;
@@ -82,18 +83,33 @@ const CLIENTS = persistent(
   () => new Map<ClientId, Client>(SEED_CLIENTS.map((c) => [c.id, c])),
 );
 
+/**
+ * Merge overlay-first + seed in-memory, deduped por id. Necesario porque en
+ * Vercel serverless las escrituras en `CLIENTS` (in-memory) no sobreviven el
+ * salto entre lambdas — los nuevos clientes desaparecían y sus compras
+ * subsiguientes se mostraban como "Cliente eliminado".
+ */
+async function mergedClients(): Promise<Map<string, Client>> {
+  const overlay = await readOverlayClients();
+  const merged = new Map<string, Client>();
+  // Seed primero, overlay después → overlay sobreescribe (autoritativo).
+  for (const [id, c] of CLIENTS.entries()) merged.set(id as unknown as string, c);
+  for (const c of overlay) merged.set(c.id as unknown as string, c);
+  return merged;
+}
+
 export const clientRepository: ClientRepository = {
   async findById(id) {
-    return CLIENTS.get(id) ?? null;
+    const merged = await mergedClients();
+    return merged.get(id as unknown as string) ?? null;
   },
 
   async findByContact(query) {
     const needle = query.trim().toLowerCase();
     if (!needle) return null;
-    // Normaliza el query: si parece teléfono (dígitos), busca por sufijo de
-    // 10 dígitos para tolerar variantes con/sin code "+52".
     const digits = needle.replace(/\D/g, "");
-    for (const c of CLIENTS.values()) {
+    const merged = await mergedClients();
+    for (const c of merged.values()) {
       if (c.email.toLowerCase() === needle) return c;
       const phoneDigits = c.phone.replace(/\D/g, "");
       if (digits.length >= 7 && phoneDigits.endsWith(digits)) return c;
@@ -102,7 +118,8 @@ export const clientRepository: ClientRepository = {
   },
 
   async list(filter = {}) {
-    const all = Array.from(CLIENTS.values());
+    const merged = await mergedClients();
+    const all = Array.from(merged.values());
     const query = filter.query?.trim().toLowerCase();
     const brandScope = filter.brands;
     const storeScope = filter.storeIds;
@@ -111,9 +128,6 @@ export const clientRepository: ClientRepository = {
       if (filter.brand && !c.brands.includes(filter.brand)) return false;
       if (brandScope && brandScope.length && !c.brands.some((b) => brandScope.includes(b))) return false;
       if (storeScope && storeScope.length && !storeScope.includes(c.storeId)) return false;
-      // Guard defensivo: clientes que viven en cache persistent de una
-      // versión previa (pre v4) no tienen assignedBaIds. Tratarlos como
-      // sin asignar — la BA tendrá que vincularlos vía el buscador.
       if (baFilter && !(c.assignedBaIds ?? []).includes(baFilter)) return false;
       if (!query) return true;
       const haystack = `${c.name} ${c.email} ${c.phone}`.toLowerCase();
@@ -125,13 +139,22 @@ export const clientRepository: ClientRepository = {
     const id = generateId("cl") as ClientId;
     const client: Client = { ...input, id };
     CLIENTS.set(id, client);
+    await upsertOverlayClient(client);
     return client;
   },
 
   async patchStats(id, stats) {
-    const current = CLIENTS.get(id);
+    // Buscamos primero en seed in-memory; si no, en overlay (caso típico
+    // post-venta de un cliente recién creado en otro lambda).
+    let current = CLIENTS.get(id) ?? null;
+    if (!current) {
+      const overlay = await readOverlayClients();
+      current = overlay.find((c) => c.id === id) ?? null;
+    }
     if (!current) return;
-    CLIENTS.set(id, { ...current, stats });
+    const next: Client = { ...current, stats };
+    CLIENTS.set(id, next);
+    await upsertOverlayClient(next);
   },
 
   async delete(id) {
@@ -139,9 +162,12 @@ export const clientRepository: ClientRepository = {
   },
 
   async linkBa(id, baId, brand) {
-    const current = CLIENTS.get(id);
+    let current = CLIENTS.get(id) ?? null;
+    if (!current) {
+      const overlay = await readOverlayClients();
+      current = overlay.find((c) => c.id === id) ?? null;
+    }
     if (!current) return null;
-    // Defensivo contra cache pre v4: trata undefined como vacío.
     const currentAssigned = current.assignedBaIds ?? [];
     const alreadyHasBa = currentAssigned.includes(baId);
     const alreadyHasBrand = current.brands.includes(brand);
@@ -152,14 +178,17 @@ export const clientRepository: ClientRepository = {
       brands: alreadyHasBrand ? current.brands : [...current.brands, brand],
     };
     CLIENTS.set(id, next);
+    await upsertOverlayClient(next);
     return next;
   },
 
   async patchProfile(id, patch) {
-    const current = CLIENTS.get(id);
+    let current = CLIENTS.get(id) ?? null;
+    if (!current) {
+      const overlay = await readOverlayClients();
+      current = overlay.find((c) => c.id === id) ?? null;
+    }
     if (!current) return null;
-    // Build merged client; explicitly drop keys set to undefined so the
-    // editor can clear optional fields (routineSteps, ingredient lists).
     const next: Client = { ...current, ...patch };
     if ("routineSteps" in patch && patch.routineSteps === undefined) {
       delete (next as Partial<Client>).routineSteps;
@@ -171,6 +200,7 @@ export const clientRepository: ClientRepository = {
       delete (next as Partial<Client>).avoidedIngredients;
     }
     CLIENTS.set(id, next);
+    await upsertOverlayClient(next);
     return next;
   },
 };

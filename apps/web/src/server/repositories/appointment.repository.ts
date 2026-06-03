@@ -6,6 +6,7 @@ import type { StaffId } from "@/types/staff";
 import type { StoreId } from "@/types/store";
 import { generateId } from "@/lib/id/generate-id";
 import { persistent } from "./_persist";
+import { readOverlayAppointments, upsertOverlayAppointment } from "./_overlay";
 
 // Match user.repository.ts and seed.ts IDs.
 const BA_POL_LCM_1 = "us-ba-pol-lcm-1" as StaffId;
@@ -437,11 +438,23 @@ export interface AppointmentRepository {
   deleteByClient(clientId: ClientId): Promise<number>;
 }
 
+async function mergedAppointments(): Promise<Appointment[]> {
+  const overlay = await readOverlayAppointments();
+  const seen = new Set<string>(overlay.map((a) => a.id as unknown as string));
+  const merged: Appointment[] = [...overlay];
+  for (const a of APPOINTMENTS) {
+    if (seen.has(a.id as unknown as string)) continue;
+    merged.push(a);
+  }
+  return merged;
+}
+
 export const appointmentRepository: AppointmentRepository = {
   async list(filter = {}) {
     const brandScope = filter.brands;
     const storeScope = filter.storeIds;
-    return APPOINTMENTS.filter((a) => {
+    const all = await mergedAppointments();
+    return all.filter((a) => {
       if (filter.baId && a.baId !== filter.baId) return false;
       if (brandScope && brandScope.length && !brandScope.includes(a.brand)) return false;
       if (storeScope && storeScope.length && !storeScope.includes(a.storeId)) return false;
@@ -454,7 +467,8 @@ export const appointmentRepository: AppointmentRepository = {
 
   async listByClient(clientId, filter = {}) {
     const brandScope = filter.brands;
-    return APPOINTMENTS.filter((a) => {
+    const all = await mergedAppointments();
+    return all.filter((a) => {
       if (a.clientId !== clientId) return false;
       if (brandScope && brandScope.length && !brandScope.includes(a.brand)) return false;
       return true;
@@ -462,22 +476,32 @@ export const appointmentRepository: AppointmentRepository = {
   },
 
   async findById(id) {
-    return APPOINTMENTS.find((a) => a.id === id) ?? null;
+    const all = await mergedAppointments();
+    return all.find((a) => a.id === id) ?? null;
   },
 
   async create(input) {
     const id = generateId("ap") as AppointmentId;
     const appointment: Appointment = { ...input, id };
     APPOINTMENTS.push(appointment);
+    await upsertOverlayAppointment(appointment);
     return appointment;
   },
 
   async patch(id, patch) {
     const idx = APPOINTMENTS.findIndex((a) => a.id === id);
-    if (idx < 0) return null;
-    const current = APPOINTMENTS[idx]!;
-    const next: Appointment = { ...current, ...patch };
-    APPOINTMENTS[idx] = next;
+    let next: Appointment | null = null;
+    if (idx >= 0) {
+      const current = APPOINTMENTS[idx]!;
+      next = { ...current, ...patch };
+      APPOINTMENTS[idx] = next;
+    } else {
+      const overlay = await readOverlayAppointments();
+      const found = overlay.find((a) => a.id === id);
+      if (!found) return null;
+      next = { ...found, ...patch };
+    }
+    await upsertOverlayAppointment(next);
     return next;
   },
 
