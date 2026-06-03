@@ -858,6 +858,7 @@ export const SEED_CLIENTS: Client[] = [
     affinities: ["Sérum antiedad", "Hidratación profunda"],
     interests: ["Skincare", "Fragancia"],
     routine: "Intermedia",
+    routineTiming: ["morning", "evening"],
     routineSteps: ["cleanser", "serum", "moisturizer", "spf"],
     preferredIngredients: ["niacinamida", "vitamina c", "hialurónico"],
     gender: "Femenino",

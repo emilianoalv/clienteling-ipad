@@ -73,6 +73,14 @@ interface Draft {
 }
 
 function buildDraft(client: Client): Draft {
+  // Default seguro: clientes seedeados antes de la migración de routineTiming
+  // no tienen el campo, y el schema exige al menos uno al guardar (min 1).
+  // Sin este default, "Editar perfil" → "Guardar" fallaba con error de
+  // validación sin que la BA hubiera tocado nada. "morning" es el mínimo
+  // razonable para alguien con rutina básica o superior.
+  const seededTiming = client.routineTiming ?? [];
+  const timingDefault: RoutineTiming[] =
+    seededTiming.length > 0 ? [...seededTiming] : ["morning"];
   return {
     skinType: client.skin.type,
     tone: client.skin.tone === "—" ? "" : client.skin.tone,
@@ -81,7 +89,7 @@ function buildDraft(client: Client): Draft {
     allergies: [...client.allergies],
     allergiesText: client.allergies.join(", "),
     routineLevel: client.routine,
-    routineTiming: [...(client.routineTiming ?? [])],
+    routineTiming: timingDefault,
     routineSteps: [...(client.routineSteps ?? [])],
     interests: [...client.interests],
     preferredIngredients: [...(client.preferredIngredients ?? [])],
