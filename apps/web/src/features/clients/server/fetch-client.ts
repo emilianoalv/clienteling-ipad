@@ -64,14 +64,16 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     products,
   ] = await Promise.all([
     clientRepository.findById(clientId),
-    interactionRepository.listByClient(clientId),
-    purchaseRepository.listByClient(clientId),
-    sampleRepository.listByClient(clientId),
-    recommendationRepository.listByClient(clientId),
+    // Todas las listas del perfil están brand-scopeadas: en clientes
+    // multi-brand, una BA YSL solo ve actividad YSL (compras, recs,
+    // muestras, interacciones, citas). Antes mostraba ambas marcas y
+    // la usuaria reportó confusión — "una venta Lancôme no tiene por
+    // qué aparecer en mi perfil YSL aunque sea el mismo cliente".
+    interactionRepository.listByClient(clientId, { brands: brandScopeFor(staff) }),
+    purchaseRepository.listByClient(clientId, { brands: brandScopeFor(staff) }),
+    sampleRepository.listByClient(clientId, { brands: brandScopeFor(staff) }),
+    recommendationRepository.listByClient(clientId, { brands: brandScopeFor(staff) }),
     consentRepository.listByClient(clientId),
-    // Citas: SÍ scopeadas por marca — una BA Lancôme no debe ver citas YSL
-    // del cliente compartido, ni viceversa. La marca define el flujo de
-    // trabajo (kind, briefing, productos) y el "owner" de la cita.
     appointmentRepository.listByClient(clientId, { brands: brandScopeFor(staff) }),
     communicationRepository.listByClient(clientId),
     followupTaskRepository.listByClient(clientId),

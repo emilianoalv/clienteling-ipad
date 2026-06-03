@@ -26,6 +26,14 @@ function initials(name: string): string {
 
 export interface SaleClientPickerProps {
   clients: readonly Client[];
+  /**
+   * Marca de la BA en sesión. Si viene, los chips y el tone del avatar
+   * usan esta marca en vez de client.brands[0] — es la marca con la que
+   * la BA está REGISTRANDO la venta, no la marca "primaria" del cliente
+   * multi-brand. Para Gerente/Admin (sin marca propia) se omite y se cae
+   * al primer brand del cliente.
+   */
+  brand?: string;
 }
 
 /**
@@ -34,7 +42,7 @@ export interface SaleClientPickerProps {
  * (`/ba/clients/[id]/sale`) — así no duplicamos el RegisterSaleForm y
  * la BA termina en el mismo lugar que si hubiera entrado por el perfil.
  */
-export function SaleClientPicker({ clients }: SaleClientPickerProps) {
+export function SaleClientPicker({ clients, brand }: SaleClientPickerProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -70,7 +78,11 @@ export function SaleClientPicker({ clients }: SaleClientPickerProps) {
                 onClick={() => router.push(`/ba/clients/${c.id}/sale`)}
                 className="grid grid-cols-[40px_1fr_auto] gap-3 items-center w-full p-3 bg-white border border-line rounded-lg cursor-pointer text-left text-ink hover:border-ink/30 hover:bg-bone/40 transition-colors"
               >
-                <Avatar initials={initials(c.name)} size={36} tone={tone(c.brands[0])} />
+                <Avatar
+                  initials={initials(c.name)}
+                  size={36}
+                  tone={tone(brand ?? c.brands[0])}
+                />
                 <div className="min-w-0">
                   <div className="text-[16px] font-semibold leading-tight truncate">{c.name}</div>
                   <div className="text-[14px] text-ink/60 leading-snug truncate">
@@ -78,7 +90,7 @@ export function SaleClientPicker({ clients }: SaleClientPickerProps) {
                   </div>
                 </div>
                 <span className="text-[13.5px] font-semibold text-ink/55 uppercase tracking-[0.06em]">
-                  {c.brands[0]}
+                  {brand ?? c.brands[0]}
                 </span>
               </button>
             </li>

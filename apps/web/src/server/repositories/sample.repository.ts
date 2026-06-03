@@ -8,6 +8,11 @@ import { SEED_SAMPLES } from "./seed";
 import { MAY_2026_SAMPLES } from "./seed-may-2026";
 import { DEEP_2026_SAMPLES } from "./seed-deep-2026";
 import { persistent } from "./_persist";
+import {
+  appendOverlaySample,
+  readOverlaySamples,
+  upsertOverlaySample,
+} from "./_overlay";
 import { generateId } from "@/lib/id/generate-id";
 
 export interface SampleInventoryItem {
@@ -35,7 +40,10 @@ export interface SampleListFilter {
 
 export interface SampleRepository {
   list(filter?: SampleListFilter): Promise<Sample[]>;
-  listByClient(clientId: ClientId): Promise<Sample[]>;
+  listByClient(
+    clientId: ClientId,
+    filter?: { brands?: readonly BrandId[] },
+  ): Promise<Sample[]>;
   findById(id: SampleId): Promise<Sample | null>;
   listInventory(filter?: { brands?: readonly BrandId[] }): Promise<SampleInventoryItem[]>;
   /**
@@ -88,12 +96,25 @@ const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInvento
   { sku: "YS-MYS-7", name: "MYSLF EDP Hombre 1.2ml vial", have: 16, capacity: 35, brand: "YSL" },
 ]);
 
+/** Overlay primero (cookies) + seed in-memory, deduped por id. */
+async function mergedSamples(): Promise<Sample[]> {
+  const overlay = await readOverlaySamples();
+  const seen = new Set<string>(overlay.map((s) => s.id as unknown as string));
+  const merged: Sample[] = [...overlay];
+  for (const s of SAMPLES) {
+    if (seen.has(s.id as unknown as string)) continue;
+    merged.push(s);
+  }
+  return merged;
+}
+
 export const sampleRepository: SampleRepository = {
   async list(filter = {}) {
     const brandScope = filter.brands;
     const storeScope = filter.storeIds;
     const baFilter = filter.baId;
-    return SAMPLES.filter((s) => {
+    const all = await mergedSamples();
+    return all.filter((s) => {
       if (brandScope && brandScope.length && !brandScope.includes(s.brand)) return false;
       if (storeScope && storeScope.length && !storeScope.includes(s.storeId)) return false;
       if (baFilter && s.baId !== baFilter) return false;
@@ -104,14 +125,21 @@ export const sampleRepository: SampleRepository = {
     }).sort((a, b) => b.givenAt.localeCompare(a.givenAt));
   },
 
-  async listByClient(clientId) {
-    return SAMPLES.filter((s) => s.clientId === clientId).sort((a, b) =>
-      b.givenAt.localeCompare(a.givenAt),
-    );
+  async listByClient(clientId, filter = {}) {
+    const brandScope = filter.brands;
+    const all = await mergedSamples();
+    return all
+      .filter((s) => {
+        if (s.clientId !== clientId) return false;
+        if (brandScope && brandScope.length && !brandScope.includes(s.brand)) return false;
+        return true;
+      })
+      .sort((a, b) => b.givenAt.localeCompare(a.givenAt));
   },
 
   async findById(id) {
-    return SAMPLES.find((s) => s.id === id) ?? null;
+    const all = await mergedSamples();
+    return all.find((s) => s.id === id) ?? null;
   },
 
   async listInventory(filter = {}) {
@@ -139,15 +167,25 @@ export const sampleRepository: SampleRepository = {
     const id = generateId("sm") as SampleId;
     const sample: Sample = { ...input, id };
     SAMPLES.unshift(sample);
+    await appendOverlaySample(sample);
     return sample;
   },
 
   async markConverted(id, purchaseId) {
     const idx = SAMPLES.findIndex((s) => s.id === id);
-    if (idx < 0) return null;
-    const current = SAMPLES[idx]!;
-    const next: Sample = { ...current, converted: true, purchaseId };
-    SAMPLES[idx] = next;
+    let next: Sample | null = null;
+    if (idx >= 0) {
+      const current = SAMPLES[idx]!;
+      next = { ...current, converted: true, purchaseId };
+      SAMPLES[idx] = next;
+    } else {
+      // Item live solo en overlay (creado en otro lambda).
+      const overlay = await readOverlaySamples();
+      const found = overlay.find((s) => s.id === id);
+      if (!found) return null;
+      next = { ...found, converted: true, purchaseId };
+    }
+    await upsertOverlaySample(next);
     return next;
   },
 

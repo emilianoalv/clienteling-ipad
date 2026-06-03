@@ -9,6 +9,7 @@ import type { ClientId } from "@/types/client";
 import type { StaffId } from "@/types/staff";
 import { generateId } from "@/lib/id/generate-id";
 import { persistent } from "./_persist";
+import { appendOverlayFollowupTask, readOverlayFollowupTasks } from "./_overlay";
 
 // BAs reales del seed post-refactor (ver user.repository.ts).
 const BA_POL_LCM_1 = "us-ba-pol-lcm-1" as StaffId; // Valentina Ríos
@@ -574,21 +575,36 @@ function sortByDue(a: FollowupTask, b: FollowupTask): number {
   return a.dueAt.localeCompare(b.dueAt);
 }
 
+async function mergedTasks(): Promise<FollowupTask[]> {
+  const overlay = await readOverlayFollowupTasks();
+  const seen = new Set<string>(overlay.map((t) => t.id as unknown as string));
+  const merged: FollowupTask[] = [...overlay];
+  for (const t of TASKS) {
+    if (seen.has(t.id as unknown as string)) continue;
+    merged.push(t);
+  }
+  return merged;
+}
+
 export const followupTaskRepository: FollowupTaskRepository = {
   async list(filter = {}) {
-    return TASKS.filter((t) => matches(t, filter)).sort(sortByDue);
+    const all = await mergedTasks();
+    return all.filter((t) => matches(t, filter)).sort(sortByDue);
   },
 
   async listByClient(clientId) {
-    return TASKS.filter((t) => t.clientId === clientId).sort(sortByDue);
+    const all = await mergedTasks();
+    return all.filter((t) => t.clientId === clientId).sort(sortByDue);
   },
 
   async listByBA(baId, filter = {}) {
-    return TASKS.filter((t) => t.baId === baId && matches(t, filter)).sort(sortByDue);
+    const all = await mergedTasks();
+    return all.filter((t) => t.baId === baId && matches(t, filter)).sort(sortByDue);
   },
 
   async findById(id) {
-    return TASKS.find((t) => t.id === id) ?? null;
+    const all = await mergedTasks();
+    return all.find((t) => t.id === id) ?? null;
   },
 
   async create(input) {
@@ -600,6 +616,7 @@ export const followupTaskRepository: FollowupTaskRepository = {
       createdAt: new Date().toISOString(),
     };
     TASKS.unshift(task);
+    await appendOverlayFollowupTask(task);
     return task;
   },
 

@@ -8,6 +8,7 @@ import { SEED_PURCHASES } from "./seed";
 import { MAY_2026_PURCHASES } from "./seed-may-2026";
 import { DEEP_2026_PURCHASES } from "./seed-deep-2026";
 import { persistent } from "./_persist";
+import { appendOverlayPurchase, readOverlayPurchases } from "./_overlay";
 
 export interface PurchaseListFilter {
   /** Brand scope (intersection). Skips entries whose `brand` is set and not in the scope. */
@@ -25,11 +26,35 @@ export interface PurchaseListFilter {
 
 export interface PurchaseRepository {
   list(filter?: PurchaseListFilter): Promise<Purchase[]>;
-  listByClient(clientId: ClientId): Promise<Purchase[]>;
+  /**
+   * Lista compras de un cliente. Si `brands` viene, filtra al brand-scope
+   * del staff — necesario para que en perfiles multi-brand una BA YSL solo
+   * vea sus compras YSL (y viceversa).
+   */
+  listByClient(
+    clientId: ClientId,
+    filter?: { brands?: readonly BrandId[] },
+  ): Promise<Purchase[]>;
   findById(id: PurchaseId): Promise<Purchase | null>;
   create(input: Omit<Purchase, "id">): Promise<Purchase>;
   /** ARCO cascade — borra todas las compras de un cliente. */
   deleteByClient(clientId: ClientId): Promise<number>;
+}
+
+/**
+ * Merge overlay-first (más recientes / autoritativos) con el seed in-memory,
+ * deduped por id. Permite que las escrituras en serverless sobrevivan el
+ * salto entre lambdas vía cookies.
+ */
+async function mergedPurchases(): Promise<Purchase[]> {
+  const overlay = await readOverlayPurchases();
+  const seen = new Set<string>(overlay.map((p) => p.id as unknown as string));
+  const merged: Purchase[] = [...overlay];
+  for (const p of PURCHASES) {
+    if (seen.has(p.id as unknown as string)) continue;
+    merged.push(p);
+  }
+  return merged;
 }
 
 const PURCHASES: Purchase[] = persistent("__clienteling.purchases.v7", () => [
@@ -44,7 +69,8 @@ export const purchaseRepository: PurchaseRepository = {
     const storeScope = filter.storeIds;
     const baFilter = filter.baId;
     const query = filter.query?.trim().toLowerCase();
-    return PURCHASES.filter((p) => {
+    const all = await mergedPurchases();
+    return all.filter((p) => {
       if (brandScope && brandScope.length && p.brand && !brandScope.includes(p.brand)) return false;
       if (storeScope && storeScope.length && !storeScope.includes(p.storeId)) return false;
       if (baFilter && p.baId !== baFilter) return false;
@@ -53,18 +79,28 @@ export const purchaseRepository: PurchaseRepository = {
     }).sort((a, b) => b.at.localeCompare(a.at));
   },
 
-  async listByClient(clientId) {
-    return PURCHASES.filter((p) => p.clientId === clientId).sort((a, b) => b.at.localeCompare(a.at));
+  async listByClient(clientId, filter = {}) {
+    const brandScope = filter.brands;
+    const all = await mergedPurchases();
+    return all
+      .filter((p) => {
+        if (p.clientId !== clientId) return false;
+        if (brandScope && brandScope.length && p.brand && !brandScope.includes(p.brand)) return false;
+        return true;
+      })
+      .sort((a, b) => b.at.localeCompare(a.at));
   },
 
   async findById(id) {
-    return PURCHASES.find((p) => p.id === id) ?? null;
+    const all = await mergedPurchases();
+    return all.find((p) => p.id === id) ?? null;
   },
 
   async create(input) {
     const id = generateId("pu") as PurchaseId;
     const purchase: Purchase = { ...input, id };
     PURCHASES.unshift(purchase);
+    await appendOverlayPurchase(purchase);
     return purchase;
   },
 

@@ -3,7 +3,7 @@ import { Icon } from "@/components/primitives";
 import { listClients } from "@/features/clients";
 import { SaleClientPicker } from "@/features/clients/components/sale-client-picker";
 import { requireSession } from "@/server/auth/session";
-import { assignedBaScopeFor, brandScopeFor, storeScopeFor } from "@/server/auth/scope";
+import { assignedBaScopeFor, brandScopeFor, homeBrandFor, storeScopeFor } from "@/server/auth/scope";
 
 /**
  * Punto de entrada para "Registrar venta" desde Hoy / acciones rápidas.
@@ -51,7 +51,10 @@ export default async function NewSalePage() {
         </p>
       </header>
 
-      <SaleClientPicker clients={clients} />
+      <SaleClientPicker
+        clients={clients}
+        {...(homeBrandFor(staff) ? { brand: homeBrandFor(staff)! } : {})}
+      />
     </section>
   );
 }

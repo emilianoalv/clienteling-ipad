@@ -5,6 +5,7 @@ import { SampleHistory } from "@/features/clients/components/sample-history";
 import { productRepository } from "@/server/repositories/product.repository";
 import { sampleRepository } from "@/server/repositories/sample.repository";
 import { requireSession } from "@/server/auth/session";
+import { brandScopeFor } from "@/server/auth/scope";
 import type { ClientId } from "@/types/client";
 import type { Product } from "@/types/product";
 
@@ -20,7 +21,7 @@ export default async function SupervisorSamplesPage({
   const { staff } = await requireSession();
   const [client, samples, products] = await Promise.all([
     fetchClient(clientId, staff),
-    sampleRepository.listByClient(clientId as ClientId),
+    sampleRepository.listByClient(clientId as ClientId, { brands: brandScopeFor(staff) }),
     productRepository.list(),
   ]);
 
