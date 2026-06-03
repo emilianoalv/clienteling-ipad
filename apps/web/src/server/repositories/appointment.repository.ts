@@ -400,9 +400,39 @@ const SEED: Appointment[] = [
     status: "confirmed",
     notes: "Cabina YSL VIP — exploración fragancia + cuidado completo.",
   },
+
+  // ── Alma Beltrán · 2 citas (1 completada + 1 futura) ────────────────────
+  // Cita pasada (hace 10 días): diagnóstico que originó la upgrade premium.
+  {
+    id: "ap-alma-1" as AppointmentId,
+    clientId: "cl-alma" as ClientId,
+    baId: BA_POL_LCM_1,
+    brand: "Lancôme",
+    storeId: ST_POL,
+    at: relativeISO(-10, 11, 30),
+    durationMin: 45,
+    kind: "diagnosis",
+    status: "completed",
+    notes: "Diagnóstico de piel. Confirmar interés en línea Absolue.",
+  },
+  // Cita futura (en 3 días): consulta de fragancia tras la upgrade premium.
+  {
+    id: "ap-alma-2" as AppointmentId,
+    clientId: "cl-alma" as ClientId,
+    baId: BA_POL_LCM_1,
+    brand: "Lancôme",
+    storeId: ST_POL,
+    at: relativeISO(3, 16, 0),
+    durationMin: 60,
+    kind: "fragrance-consult",
+    status: "confirmed",
+    notes: "Consulta de fragancia — explorar familia oriental y floral.",
+  },
 ];
 
-const APPOINTMENTS: Appointment[] = persistent("__clienteling.appointments.v6", () => [...SEED]);
+// v7 invalida v6: agregadas 2 citas de Alma Beltrán al seed. Bumpear fuerza
+// recarga del seed en el cache del browser.
+const APPOINTMENTS: Appointment[] = persistent("__clienteling.appointments.v7", () => [...SEED]);
 
 export interface AppointmentListFilter {
   baId?: StaffId;

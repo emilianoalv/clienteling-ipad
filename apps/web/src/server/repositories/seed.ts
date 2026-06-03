@@ -827,6 +827,44 @@ export const SEED_CLIENTS: Client[] = [
     createdByBaId: BA_STF_LCM_1,
     assignedBaIds: [BA_STF_LCM_1, BA_STF_YSL_1],
   },
+
+  // ── Alma Beltrán · Polanco · Lancôme — clienta demo de Valentina ─────────
+  // Perfil completo creado específicamente para la presentación: actividad
+  // distribuida en 6 meses (1ra compra dic 2025, reposición abr 2026, upgrade
+  // premium may 2026), 2 recs con 1 conversión, 2 muestras con 1 conversión,
+  // 2 citas (1 completada + 1 futura).
+  {
+    id: "cl-alma" as ClientId,
+    name: "Alma Beltrán",
+    phone: "5587654400",
+    email: "alma.beltran@example.mx",
+    birthday: "1993-08-14",
+    city: "Ciudad de México",
+    age: 32,
+    preferredLang: "es-MX",
+    since: "2024-09-15",
+    tier: "Icon",
+    brands: ["Lancôme"],
+    storeId: ST_POL,
+    skin: {
+      type: "Mixta",
+      concerns: ["Hidratación", "Luminosidad", "Manchas"],
+      tone: "Medio cálido",
+      subtone: "neutro",
+    },
+    allergies: [],
+    loyalty: { name: "Luxe Circle", tier: "Icon", points: 4500, toNext: 500 },
+    stats: { ltv: 17_400, visits: 3, avgTicket: 5_800, lastPurchase: "2026-05-27" },
+    affinities: ["Sérum antiedad", "Hidratación profunda"],
+    interests: ["Skincare", "Fragancia"],
+    routine: "Intermedia",
+    routineSteps: ["cleanser", "serum", "moisturizer", "spf"],
+    preferredIngredients: ["niacinamida", "vitamina c", "hialurónico"],
+    gender: "Femenino",
+    ageRange: "25-34",
+    createdByBaId: BA_POL_LCM_1,
+    assignedBaIds: [BA_POL_LCM_1],
+  },
 ];
 
 export const SEED_PURCHASES: Purchase[] = [
@@ -2968,6 +3006,34 @@ export const SEED_CONSENTS: Consent[] = [
     channel: "WhatsApp",
     status: "granted",
     at: "2025-10-01T00:00:00.000Z",
+    version: "v2026.03",
+    source: "in-store",
+  },
+  // ── Alma Beltrán (3 canales) ─────────────────────────────────────────────
+  {
+    id: "co-100" as Consent["id"],
+    clientId: "cl-alma" as ClientId,
+    channel: "SMS",
+    status: "granted",
+    at: "2024-09-15T00:00:00.000Z",
+    version: "v2026.03",
+    source: "in-store",
+  },
+  {
+    id: "co-101" as Consent["id"],
+    clientId: "cl-alma" as ClientId,
+    channel: "Email",
+    status: "granted",
+    at: "2024-09-15T00:00:00.000Z",
+    version: "v2026.03",
+    source: "in-store",
+  },
+  {
+    id: "co-102" as Consent["id"],
+    clientId: "cl-alma" as ClientId,
+    channel: "WhatsApp",
+    status: "granted",
+    at: "2024-09-15T00:00:00.000Z",
     version: "v2026.03",
     source: "in-store",
   },

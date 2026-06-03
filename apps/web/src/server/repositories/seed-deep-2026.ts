@@ -1513,6 +1513,59 @@ export const DEEP_2026_PURCHASES: Purchase[] = [
     brand: "YSL",
     ticketRef: "YS-260601-1102",
   },
+
+  // ── Alma Beltrán · 3 compras spread (dic 2025 → may 2026) ───────────────
+  // Showcases purchase journey: first-buy → repurchase → premium upgrade.
+  // Compra 1 (Dic 2025): primera compra grande post-onboarding. Genifique +
+  //   Hydra Zen como kit inicial.
+  {
+    id: "pu-alma-1" as Purchase["id"],
+    clientId: "cl-alma" as ClientId,
+    baId: "us-ba-pol-lcm-1" as StaffId,
+    storeId: "st-pol" as StoreId,
+    at: "2025-12-10T22:30:00.000Z",
+    items: [
+      { sku: "LC-GEN-50" as Sku, qty: 1, unitPrice: 2250 },
+      { sku: "LC-HZN-50" as Sku, qty: 1, unitPrice: 1550 },
+    ],
+    total: 3800,
+    payment: "card",
+    brand: "Lancôme",
+    ticketRef: "LV-251210-4521",
+  },
+  // Compra 2 (Abr 2026): reposición del sérum + adición de base.
+  {
+    id: "pu-alma-2" as Purchase["id"],
+    clientId: "cl-alma" as ClientId,
+    baId: "us-ba-pol-lcm-1" as StaffId,
+    storeId: "st-pol" as StoreId,
+    at: "2026-04-12T20:15:00.000Z",
+    items: [
+      { sku: "LC-GEN-50" as Sku, qty: 1, unitPrice: 2250 },
+      { sku: "LC-TID-30" as Sku, qty: 1, unitPrice: 1400 },
+    ],
+    total: 3650,
+    payment: "card",
+    brand: "Lancôme",
+    ticketRef: "LV-260412-8830",
+  },
+  // Compra 3 (27 may 2026 — hace 1 semana): upgrade premium tras muestrear
+  //   Rénergie y Absolue. Demuestra el ROI del sampling en pantalla.
+  {
+    id: "pu-alma-3" as Purchase["id"],
+    clientId: "cl-alma" as ClientId,
+    baId: "us-ba-pol-lcm-1" as StaffId,
+    storeId: "st-pol" as StoreId,
+    at: "2026-05-27T19:45:00.000Z",
+    items: [
+      { sku: "LC-REN-50" as Sku, qty: 1, unitPrice: 3250 },
+      { sku: "LC-ABS-50" as Sku, qty: 1, unitPrice: 6700 },
+    ],
+    total: 9950,
+    payment: "card",
+    brand: "Lancôme",
+    ticketRef: "LV-260527-2407",
+  },
 ];
 
 // 76 recommendations
@@ -2309,6 +2362,33 @@ export const DEEP_2026_RECOMMENDATIONS: Recommendation[] = [
     items: ["YS-BO-50" as Sku, "YS-MYS-60" as Sku],
     status: "pending",
   },
+
+  // ── Alma Beltrán · 2 recomendaciones ────────────────────────────────────
+  // Rec 1 (Dic 2025): kit inicial recomendado en su primera visita.
+  //   Convertida → linkea a pu-alma-1 (Génifique + Hydra Zen).
+  {
+    id: "rc-alma-1" as Recommendation["id"],
+    clientId: "cl-alma" as ClientId,
+    baId: "us-ba-pol-lcm-1" as StaffId,
+    storeId: "st-pol" as StoreId,
+    brand: "Lancôme",
+    at: "2025-12-08T21:00:00.000Z",
+    items: ["LC-GEN-50" as Sku, "LC-HZN-50" as Sku],
+    status: "converted",
+    purchaseId: "pu-alma-1" as Purchase["id"],
+  },
+  // Rec 2 (Abr 2026): labial sugerido en la visita de reposición. Pending
+  //   — la BA puede ofrecerlo de nuevo en la próxima cita.
+  {
+    id: "rc-alma-2" as Recommendation["id"],
+    clientId: "cl-alma" as ClientId,
+    baId: "us-ba-pol-lcm-1" as StaffId,
+    storeId: "st-pol" as StoreId,
+    brand: "Lancôme",
+    at: "2026-04-12T20:30:00.000Z",
+    items: ["LC-LAR-34" as Sku, "LC-TCG-30" as Sku],
+    status: "pending",
+  },
 ];
 
 // 51 samples
@@ -2924,5 +3004,36 @@ export const DEEP_2026_SAMPLES: Sample[] = [
     givenAt: "2026-06-02T23:15:00.000Z",
     followUpAt: "2026-06-16T00:00:00.000Z",
     converted: true,
+  },
+
+  // ── Alma Beltrán · 2 muestras ────────────────────────────────────────────
+  // Muestra 1 (15 abr 2026): Rénergie. Convertida → la compró el 27 may
+  //   en pu-alma-3. Demuestra el ciclo sample → sale.
+  {
+    id: "sp-alma-1" as Sample["id"],
+    clientId: "cl-alma" as ClientId,
+    baId: "us-ba-pol-lcm-1" as StaffId,
+    storeId: "st-pol" as StoreId,
+    brand: "Lancôme",
+    sku: "LC-REN-7" as Sku,
+    name: "Renergie mini",
+    givenAt: "2026-04-15T22:00:00.000Z",
+    followUpAt: "2026-04-29T00:00:00.000Z",
+    converted: true,
+    purchaseId: "pu-alma-3" as Purchase["id"],
+  },
+  // Muestra 2 (28 may 2026 — hace 1 semana): Hydra Zen. Pending —
+  //   feedback no recibido todavía, la BA tiene tarea de seguimiento.
+  {
+    id: "sp-alma-2" as Sample["id"],
+    clientId: "cl-alma" as ClientId,
+    baId: "us-ba-pol-lcm-1" as StaffId,
+    storeId: "st-pol" as StoreId,
+    brand: "Lancôme",
+    sku: "LC-HZN-7" as Sku,
+    name: "Hydrating Boost mini",
+    givenAt: "2026-05-28T20:45:00.000Z",
+    followUpAt: "2026-06-11T00:00:00.000Z",
+    converted: false,
   },
 ];

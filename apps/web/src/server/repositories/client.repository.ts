@@ -74,12 +74,11 @@ export interface ClientRepository {
   delete(id: ClientId): Promise<boolean>;
 }
 
-// v4 invalida v3 para que el seed cargue con assignedBaIds + createdByBaId
-// recién agregados — antes los clientes eran agnósticos al BA y todos
-// los BAs de una tienda/marca veían los mismos. Ahora cada BA solo ve
-// clientes que la han incluido como assignedBa.
+// v5 invalida v4: el seed agregó a Alma Beltrán como clienta demo de
+// Valentina Ríos. Bumpear fuerza recarga del seed en el cache del browser
+// (la versión anterior puede tener una lista de clientes sin Alma).
 const CLIENTS = persistent(
-  "__clienteling.clients.v4",
+  "__clienteling.clients.v5",
   () => new Map<ClientId, Client>(SEED_CLIENTS.map((c) => [c.id, c])),
 );
 
