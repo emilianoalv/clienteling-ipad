@@ -32,7 +32,12 @@ export async function createAppointment(
   if (!parsed.success) return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors };
 
   const input = parsed.data;
-  const at = new Date(`${input.date}T${input.time}:00`).toISOString();
+  // La hora viene del form como horario local CDMX (lo que la BA escribió en
+  // el iPad). En Vercel el servidor corre en UTC, así que `new Date(string)`
+  // sin offset interpreta el string como UTC → la cita aterriza 6h
+  // desfasada (10:00 CDMX termina como 04:00 CDMX en el calendario, fuera
+  // del rango 10-18 que renderiza). CDMX = UTC-6 (no DST), corregimos.
+  const at = cdmxLocalToUtcIso(input.date, input.time);
 
   const existing = await appointmentRepository.list({ baId: input.baId as StaffId });
   const conflict = hasConflict(
@@ -70,4 +75,14 @@ export async function createAppointment(
 
   revalidatePath("/ba/appointments");
   redirect(`/ba/appointments?saved=${created.id}`);
+}
+
+/**
+ * Convierte un date+time local CDMX (UTC-6, sin DST) al ISO en UTC.
+ * Ej: ("2026-06-11", "10:00") → "2026-06-11T16:00:00.000Z"
+ */
+function cdmxLocalToUtcIso(date: string, time: string): string {
+  const [yyyy, mo, dd] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  return new Date(Date.UTC(yyyy!, mo! - 1, dd!, hh! + 6, mm!)).toISOString();
 }

@@ -44,7 +44,10 @@ export async function registerSale(raw: RegisterSaleInput): Promise<RegisterSale
   }
 
   const total = input.items.reduce((acc, i) => acc + i.qty * i.unitPrice, 0);
-  const at = new Date(`${input.purchaseDate}T${input.purchaseTime}:00`).toISOString();
+  // purchaseDate/purchaseTime vienen como hora CDMX local del iPad. Construir
+  // con `new Date(string)` en Vercel (UTC) interpreta el string como UTC y
+  // mete la venta 6h en el futuro de la línea de tiempo de la BA. CDMX = UTC-6.
+  const at = cdmxLocalToUtcIso(input.purchaseDate, input.purchaseTime);
 
   // Marca de atribución: para BA es su marca asignada; para Gerente/Admin
   // (demo en pantalla) caemos al brand dominante del primer item del ticket
@@ -209,4 +212,14 @@ function formatProductList(names: readonly string[]): string {
   if (names.length === 1) return names[0]!;
   if (names.length === 2) return `${names[0]} y ${names[1]}`;
   return `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
+}
+
+/**
+ * Convierte un date+time local CDMX (UTC-6, sin DST) al ISO en UTC.
+ * Ej: ("2026-06-03", "11:00") → "2026-06-03T17:00:00.000Z"
+ */
+function cdmxLocalToUtcIso(date: string, time: string): string {
+  const [yyyy, mo, dd] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  return new Date(Date.UTC(yyyy!, mo! - 1, dd!, hh! + 6, mm!)).toISOString();
 }

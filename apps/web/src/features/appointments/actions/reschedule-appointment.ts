@@ -38,7 +38,10 @@ export async function rescheduleAppointment(
     return { ok: false, message: "Cita no encontrada" };
   }
 
-  const newAt = new Date(`${parsed.data.date}T${parsed.data.time}:00`).toISOString();
+  // Misma corrección que create-appointment: input es CDMX local, el server
+  // está en UTC. Construimos UTC explícito con offset +6 para que la cita
+  // aterrice en la hora que la BA quiso.
+  const newAt = cdmxLocalToUtcIso(parsed.data.date, parsed.data.time);
 
   const existing = await appointmentRepository.list({ baId: current.baId });
   const conflict = hasConflict(
@@ -55,4 +58,10 @@ export async function rescheduleAppointment(
 
   revalidatePath("/ba/appointments");
   return { ok: true };
+}
+
+function cdmxLocalToUtcIso(date: string, time: string): string {
+  const [yyyy, mo, dd] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  return new Date(Date.UTC(yyyy!, mo! - 1, dd!, hh! + 6, mm!)).toISOString();
 }

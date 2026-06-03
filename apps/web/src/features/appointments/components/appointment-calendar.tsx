@@ -77,7 +77,7 @@ export function AppointmentCalendar({ appointments, clientLookup }: AppointmentC
           {/* "+ Nueva cita" vive ahora SOLO en el header de la page
               (ver app/(app)/ba/appointments/page.tsx). Antes estaba duplicado
               aquí — el del header es más visible en ambos tabs (Calendario
-              y Reagendadas/canceladas), así que ese es el que mantenemos. */}
+              y Agenda), así que ese es el que mantenemos. */}
         </div>
       </header>
 
