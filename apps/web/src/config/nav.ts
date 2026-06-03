@@ -43,7 +43,10 @@ export const NAV_BY_ROLE: Record<Role, readonly NavItem[]> = {
     { id: "stores", href: "/admin/stores", labelKey: "rail.stores", icon: "bag" },
     { id: "catalog", href: "/admin/catalog", labelKey: "rail.catalog", icon: "sparkle" },
     { id: "segments", href: "/admin/segments", labelKey: "rail.segments", icon: "chart" },
-    { id: "integrations", href: "/admin/integrations", labelKey: "rail.integrations", icon: "plug" },
+    // "Integraciones" ocultada de la demo — la pantalla y la ruta
+    // /admin/integrations siguen funcionales; solo se quitó el enlace del
+    // rail para no enseñarla en la presentación. Restaurar la línea para
+    // recuperarla.
     { id: "privacy", href: "/admin/privacy", labelKey: "rail.privacy", icon: "shield" },
     { id: "reports", href: "/admin/reports", labelKey: "rail.reports", icon: "pdf" },
     { id: "audit", href: "/admin/audit", labelKey: "rail.audit", icon: "shield" },
