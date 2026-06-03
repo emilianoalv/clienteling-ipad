@@ -99,21 +99,14 @@ export const recommendationRepository: RecommendationRepository = {
   },
 
   async patch(id, patch) {
+    // Leemos del merge (overlay-first + seed in-memory) para que mutaciones
+    // previas hechas en otros lambdas no se pisen.
+    const all = await mergedRecs();
+    const current = all.find((r) => r.id === id);
+    if (!current) return null;
+    const next: Recommendation = { ...current, ...patch };
     const idx = RECS.findIndex((r) => r.id === id);
-    let next: Recommendation | null = null;
-    if (idx >= 0) {
-      const current = RECS[idx]!;
-      next = { ...current, ...patch };
-      RECS[idx] = next;
-    } else {
-      // Puede que el item viva solo en overlay (creado por la misma BA en
-      // un lambda anterior). Buscamos ahí y, si está, lo persistimos
-      // actualizado de vuelta al overlay para que la mutación viaje.
-      const overlay = await readOverlayRecommendations();
-      const found = overlay.find((r) => r.id === id);
-      if (!found) return null;
-      next = { ...found, ...patch };
-    }
+    if (idx >= 0) RECS[idx] = next;
     await upsertOverlayRecommendation(next);
     return next;
   },

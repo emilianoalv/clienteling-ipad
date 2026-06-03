@@ -519,18 +519,14 @@ export const appointmentRepository: AppointmentRepository = {
   },
 
   async patch(id, patch) {
+    // Lee del merge (overlay-first + seed) para no pisar mutaciones previas
+    // hechas en otros lambdas (status, rescheduledAt, cancelReason, etc.).
+    const all = await mergedAppointments();
+    const current = all.find((a) => a.id === id);
+    if (!current) return null;
+    const next: Appointment = { ...current, ...patch };
     const idx = APPOINTMENTS.findIndex((a) => a.id === id);
-    let next: Appointment | null = null;
-    if (idx >= 0) {
-      const current = APPOINTMENTS[idx]!;
-      next = { ...current, ...patch };
-      APPOINTMENTS[idx] = next;
-    } else {
-      const overlay = await readOverlayAppointments();
-      const found = overlay.find((a) => a.id === id);
-      if (!found) return null;
-      next = { ...found, ...patch };
-    }
+    if (idx >= 0) APPOINTMENTS[idx] = next;
     await upsertOverlayAppointment(next);
     return next;
   },

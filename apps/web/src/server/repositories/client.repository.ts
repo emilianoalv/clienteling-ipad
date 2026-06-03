@@ -143,13 +143,13 @@ export const clientRepository: ClientRepository = {
   },
 
   async patchStats(id, stats) {
-    // Buscamos primero en seed in-memory; si no, en overlay (caso típico
-    // post-venta de un cliente recién creado en otro lambda).
-    let current = CLIENTS.get(id) ?? null;
-    if (!current) {
-      const overlay = await readOverlayClients();
-      current = overlay.find((c) => c.id === id) ?? null;
-    }
+    // Leemos del merge (overlay-first + seed) para que actualizaciones
+    // previas hechas en otros lambdas no se pisen. Antes leíamos CLIENTS.get
+    // directo, lo cual hacía que un patchStats post-venta en lambda A se
+    // perdiera si después un patchProfile corría en lambda B (que veía
+    // solo el seed sin los stats actualizados).
+    const merged = await mergedClients();
+    const current = merged.get(id as unknown as string) ?? null;
     if (!current) return;
     const next: Client = { ...current, stats };
     CLIENTS.set(id, next);
@@ -161,11 +161,8 @@ export const clientRepository: ClientRepository = {
   },
 
   async linkBa(id, baId, brand) {
-    let current = CLIENTS.get(id) ?? null;
-    if (!current) {
-      const overlay = await readOverlayClients();
-      current = overlay.find((c) => c.id === id) ?? null;
-    }
+    const merged = await mergedClients();
+    const current = merged.get(id as unknown as string) ?? null;
     if (!current) return null;
     const currentAssigned = current.assignedBaIds ?? [];
     const alreadyHasBa = currentAssigned.includes(baId);
@@ -182,11 +179,8 @@ export const clientRepository: ClientRepository = {
   },
 
   async patchProfile(id, patch) {
-    let current = CLIENTS.get(id) ?? null;
-    if (!current) {
-      const overlay = await readOverlayClients();
-      current = overlay.find((c) => c.id === id) ?? null;
-    }
+    const merged = await mergedClients();
+    const current = merged.get(id as unknown as string) ?? null;
     if (!current) return null;
     const next: Client = { ...current, ...patch };
     if ("routineSteps" in patch && patch.routineSteps === undefined) {

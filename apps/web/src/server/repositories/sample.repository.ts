@@ -172,19 +172,13 @@ export const sampleRepository: SampleRepository = {
   },
 
   async markConverted(id, purchaseId) {
+    // Lee del merge (overlay-first + seed) para no pisar mutaciones previas.
+    const all = await mergedSamples();
+    const current = all.find((s) => s.id === id);
+    if (!current) return null;
+    const next: Sample = { ...current, converted: true, purchaseId };
     const idx = SAMPLES.findIndex((s) => s.id === id);
-    let next: Sample | null = null;
-    if (idx >= 0) {
-      const current = SAMPLES[idx]!;
-      next = { ...current, converted: true, purchaseId };
-      SAMPLES[idx] = next;
-    } else {
-      // Item live solo en overlay (creado en otro lambda).
-      const overlay = await readOverlaySamples();
-      const found = overlay.find((s) => s.id === id);
-      if (!found) return null;
-      next = { ...found, converted: true, purchaseId };
-    }
+    if (idx >= 0) SAMPLES[idx] = next;
     await upsertOverlaySample(next);
     return next;
   },
