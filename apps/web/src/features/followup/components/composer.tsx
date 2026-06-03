@@ -158,18 +158,22 @@ export function Composer({
   );
 
   const initialTemplate = useMemo(() => {
-    if (task) return pickTemplateForTask(channelScopedTemplates, task);
+    // Si la page ya derivó la categoría exacta (desde task.category o
+    // intent), la usamos como ancla — eso evita que pickTemplateForTask
+    // caiga al fallback "primer template" cuando el mapping interno no
+    // matchea. Cuando hay task + initialCategory, buscamos primero la
+    // plantilla de la categoría preferida con la marca del cliente,
+    // después cualquier marca, después caemos al heurístico de la task.
     if (initialCategory) {
-      // Buscamos la plantilla de la categoría pedida, preferentemente
-      // de la marca primaria del cliente.
       const clientBrand = client.brands[0];
       const sameCatSameBrand = channelScopedTemplates.find(
         (tpl) => tpl.category === initialCategory && tpl.brand === clientBrand,
       );
       if (sameCatSameBrand) return sameCatSameBrand;
       const sameCat = channelScopedTemplates.find((tpl) => tpl.category === initialCategory);
-      return sameCat ?? null;
+      if (sameCat) return sameCat;
     }
+    if (task) return pickTemplateForTask(channelScopedTemplates, task);
     return null;
   }, [channelScopedTemplates, task, initialCategory, client.brands]);
   // Sin task ni initialCategory: arranca en "mensaje en blanco". Con

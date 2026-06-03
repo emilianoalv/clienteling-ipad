@@ -7,7 +7,7 @@ import { productRepository } from "@/server/repositories/product.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
 import { storeRepository } from "@/server/repositories/store.repository";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor, homeStoreFor } from "@/server/auth/scope";
+import { homeStoreFor } from "@/server/auth/scope";
 import type { PurchaseId } from "@/types/purchase";
 import type { Product, Sku } from "@/types/product";
 
@@ -28,7 +28,7 @@ export default async function SupervisorPurchaseDetailPage({
   const storeId = homeStoreFor(staff);
   const [client, products, store] = await Promise.all([
     fetchClient(clientId, staff),
-    productRepository.list({ brands: brandScopeFor(staff) }),
+    productRepository.list(),
     storeId ? storeRepository.findById(storeId) : Promise.resolve(null),
   ]);
 

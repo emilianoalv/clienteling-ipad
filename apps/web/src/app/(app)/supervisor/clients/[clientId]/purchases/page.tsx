@@ -5,7 +5,6 @@ import { PurchaseHistory } from "@/features/clients/components/purchase-history"
 import { productRepository } from "@/server/repositories/product.repository";
 import { purchaseRepository } from "@/server/repositories/purchase.repository";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor } from "@/server/auth/scope";
 import type { ClientId } from "@/types/client";
 import type { Product, Sku } from "@/types/product";
 
@@ -22,7 +21,7 @@ export default async function SupervisorPurchasesPage({
   const [client, purchases, products] = await Promise.all([
     fetchClient(clientId, staff),
     purchaseRepository.listByClient(clientId as ClientId),
-    productRepository.list({ brands: brandScopeFor(staff) }),
+    productRepository.list(),
   ]);
 
   const productBySku: Record<string, Product> = {};

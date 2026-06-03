@@ -72,24 +72,24 @@ export function RecsPreview({
           <li key={r.id} className="border-b border-line last:border-b-0">
             <Link
               href={`${basePath}/${clientId}/recommendations/${r.id}`}
-              className="grid grid-cols-[40px_minmax(0,1fr)_auto_auto] items-start gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
+              className="grid grid-cols-[56px_minmax(0,1fr)_auto_auto] items-start gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
             >
               {thumb ? (
                 <span
                   aria-hidden
-                  className="inline-block w-10 h-10 rounded-md bg-bone overflow-hidden mt-0.5"
+                  className="inline-block w-14 h-14 rounded-md bg-bone overflow-hidden mt-0.5"
                 >
                   <img
                     src={thumb}
                     alt=""
                     loading="lazy"
-                    className="w-full h-full object-contain p-1"
+                    className="w-full h-full object-contain p-1.5"
                   />
                 </span>
               ) : (
                 <span
                   aria-hidden
-                  className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60 mt-0.5"
+                  className="inline-flex w-14 h-14 items-center justify-center rounded-md bg-bone text-ink/60 mt-0.5"
                 >
                   <Icon name="sparkle" size={18} />
                 </span>

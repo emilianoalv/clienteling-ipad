@@ -8,7 +8,6 @@ import { productTechRepository } from "@/server/repositories/product-tech.reposi
 import { recommendationRepository } from "@/server/repositories/recommendation.repository";
 import { storeRepository } from "@/server/repositories/store.repository";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor } from "@/server/auth/scope";
 import type { RecommendationId } from "@/types/recommendation";
 import type { Product, Sku } from "@/types/product";
 
@@ -28,7 +27,7 @@ export default async function GerenteRecommendationDetailPage({
 
   const [client, products, techs, store] = await Promise.all([
     fetchClient(clientId, staff),
-    productRepository.list({ brands: brandScopeFor(staff) }),
+    productRepository.list(),
     productTechRepository.list(),
     storeRepository.findById(recommendation.storeId),
   ]);

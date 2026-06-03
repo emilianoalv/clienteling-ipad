@@ -13,7 +13,7 @@ import { followupTaskRepository } from "@/server/repositories/followup-task.repo
 import { storeRepository } from "@/server/repositories/store.repository";
 import { templateRepository } from "@/server/repositories/template.repository";
 import type { ClientId } from "@/types/client";
-import type { FollowupTaskId } from "@/types/followup-task";
+import type { FollowupCategory, FollowupTaskId } from "@/types/followup-task";
 import type { LifeEventKind } from "@/types/life-event";
 import type { TemplateCategory } from "@/types/template";
 
@@ -36,6 +36,47 @@ const INTENT_TO_CATEGORY: Record<LifeEventKind, TemplateCategory> = {
   birthday: "Cumpleaños",
   anniversary: "Aniversario",
 };
+
+/**
+ * Mapping de FollowupCategory de la tarea → TemplateCategory para
+ * pre-seleccionar la plantilla correcta cuando la BA hace click en
+ * "Responder" desde el inbox. Antes el composer hacía este mapping
+ * internamente, pero algunos casos caían a la primera plantilla
+ * cualquiera (por ejemplo Post-visita) en lugar de la de Cumpleaños.
+ * Pasarlo explícito desde la page lo hace determinista.
+ */
+const TASK_CATEGORY_TO_TEMPLATE: Partial<Record<FollowupCategory, TemplateCategory>> = {
+  birthday: "Cumpleaños",
+  "sample-feedback": "Muestra",
+  "post-purchase": "Post-visita",
+  "3-month-check": "Seguimiento",
+  "6-month-check": "Reposición",
+  replenishment: "Reposición",
+  // "special-event" intencionalmente sin mapeo: en seed se usa para
+  // varios casos (lanzamiento, info producto). El composer cae al
+  // mapping interno (Promoción) que es el matching por defecto.
+};
+
+/**
+ * Heurística: si la descripción de la task menciona "aniversario" o
+ * "años contigo / años como cliente", forzar Aniversario aunque la
+ * categoría diga otra cosa. Cubre el caso donde la task se etiquetó
+ * como special-event/general pero claramente es saludo de aniversario.
+ */
+function categoryFromTaskDescription(description: string): TemplateCategory | undefined {
+  const d = description.toLowerCase();
+  if (
+    d.includes("aniversario") ||
+    d.includes("años contigo") ||
+    d.includes("años como cliente")
+  ) {
+    return "Aniversario";
+  }
+  if (d.includes("cumpleaños") || d.includes("cumple ")) {
+    return "Cumpleaños";
+  }
+  return undefined;
+}
 
 function isLifeEventKind(value: string | undefined): value is LifeEventKind {
   return value === "birthday" || value === "anniversary";
@@ -98,11 +139,23 @@ export default async function NewMessagePage({
     ? await resolveSampleContext(clientId as ClientId, sampleIntent)
     : undefined;
 
-  const initialCategory: TemplateCategory | undefined = intent
-    ? INTENT_TO_CATEGORY[intent]
-    : sampleIntent
-      ? "Muestra"
-      : undefined;
+  // Orden de prioridad para pre-seleccionar plantilla:
+  //   1. Intent de evento (cumple / aniversario)
+  //   2. Intent de muestra (sample)
+  //   3. Task category (Responder desde inbox) — heurística por descripción
+  //      tiene prioridad sobre el mapping de la categoría porque captura
+  //      casos especiales (aniversario etiquetado como special-event).
+  const initialCategory: TemplateCategory | undefined = (() => {
+    if (intent) return INTENT_TO_CATEGORY[intent];
+    if (sampleIntent) return "Muestra";
+    if (initialTask) {
+      return (
+        categoryFromTaskDescription(initialTask.description) ??
+        TASK_CATEGORY_TO_TEMPLATE[initialTask.category]
+      );
+    }
+    return undefined;
+  })();
   const intentContext: TemplateContext | undefined = (() => {
     if (intent === "anniversary") {
       const years = yearsSince(client.since, new Date());

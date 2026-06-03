@@ -59,7 +59,7 @@ export function ProductCard({
       <ProductThumb
         brand={product.brand}
         initial={product.line.charAt(0)}
-        height={120}
+        height={200}
         {...(product.image ? { image: product.image } : {})}
         alt={product.line}
       />

@@ -39,7 +39,7 @@ export function ProductThumb({
           src={image}
           alt={alt ?? `${brand}`}
           loading="lazy"
-          className="w-full h-full object-contain object-center p-2"
+          className="w-full h-full object-contain object-center"
         />
       </div>
     );

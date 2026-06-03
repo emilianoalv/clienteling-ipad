@@ -74,24 +74,24 @@ export function PurchasesPreview({
             <li key={p.id} className="border-b border-line last:border-b-0">
               <Link
                 href={`${basePath}/${clientId}/purchases/${p.id}`}
-                className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
+                className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
               >
                 {thumb ? (
                   <span
                     aria-hidden
-                    className="inline-block w-10 h-10 rounded-md bg-bone overflow-hidden"
+                    className="inline-block w-14 h-14 rounded-md bg-bone overflow-hidden"
                   >
                     <img
                       src={thumb}
                       alt=""
                       loading="lazy"
-                      className="w-full h-full object-contain p-1"
+                      className="w-full h-full object-contain p-1.5"
                     />
                   </span>
                 ) : (
                   <span
                     aria-hidden
-                    className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60"
+                    className="inline-flex w-14 h-14 items-center justify-center rounded-md bg-bone text-ink/60"
                   >
                     <Icon name="bag" size={18} />
                   </span>

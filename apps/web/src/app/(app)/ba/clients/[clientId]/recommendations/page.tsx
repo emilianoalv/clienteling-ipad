@@ -5,7 +5,6 @@ import { RecommendationHistory } from "@/features/clients/components/recommendat
 import { productRepository } from "@/server/repositories/product.repository";
 import { recommendationRepository } from "@/server/repositories/recommendation.repository";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor } from "@/server/auth/scope";
 import type { ClientId } from "@/types/client";
 import type { Product, Sku } from "@/types/product";
 
@@ -19,7 +18,7 @@ export default async function ClientRecommendationsPage({
   const [client, recommendations, products] = await Promise.all([
     fetchClient(clientId, staff),
     recommendationRepository.listByClient(clientId as ClientId),
-    productRepository.list({ brands: brandScopeFor(staff) }),
+    productRepository.list(),
   ]);
 
   const productBySku: Record<string, Product> = {};

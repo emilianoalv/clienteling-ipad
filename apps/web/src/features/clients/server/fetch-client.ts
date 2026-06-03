@@ -13,7 +13,7 @@ import { communicationRepository } from "@/server/repositories/communication.rep
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { productRepository } from "@/server/repositories/product.repository";
 import { userRepository } from "@/server/repositories/user.repository";
-import { brandScopeFor, isClientOwnedBy, isStoreInScope } from "@/server/auth/scope";
+import { isClientOwnedBy, isStoreInScope } from "@/server/auth/scope";
 import type { Product, Sku } from "@/types/product";
 
 /**
@@ -43,7 +43,13 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
   if (!isStoreInScope(staff, initial.storeId)) notFound();
   if (!isClientOwnedBy(staff, initial.assignedBaIds)) notFound();
 
-  const brands = brandScopeFor(staff);
+  // Productos cargados SIN filtro de marca porque el perfil unificado del
+  // cliente (RF-04) puede tener compras / recomendaciones / muestras de
+  // marcas distintas a la del BA que atiende. Si filtramos por brand, los
+  // tickets/muestras YSL en un perfil atendido por BA Lancôme (o
+  // viceversa) no encuentran sus productos y se ven sin imagen. La
+  // RBAC de escritura sigue scopeada por marca en register-sale / visit;
+  // este lookup es solo para presentación.
   const [
     client,
     interactions,
@@ -67,7 +73,7 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     communicationRepository.listByClient(clientId),
     followupTaskRepository.listByClient(clientId),
     userRepository.list(),
-    productRepository.list({ brands }),
+    productRepository.list(),
   ]);
   if (!client) notFound();
 

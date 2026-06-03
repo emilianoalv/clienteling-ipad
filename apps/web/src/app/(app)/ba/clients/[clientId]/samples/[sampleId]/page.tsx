@@ -8,7 +8,6 @@ import { productTechRepository } from "@/server/repositories/product-tech.reposi
 import { sampleRepository } from "@/server/repositories/sample.repository";
 import { storeRepository } from "@/server/repositories/store.repository";
 import { requireSession } from "@/server/auth/session";
-import { brandScopeFor } from "@/server/auth/scope";
 import type { SampleId } from "@/types/sample";
 import type { Product } from "@/types/product";
 
@@ -25,7 +24,7 @@ export default async function SampleDetailPage({
 
   const [client, products, techs, store] = await Promise.all([
     fetchClient(clientId, staff),
-    productRepository.list({ brands: brandScopeFor(staff) }),
+    productRepository.list(),
     productTechRepository.list(),
     storeRepository.findById(sample.storeId),
   ]);
