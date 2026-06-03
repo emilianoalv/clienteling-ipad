@@ -6,6 +6,7 @@ import type { Sample, SampleId } from "@/types/sample";
 import type { StoreId } from "@/types/store";
 import { SEED_SAMPLES } from "./seed";
 import { MAY_2026_SAMPLES } from "./seed-may-2026";
+import { WEEK_JUN_2026_SAMPLES } from "./seed-week-jun-2026";
 import { persistent } from "./_persist";
 import { generateId } from "@/lib/id/generate-id";
 
@@ -53,9 +54,10 @@ export interface SampleRepository {
   deleteByClient(clientId: ClientId): Promise<number>;
 }
 
-const SAMPLES: Sample[] = persistent("__clienteling.samples.v3", () => [
+const SAMPLES: Sample[] = persistent("__clienteling.samples.v4", () => [
   ...SEED_SAMPLES,
   ...MAY_2026_SAMPLES,
+  ...WEEK_JUN_2026_SAMPLES,
 ]);
 
 // v4 invalida v3 para refrescar el inventario YSL: el SKU YS-OPI-1

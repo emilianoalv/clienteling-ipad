@@ -74,17 +74,12 @@ export function AppointmentsPreview({
             <li key={a.id} className="border-b border-line last:border-b-0">
               <Link
                 href={`${basePath}/${clientId}/appointments/${a.id}`}
-                className="grid grid-cols-[40px_minmax(0,1fr)_auto_auto] items-center gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
+                className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3.5 py-3.5 px-1 text-ink no-underline transition-colors hover:bg-bone/60 rounded-md"
               >
-                <span
-                  aria-hidden
-                  className="inline-flex w-10 h-10 items-center justify-center rounded-md bg-bone text-ink/60"
-                >
-                  <Icon name="calendar" size={18} />
-                </span>
                 <div className="min-w-0 flex flex-col gap-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[15px] font-semibold leading-tight">
+                    <span className="inline-flex items-center gap-1.5 text-[15px] font-semibold leading-tight">
+                      <Icon name="calendar" size={14} className="text-ink/55" />
                       {t(`appointment.kind.${a.kind}`)}
                     </span>
                     <BrandTag brand={a.brand} alwaysShow />

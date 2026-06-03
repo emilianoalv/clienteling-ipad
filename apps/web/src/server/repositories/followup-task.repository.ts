@@ -24,11 +24,22 @@ const BA_STF_LCM_2 = "us-ba-stf-lcm-2" as StaffId; // Ximena Pereda
 const BA_STF_YSL_1 = "us-ba-stf-ysl-1" as StaffId; // YSL Santa Fe 1
 const BA_STF_YSL_2 = "us-ba-stf-ysl-2" as StaffId; // YSL Santa Fe 2
 
-function relativeISO(dayDelta: number, hours = 10, minutes = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() + dayDelta);
-  d.setHours(hours, minutes, 0, 0);
-  return d.toISOString();
+// CDMX = UTC-6 (no DST). Anchoramos a la TZ de la BA para que las horas
+// se vean dentro del horario laboral en el iPad de demo, sin importar la
+// TZ del servidor (Vercel corre en UTC).
+function relativeISO(dayDelta: number, hoursCdmx = 10, minutesCdmx = 0): string {
+  const now = new Date();
+  const cdmxNow = new Date(now.getTime() - 6 * 3600_000);
+  return new Date(
+    Date.UTC(
+      cdmxNow.getUTCFullYear(),
+      cdmxNow.getUTCMonth(),
+      cdmxNow.getUTCDate() + dayDelta,
+      hoursCdmx + 6,
+      minutesCdmx,
+      0,
+    ),
+  ).toISOString();
 }
 
 /**
@@ -78,7 +89,7 @@ const SEED: FollowupTask[] = [
     description: "Mandar info de Rénergie H.C.F. y disponibilidad en tienda",
     dueAt: relativeISO(3, 10, 30),
     status: "pending",
-    createdAt: relativeISO(0, 8, 0),
+    createdAt: relativeISO(0, 9, 15),
   },
   {
     id: "ft-05" as FollowupTaskId,

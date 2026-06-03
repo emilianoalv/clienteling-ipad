@@ -482,9 +482,20 @@ export const appointmentRepository: AppointmentRepository = {
   },
 };
 
-function relativeISO(dayDelta: number, hours: number, minutes: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + dayDelta);
-  d.setHours(hours, minutes, 0, 0);
-  return d.toISOString();
+// CDMX = UTC-6 (no DST). Anclamos al horario local de la BA para que las
+// citas se vean dentro del horario laboral en el iPad de demo, sin importar
+// la TZ del servidor (Vercel corre en UTC).
+function relativeISO(dayDelta: number, hoursCdmx: number, minutesCdmx: number): string {
+  const now = new Date();
+  const cdmxNow = new Date(now.getTime() - 6 * 3600_000);
+  return new Date(
+    Date.UTC(
+      cdmxNow.getUTCFullYear(),
+      cdmxNow.getUTCMonth(),
+      cdmxNow.getUTCDate() + dayDelta,
+      hoursCdmx + 6,
+      minutesCdmx,
+      0,
+    ),
+  ).toISOString();
 }

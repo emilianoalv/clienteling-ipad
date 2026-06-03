@@ -77,6 +77,7 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
   const [motive, setMotive] = useState<VisitMotive>("new-purchase");
   const [purchaseDate, setPurchaseDate] = useState<string>(todayISO());
   const [purchaseTime, setPurchaseTime] = useState<string>(nowHHMM());
+  const [adjustingDateTime, setAdjustingDateTime] = useState(false);
   const [items, setItems] = useState<DraftItem[]>([{ ...NEW_ITEM }]);
   const [payment, setPayment] = useState<Payment>("card");
   const [paymentDetail, setPaymentDetail] = useState("");
@@ -163,11 +164,15 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
 
   function onSubmit() {
     if (filledItems.length === 0) return;
+    // Si el BA no ajustó la fecha/hora manualmente, sellamos con la hora actual
+    // al momento de guardar (no la del mount del form).
+    const stampedDate = adjustingDateTime ? purchaseDate : todayISO();
+    const stampedTime = adjustingDateTime ? purchaseTime : nowHHMM();
     const input: RegisterSaleInput = {
       clientId: client.id,
       motive,
-      purchaseDate,
-      purchaseTime,
+      purchaseDate: stampedDate,
+      purchaseTime: stampedTime,
       items: filledItems.map((it) => ({
         sku: it.product.sku,
         qty: it.qty,
@@ -255,24 +260,51 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
             ) : null}
           </section>
 
-          {/* Date + Time */}
-          <div className="grid grid-cols-2 gap-4 max-w-[420px]">
-            <Input
-              label="Fecha de la compra *"
-              type="date"
-              value={purchaseDate}
-              max={todayISO()}
-              onChange={(e) => setPurchaseDate(e.target.value)}
-              {...(errors.purchaseDate?.[0] ? { error: errors.purchaseDate[0] } : {})}
-            />
-            <Input
-              label="Hora"
-              type="time"
-              value={purchaseTime}
-              onChange={(e) => setPurchaseTime(e.target.value)}
-              {...(errors.purchaseTime?.[0] ? { error: errors.purchaseTime[0] } : {})}
-            />
-          </div>
+          {/* Date + Time — por defecto se sella con la hora del POS al guardar.
+              El BA puede ajustar solo si es una captura retroactiva. */}
+          {adjustingDateTime ? (
+            <div className="flex flex-col gap-2 max-w-[420px]">
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Fecha de la compra *"
+                  type="date"
+                  value={purchaseDate}
+                  max={todayISO()}
+                  onChange={(e) => setPurchaseDate(e.target.value)}
+                  {...(errors.purchaseDate?.[0] ? { error: errors.purchaseDate[0] } : {})}
+                />
+                <Input
+                  label="Hora"
+                  type="time"
+                  value={purchaseTime}
+                  onChange={(e) => setPurchaseTime(e.target.value)}
+                  {...(errors.purchaseTime?.[0] ? { error: errors.purchaseTime[0] } : {})}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPurchaseDate(todayISO());
+                  setPurchaseTime(nowHHMM());
+                  setAdjustingDateTime(false);
+                }}
+                className="self-start text-[13px] font-medium text-ink/60 hover:text-ink underline-offset-2 hover:underline cursor-pointer"
+              >
+                Usar fecha y hora actual
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-[13.5px] text-ink/60">
+              <span>Se registrará con la fecha y hora del ticket.</span>
+              <button
+                type="button"
+                onClick={() => setAdjustingDateTime(true)}
+                className="text-[13.5px] font-medium text-ink underline-offset-2 underline hover:text-ink/80 cursor-pointer"
+              >
+                Ajustar fecha/hora
+              </button>
+            </div>
+          )}
 
           {/* Products */}
           <section>
