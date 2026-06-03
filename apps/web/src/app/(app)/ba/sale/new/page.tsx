@@ -24,7 +24,7 @@ export default async function NewSalePage() {
         className="inline-flex items-center gap-2 text-[14.5px] font-medium"
       >
         <Link
-          href="/ba/home"
+          href="/ba"
           className="inline-flex items-center gap-1.5 text-ink hover:text-ink/80"
         >
           <Icon name="arrow-left" size={14} />

@@ -28,7 +28,7 @@ import type { TemplateCategory } from "@/types/template";
  *    intent, abre en modo blank.
  *  - "Responder" desde el inbox de tareas (?taskId=…). Pre-selecciona
  *    plantilla por categoría y al confirmar envío marca la task hecha.
- *  - "Felicitar" desde Eventos en /ba/home (?intent=birthday|anniversary).
+ *  - "Felicitar" desde Eventos en /ba (?intent=birthday|anniversary).
  *    Pre-selecciona plantilla y, en aniversario, calcula los años
  *    cumplidos desde client.since para meterlos en el mensaje.
  */

@@ -16,7 +16,7 @@ const BIRTHDAY_WINDOW_DAYS = 30;
  * no duplica si ya hay una task (pending o done) cuya dueAt cae dentro de
  * ±30 días del cumpleaños esperado.
  *
- * Se ejecuta cada vez que la BA abre `/ba/home`. No es un cron formal —
+ * Se ejecuta cada vez que la BA abre `/ba`. No es un cron formal —
  * la app de demo no tiene infra de jobs — pero el patrón "lazy ensure"
  * cubre el caso real: la BA entra a su pantalla principal todos los días.
  *

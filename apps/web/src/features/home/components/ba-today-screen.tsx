@@ -1,5 +1,6 @@
 import type { BaDaySnapshot } from "../services/get-ba-day-snapshot";
 import { AppointmentReminders } from "./_parts/appointment-reminders";
+import { NextAppointmentCard } from "./_parts/next-appointment-card";
 import { TodayHero } from "./_parts/today-hero";
 import { QuickActions } from "./_parts/quick-actions";
 import { TodayEvents } from "./_parts/today-events";
@@ -35,6 +36,13 @@ export function BaTodayScreen({ baName, storeName, snapshot, now = new Date() }:
         todayApptCount={snapshot.today.length}
         pendingCount={pendingCount}
       />
+
+      {/* Card prominente solo cuando hay cita en próximas 2h. Por encima
+          de AppointmentReminders porque es la señal visual más fuerte —
+          el banner de permiso de notif es secundario. */}
+      {snapshot.nextAppointmentBriefing ? (
+        <NextAppointmentCard briefing={snapshot.nextAppointmentBriefing} />
+      ) : null}
 
       <AppointmentReminders today={snapshot.today} />
 
