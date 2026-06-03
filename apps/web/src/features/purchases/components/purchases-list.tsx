@@ -76,12 +76,14 @@ export function PurchasesList({ purchases, clientLookup, productLookup }: Purcha
                     href={`/ba/clients/${p.clientId}/purchases/${p.id}`}
                     className="grid grid-cols-[0.9fr_1.4fr_1.6fr_1fr_0.7fr_0.8fr] gap-3 px-5 py-3.5 border-b border-line last:border-b-0 items-center cursor-pointer no-underline text-inherit hover:bg-bone transition-colors"
                   >
-                    <span className="inline-flex items-center gap-1.5 min-w-0">
-                      <span className="font-mono text-[16px] font-semibold">{ticket}</span>
+                    <span className="flex flex-col min-w-0 gap-0.5">
+                      <span className="font-mono text-[16px] font-semibold truncate">
+                        {ticket}
+                      </span>
                       {p.manual ? (
-                        <Chip size="sm" className="h-4 text-[13px]">
+                        <span className="inline-flex items-center self-start h-4 px-1.5 rounded-sm bg-bone text-ink/55 text-[11px] font-semibold tracking-[0.08em] uppercase">
                           {t("purchases.manual")}
-                        </Chip>
+                        </span>
                       ) : null}
                     </span>
                     <div className="flex items-center gap-2 min-w-0">
