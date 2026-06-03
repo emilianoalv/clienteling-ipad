@@ -58,12 +58,9 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
-const PAYMENT_DETAIL_PLACEHOLDER: Record<Payment, string> = {
-  card: "Visa · 4321",
-  cash: "Recibido en MXN",
-  transfer: "Banorte · ref",
-  "store-credit": "Crédito #",
-};
+// PAYMENT_DETAIL_PLACEHOLDER quedó fuera de uso con los campos Detalle /
+// Ticket ocultos para la demo. Mantener este record si más adelante se
+// restaura el input — son los placeholders por método de pago.
 
 export interface RegisterSaleFormProps {
   client: Client;
@@ -80,8 +77,11 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
   const [adjustingDateTime, setAdjustingDateTime] = useState(false);
   const [items, setItems] = useState<DraftItem[]>([{ ...NEW_ITEM }]);
   const [payment, setPayment] = useState<Payment>("card");
-  const [paymentDetail, setPaymentDetail] = useState("");
-  const [ticketRef, setTicketRef] = useState("");
+  // Detalle (paymentDetail) y Ticket / folio (ticketRef) ocultos del UI
+  // para la demo. Las constantes vacías preservan el omit-when-empty del
+  // payload sin cambiar el shape del schema ni del action.
+  const paymentDetail = "";
+  const ticketRef = "";
   const [notes, setNotes] = useState("");
   const [showFollowup, setShowFollowup] = useState(false);
   const [followupType, setFollowupType] = useState<FollowupType>("call");
@@ -404,20 +404,12 @@ export function RegisterSaleForm({ client, products, baName, storeName }: Regist
                 );
               })}
             </div>
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <Input
-                label="Detalle (opcional)"
-                value={paymentDetail}
-                onChange={(e) => setPaymentDetail(e.target.value)}
-                placeholder={PAYMENT_DETAIL_PLACEHOLDER[payment]}
-              />
-              <Input
-                label="Ticket / folio (opcional)"
-                value={ticketRef}
-                onChange={(e) => setTicketRef(e.target.value)}
-                placeholder="LV-260514-XXXX (vacío → folio MAN-…)"
-              />
-            </div>
+            {/* Campos "Detalle" y "Ticket / folio" ocultados para la demo —
+                la integración POS los llena automáticamente, no es valor
+                presentar la captura manual. Los states paymentDetail y
+                ticketRef siguen viviendo en useState con string vacío, así
+                el submit funciona igual y el omit-when-empty del payload
+                no incluye keys vacías. Restaurar: descomenta este bloque. */}
           </section>
 
           {/* Notes */}
