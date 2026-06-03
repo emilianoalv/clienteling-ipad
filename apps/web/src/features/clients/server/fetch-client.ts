@@ -13,7 +13,7 @@ import { communicationRepository } from "@/server/repositories/communication.rep
 import { followupTaskRepository } from "@/server/repositories/followup-task.repository";
 import { productRepository } from "@/server/repositories/product.repository";
 import { userRepository } from "@/server/repositories/user.repository";
-import { isClientOwnedBy, isStoreInScope } from "@/server/auth/scope";
+import { brandScopeFor, isClientOwnedBy, isStoreInScope } from "@/server/auth/scope";
 import type { Product, Sku } from "@/types/product";
 
 /**
@@ -69,7 +69,10 @@ export async function fetchClientWithHistory(id: string, staff: Staff) {
     sampleRepository.listByClient(clientId),
     recommendationRepository.listByClient(clientId),
     consentRepository.listByClient(clientId),
-    appointmentRepository.listByClient(clientId),
+    // Citas: SÍ scopeadas por marca — una BA Lancôme no debe ver citas YSL
+    // del cliente compartido, ni viceversa. La marca define el flujo de
+    // trabajo (kind, briefing, productos) y el "owner" de la cita.
+    appointmentRepository.listByClient(clientId, { brands: brandScopeFor(staff) }),
     communicationRepository.listByClient(clientId),
     followupTaskRepository.listByClient(clientId),
     userRepository.list(),

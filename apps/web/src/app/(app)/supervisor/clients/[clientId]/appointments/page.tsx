@@ -5,6 +5,7 @@ import { AppointmentHistory } from "@/features/clients/components/appointment-hi
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import { userRepository } from "@/server/repositories/user.repository";
 import { requireSession } from "@/server/auth/session";
+import { brandScopeFor } from "@/server/auth/scope";
 import type { ClientId } from "@/types/client";
 
 /**
@@ -19,7 +20,7 @@ export default async function SupervisorClientAppointmentsPage({
   const { staff } = await requireSession();
   const [client, appointments, users] = await Promise.all([
     fetchClient(clientId, staff),
-    appointmentRepository.listByClient(clientId as ClientId),
+    appointmentRepository.listByClient(clientId as ClientId, { brands: brandScopeFor(staff) }),
     userRepository.list(),
   ]);
 

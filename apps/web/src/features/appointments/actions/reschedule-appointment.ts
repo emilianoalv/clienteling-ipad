@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
-import { isStoreInScope } from "@/server/auth/scope";
+import { brandScopeFor, isStoreInScope } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import { hasConflict } from "../services/has-conflict";
@@ -27,7 +27,14 @@ export async function rescheduleAppointment(
   const appointmentId = parsed.data.appointmentId as AppointmentId;
   const current = await appointmentRepository.findById(appointmentId);
   // Out-of-scope returns the same error as not-found (no existence leak).
-  if (!current || !isStoreInScope(staff, current.storeId)) {
+  // Brand scope: una BA Lancôme no debe poder reagendar citas YSL del
+  // cliente compartido (y viceversa).
+  const brandScope = brandScopeFor(staff);
+  if (
+    !current ||
+    !isStoreInScope(staff, current.storeId) ||
+    (brandScope && !brandScope.includes(current.brand))
+  ) {
     return { ok: false, message: "Cita no encontrada" };
   }
 

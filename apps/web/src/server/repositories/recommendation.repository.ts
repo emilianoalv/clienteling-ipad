@@ -7,6 +7,7 @@ import { generateId } from "@/lib/id/generate-id";
 import { SEED_RECOMMENDATIONS } from "./seed";
 import { MAY_2026_RECOMMENDATIONS } from "./seed-may-2026";
 import { WEEK_JUN_2026_RECOMMENDATIONS } from "./seed-week-jun-2026";
+import { DEEP_2026_RECOMMENDATIONS } from "./seed-deep-2026";
 import { persistent } from "./_persist";
 
 export interface RecommendationListFilter {
@@ -35,10 +36,11 @@ export interface RecommendationRepository {
   deleteByClient(clientId: ClientId): Promise<number>;
 }
 
-const RECS: Recommendation[] = persistent("__clienteling.recommendations.v5", () => [
+const RECS: Recommendation[] = persistent("__clienteling.recommendations.v6", () => [
   ...SEED_RECOMMENDATIONS,
   ...MAY_2026_RECOMMENDATIONS,
   ...WEEK_JUN_2026_RECOMMENDATIONS,
+  ...DEEP_2026_RECOMMENDATIONS,
 ]);
 
 export const recommendationRepository: RecommendationRepository = {

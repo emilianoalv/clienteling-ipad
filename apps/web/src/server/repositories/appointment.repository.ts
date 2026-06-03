@@ -421,7 +421,15 @@ export interface AppointmentListFilter {
 
 export interface AppointmentRepository {
   list(filter?: AppointmentListFilter): Promise<Appointment[]>;
-  listByClient(clientId: ClientId): Promise<Appointment[]>;
+  /**
+   * Trae citas de un cliente. Si se pasa `brands`, filtra al brand scope
+   * del staff — una BA Lancôme no debe ver citas YSL en el perfil del cliente
+   * compartido, ni viceversa. Omitir scope para Admin/HQ.
+   */
+  listByClient(
+    clientId: ClientId,
+    filter?: { brands?: readonly BrandId[] },
+  ): Promise<Appointment[]>;
   findById(id: AppointmentId): Promise<Appointment | null>;
   create(input: Omit<Appointment, "id">): Promise<Appointment>;
   patch(id: AppointmentId, patch: Partial<Omit<Appointment, "id">>): Promise<Appointment | null>;
@@ -444,10 +452,13 @@ export const appointmentRepository: AppointmentRepository = {
     }).sort((a, b) => a.at.localeCompare(b.at));
   },
 
-  async listByClient(clientId) {
-    return APPOINTMENTS.filter((a) => a.clientId === clientId).sort((a, b) =>
-      b.at.localeCompare(a.at),
-    );
+  async listByClient(clientId, filter = {}) {
+    const brandScope = filter.brands;
+    return APPOINTMENTS.filter((a) => {
+      if (a.clientId !== clientId) return false;
+      if (brandScope && brandScope.length && !brandScope.includes(a.brand)) return false;
+      return true;
+    }).sort((a, b) => b.at.localeCompare(a.at));
   },
 
   async findById(id) {

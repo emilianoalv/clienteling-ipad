@@ -7,6 +7,7 @@ import type { StoreId } from "@/types/store";
 import { SEED_SAMPLES } from "./seed";
 import { MAY_2026_SAMPLES } from "./seed-may-2026";
 import { WEEK_JUN_2026_SAMPLES } from "./seed-week-jun-2026";
+import { DEEP_2026_SAMPLES } from "./seed-deep-2026";
 import { persistent } from "./_persist";
 import { generateId } from "@/lib/id/generate-id";
 
@@ -54,21 +55,22 @@ export interface SampleRepository {
   deleteByClient(clientId: ClientId): Promise<number>;
 }
 
-const SAMPLES: Sample[] = persistent("__clienteling.samples.v4", () => [
+const SAMPLES: Sample[] = persistent("__clienteling.samples.v5", () => [
   ...SEED_SAMPLES,
   ...MAY_2026_SAMPLES,
   ...WEEK_JUN_2026_SAMPLES,
+  ...DEEP_2026_SAMPLES,
 ]);
 
-// v4 invalida v3 para refrescar el inventario YSL: el SKU YS-OPI-1
-// del seed anterior se renombró a YS-BO-1 (sigue convención line-size),
-// se agregaron muestras de fragancias masculinas (Y, MYSLF) y skincare
-// Pure Shots — antes YSL tenía solo 25 unidades vs 193 de Lancôme.
-const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInventory.v4", () => [
+// v5 unifica el sufijo de las muestras al patrón "-7" para que coincida con
+// el seed (MAY 2026 + WEEK JUN 2026) y con el sampleSku del catálogo. Antes
+// la BA entregaba una muestra LC-REN-7 pero el inventario solo conocía
+// LC-REN-5 → la imagen del producto no resolvía y el decremento no ocurría.
+const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInventory.v5", () => [
   // ── Lancôme · skincare ────────────────────────────────────────────────────
   { sku: "LC-GEN-7", name: "Advanced Génifique 7ml", have: 31, capacity: 50, brand: "Lancôme" },
-  { sku: "LC-REN-5", name: "Rénergie H.C.F. sample 5ml", have: 42, capacity: 60, brand: "Lancôme" },
-  { sku: "LC-ABS-5", name: "Absolue Soft Cream 5ml", have: 18, capacity: 40, brand: "Lancôme" },
+  { sku: "LC-REN-7", name: "Rénergie H.C.F. sample 7ml", have: 42, capacity: 60, brand: "Lancôme" },
+  { sku: "LC-ABS-7", name: "Absolue Soft Cream 7ml", have: 18, capacity: 40, brand: "Lancôme" },
   { sku: "LC-AEC-3", name: "Absolue Eye Cream 3ml", have: 22, capacity: 35, brand: "Lancôme" },
   { sku: "LC-HZN-7", name: "Hydra Zen Gel Cream 7ml", have: 28, capacity: 45, brand: "Lancôme" },
   // ── Lancôme · fragancias (vials 1.5ml) ───────────────────────────────────
@@ -80,11 +82,12 @@ const INVENTORY: SampleInventoryItem[] = persistent("__clienteling.sampleInvento
   // ── YSL · skincare ───────────────────────────────────────────────────────
   { sku: "YS-OR-5", name: "Or Rouge sérum 5ml", have: 12, capacity: 25, brand: "YSL" },
   { sku: "YS-PSE-3", name: "Pure Shots Y-Shape Eye 3ml", have: 15, capacity: 30, brand: "YSL" },
+  { sku: "YS-RPC-7", name: "Rouge Pur Couture sample", have: 20, capacity: 35, brand: "YSL" },
   // ── YSL · fragancias (vials 1.2ml) ───────────────────────────────────────
-  { sku: "YS-LIB-1", name: "Libre EDP 1.2ml vial", have: 22, capacity: 40, brand: "YSL" },
-  { sku: "YS-BO-1", name: "Black Opium EDP 1.2ml vial", have: 24, capacity: 40, brand: "YSL" },
+  { sku: "YS-LIB-7", name: "Libre EDP 1.2ml vial", have: 22, capacity: 40, brand: "YSL" },
+  { sku: "YS-BO-7", name: "Black Opium EDP 1.2ml vial", have: 24, capacity: 40, brand: "YSL" },
   { sku: "YS-Y-1", name: "Y EDP Hombre 1.2ml vial", have: 18, capacity: 35, brand: "YSL" },
-  { sku: "YS-MYS-1", name: "MYSLF EDP Hombre 1.2ml vial", have: 16, capacity: 35, brand: "YSL" },
+  { sku: "YS-MYS-7", name: "MYSLF EDP Hombre 1.2ml vial", have: 16, capacity: 35, brand: "YSL" },
 ]);
 
 export const sampleRepository: SampleRepository = {

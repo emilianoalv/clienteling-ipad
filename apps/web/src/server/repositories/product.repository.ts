@@ -4,9 +4,9 @@ import type { Product, Sku } from "@/types/product";
 import type { StoreId } from "@/types/store";
 import { persistent } from "./_persist";
 
-const ST_POLANCO = "st-polanco" as StoreId;
-const ST_SANTA_FE = "st-santa-fe" as StoreId;
-const ST_PALACIO = "st-palacio-polanco" as StoreId;
+const ST_POL = "st-pol" as StoreId;
+const ST_PER = "st-per" as StoreId;
+const ST_STF = "st-stf" as StoreId;
 
 /**
  * Catálogo Lancôme: datos reales verificados contra lancome.com.mx (mayo 2026)
@@ -25,7 +25,7 @@ const SEED: Product[] = [
     name: "Serum activador de juventud",
     size: "50 ml",
     price: 2_250,
-    stock: { [ST_POLANCO]: 14, [ST_PALACIO]: 6, [ST_SANTA_FE]: 9 } as Product["stock"],
+    stock: { [ST_POL]: 14, [ST_PER]: 14, [ST_STF]: 14 } as Product["stock"],
     attrs: {
       tipo: "Sérum",
       piel: ["Todas"],
@@ -49,7 +49,7 @@ const SEED: Product[] = [
     name: "Suero antiedad de alto rendimiento",
     size: "50 ml",
     price: 3_250,
-    stock: { [ST_POLANCO]: 8, [ST_PALACIO]: 5, [ST_SANTA_FE]: 4 } as Product["stock"],
+    stock: { [ST_POL]: 18, [ST_PER]: 9, [ST_STF]: 10 } as Product["stock"],
     attrs: {
       tipo: "Sérum",
       piel: ["Madura", "Todas"],
@@ -63,7 +63,7 @@ const SEED: Product[] = [
       "Piel más joven en 2 semanas",
     ],
     lifecycleDays: 90,
-    sampleSku: "LC-REN-5" as Sku,
+    sampleSku: "LC-REN-7" as Sku,
   },
 
   // ── Lancôme · Skincare · Cremas ──────────────────────────────────────────
@@ -75,7 +75,7 @@ const SEED: Product[] = [
     name: "Soft Cream — crema revitalizante",
     size: "60 ml",
     price: 6_700,
-    stock: { [ST_POLANCO]: 4, [ST_PALACIO]: 2, [ST_SANTA_FE]: 1 } as Product["stock"],
+    stock: { [ST_POL]: 17, [ST_PER]: 10, [ST_STF]: 14 } as Product["stock"],
     attrs: {
       tipo: "Crema",
       piel: ["Madura", "Seca"],
@@ -89,7 +89,7 @@ const SEED: Product[] = [
       "24 h de hidratación luminosa",
     ],
     lifecycleDays: 100,
-    sampleSku: "LC-ABS-5" as Sku,
+    sampleSku: "LC-ABS-7" as Sku,
   },
   {
     sku: "LC-AEC-20" as Sku,
@@ -99,7 +99,7 @@ const SEED: Product[] = [
     name: "Revitalizing Eye Cream — contorno antiedad",
     size: "20 ml",
     price: 2_860,
-    stock: { [ST_POLANCO]: 6, [ST_PALACIO]: 3, [ST_SANTA_FE]: 2 } as Product["stock"],
+    stock: { [ST_POL]: 18, [ST_PER]: 9, [ST_STF]: 17 } as Product["stock"],
     attrs: {
       tipo: "Crema",
       piel: ["Madura"],
@@ -123,7 +123,7 @@ const SEED: Product[] = [
     name: "Gel Cream — hidratación calmante",
     size: "50 ml",
     price: 1_550,
-    stock: { [ST_POLANCO]: 18, [ST_PALACIO]: 12, [ST_SANTA_FE]: 10 } as Product["stock"],
+    stock: { [ST_POL]: 18, [ST_PER]: 12, [ST_STF]: 15 } as Product["stock"],
     attrs: {
       tipo: "Crema",
       piel: ["Mixta", "Sensible", "Todas"],
@@ -149,7 +149,7 @@ const SEED: Product[] = [
     name: "Foundation 24H — base cobertura completa",
     size: "30 ml",
     price: 1_400,
-    stock: { [ST_POLANCO]: 22, [ST_PALACIO]: 18, [ST_SANTA_FE]: 14 } as Product["stock"],
+    stock: { [ST_POL]: 22, [ST_PER]: 18, [ST_STF]: 14 } as Product["stock"],
     attrs: {
       tipo: "Base",
       piel: ["Todas"],
@@ -173,7 +173,7 @@ const SEED: Product[] = [
     name: "Care & Glow — base infusionada con serum",
     size: "30 ml",
     price: 1_400,
-    stock: { [ST_POLANCO]: 16, [ST_PALACIO]: 11, [ST_SANTA_FE]: 9 } as Product["stock"],
+    stock: { [ST_POL]: 16, [ST_PER]: 12, [ST_STF]: 13 } as Product["stock"],
     attrs: {
       tipo: "Base",
       piel: ["Seca", "Todas"],
@@ -197,7 +197,7 @@ const SEED: Product[] = [
     name: "All Over Concealer — corrector líquido 24H",
     size: "13 ml",
     price: 870,
-    stock: { [ST_POLANCO]: 24, [ST_PALACIO]: 18, [ST_SANTA_FE]: 14 } as Product["stock"],
+    stock: { [ST_POL]: 24, [ST_PER]: 18, [ST_STF]: 14 } as Product["stock"],
     attrs: {
       tipo: "Corrector",
       piel: ["Todas"],
@@ -223,7 +223,7 @@ const SEED: Product[] = [
     name: "Cream — labial cremoso de larga duración",
     size: "3.4 g",
     price: 590,
-    stock: { [ST_POLANCO]: 28, [ST_PALACIO]: 22, [ST_SANTA_FE]: 18 } as Product["stock"],
+    stock: { [ST_POL]: 28, [ST_PER]: 22, [ST_STF]: 18 } as Product["stock"],
     attrs: {
       tipo: "Labial",
       vegano: false,
@@ -248,7 +248,7 @@ const SEED: Product[] = [
     name: "Le Parfum — Eau de Parfum",
     size: "50 ml",
     price: 2_400,
-    stock: { [ST_POLANCO]: 11, [ST_PALACIO]: 8, [ST_SANTA_FE]: 5 } as Product["stock"],
+    stock: { [ST_POL]: 18, [ST_PER]: 18, [ST_STF]: 10 } as Product["stock"],
     attrs: { tipo: "Fragancia", familia: "Floral Chypre", gender: "Femenino" },
     howTo: "Vaporizar en puntos de pulso: muñecas, cuello y detrás de las orejas.",
     selling: [
@@ -267,7 +267,7 @@ const SEED: Product[] = [
     name: "Eau de Parfum",
     size: "100 ml",
     price: 3_890,
-    stock: { [ST_POLANCO]: 9, [ST_PALACIO]: 7, [ST_SANTA_FE]: 3 } as Product["stock"],
+    stock: { [ST_POL]: 15, [ST_PER]: 10, [ST_STF]: 17 } as Product["stock"],
     attrs: { tipo: "Fragancia", familia: "Floral Gourmand", gender: "Femenino" },
     howTo: "Vaporizar en puntos de pulso; intensidad media-alta, ideal para día y noche.",
     selling: [
@@ -286,7 +286,7 @@ const SEED: Product[] = [
     name: "Iris Absolu — Eau de Parfum",
     size: "100 ml",
     price: 3_820,
-    stock: { [ST_POLANCO]: 5, [ST_PALACIO]: 4, [ST_SANTA_FE]: 2 } as Product["stock"],
+    stock: { [ST_POL]: 15, [ST_PER]: 9, [ST_STF]: 18 } as Product["stock"],
     attrs: { tipo: "Fragancia", familia: "Floral Frutal Gourmand", gender: "Femenino" },
     howTo: "Vaporizar en puntos de pulso; perfecto para ocasiones especiales.",
     selling: [
@@ -305,7 +305,7 @@ const SEED: Product[] = [
     name: "Eau de Parfum — fragancia icónica desde 1990",
     size: "100 ml",
     price: 3_600,
-    stock: { [ST_POLANCO]: 7, [ST_PALACIO]: 6, [ST_SANTA_FE]: 4 } as Product["stock"],
+    stock: { [ST_POL]: 10, [ST_PER]: 12, [ST_STF]: 18 } as Product["stock"],
     attrs: { tipo: "Fragancia", familia: "Floral Oriental", gender: "Femenino" },
     howTo: "Vaporizar en puntos de pulso; aroma envolvente para ocasiones románticas.",
     selling: [
@@ -324,7 +324,7 @@ const SEED: Product[] = [
     name: "Eau de Parfum — fragancia floral luminosa",
     size: "100 ml",
     price: 2_015,
-    stock: { [ST_POLANCO]: 8, [ST_PALACIO]: 5, [ST_SANTA_FE]: 3 } as Product["stock"],
+    stock: { [ST_POL]: 12, [ST_PER]: 18, [ST_STF]: 18 } as Product["stock"],
     attrs: { tipo: "Fragancia", familia: "Floral", gender: "Femenino" },
     howTo: "Vaporizar en puntos de pulso; ideal para día por su carácter luminoso.",
     selling: [
@@ -348,7 +348,7 @@ const SEED: Product[] = [
     name: "Eau de Parfum",
     size: "90 ml",
     price: 4_120,
-    stock: { [ST_POLANCO]: 6, [ST_PALACIO]: 10, [ST_SANTA_FE]: 8 } as Product["stock"],
+    stock: { [ST_POL]: 15, [ST_PER]: 12, [ST_STF]: 15 } as Product["stock"],
     attrs: { tipo: "Fragancia", familia: "Floral Amaderada", gender: "Femenino" },
     howTo: "Vaporizar en puntos de pulso: muñecas, cuello y detrás de las orejas.",
     selling: [
@@ -357,7 +357,7 @@ const SEED: Product[] = [
       "Frasco recargable, oro 24K",
     ],
     lifecycleDays: 240,
-    sampleSku: "YS-LIB-1" as Sku,
+    sampleSku: "YS-LIB-7" as Sku,
   },
   {
     sku: "YS-BO-50" as Sku,
@@ -367,7 +367,7 @@ const SEED: Product[] = [
     name: "Eau de Parfum",
     size: "50 ml",
     price: 2_650,
-    stock: { [ST_POLANCO]: 12, [ST_PALACIO]: 9, [ST_SANTA_FE]: 7 } as Product["stock"],
+    stock: { [ST_POL]: 12, [ST_PER]: 12, [ST_STF]: 17 } as Product["stock"],
     attrs: { tipo: "Fragancia", familia: "Gourmand Oriental", gender: "Femenino" },
     howTo: "Vaporizar en puntos de pulso; ideal de tarde a noche por su intensidad.",
     selling: [
@@ -376,7 +376,7 @@ const SEED: Product[] = [
       "El éxito femenino YSL desde 2014",
     ],
     lifecycleDays: 180,
-    sampleSku: "YS-BO-1" as Sku,
+    sampleSku: "YS-BO-7" as Sku,
   },
   {
     sku: "YS-Y-60" as Sku,
@@ -386,7 +386,7 @@ const SEED: Product[] = [
     name: "Eau de Parfum",
     size: "60 ml",
     price: 2_950,
-    stock: { [ST_POLANCO]: 9, [ST_PALACIO]: 7, [ST_SANTA_FE]: 5 } as Product["stock"],
+    stock: { [ST_POL]: 14, [ST_PER]: 13, [ST_STF]: 15 } as Product["stock"],
     attrs: { tipo: "Fragancia", familia: "Aromática Amaderada", gender: "Masculino" },
     howTo: "Vaporizar en cuello y muñecas; perfil sofisticado día a noche.",
     selling: [
@@ -405,7 +405,7 @@ const SEED: Product[] = [
     name: "Eau de Parfum",
     size: "60 ml",
     price: 3_120,
-    stock: { [ST_POLANCO]: 8, [ST_PALACIO]: 6, [ST_SANTA_FE]: 4 } as Product["stock"],
+    stock: { [ST_POL]: 14, [ST_PER]: 17, [ST_STF]: 10 } as Product["stock"],
     attrs: { tipo: "Fragancia", familia: "Aromática Floral", gender: "Masculino" },
     howTo: "Vaporizar en puntos de pulso; firma masculina moderna y versátil.",
     selling: [
@@ -414,7 +414,7 @@ const SEED: Product[] = [
       "Lanzamiento masculino 2023",
     ],
     lifecycleDays: 180,
-    sampleSku: "YS-MYS-1" as Sku,
+    sampleSku: "YS-MYS-7" as Sku,
   },
 
   // ── YSL · Maquillaje · Labios ────────────────────────────────────────────
@@ -426,7 +426,7 @@ const SEED: Product[] = [
     name: "Labial The Bold",
     size: "2.8 g",
     price: 950,
-    stock: { [ST_POLANCO]: 30, [ST_PALACIO]: 24, [ST_SANTA_FE]: 20 } as Product["stock"],
+    stock: { [ST_POL]: 30, [ST_PER]: 24, [ST_STF]: 20 } as Product["stock"],
     attrs: {
       tipo: "Labial",
       concerns: ["Color duradero", "Pigmentación intensa"],
@@ -435,6 +435,7 @@ const SEED: Product[] = [
     howTo: "Aplicar directo del tubo; para mayor precisión usar pincel.",
     selling: ["Pigmentación saturada", "Confort 8 horas", "Tubo icónico YSL"],
     lifecycleDays: 240,
+    sampleSku: "YS-RPC-7" as Sku,
   },
   {
     sku: "YS-TC-01" as Sku,
@@ -444,7 +445,7 @@ const SEED: Product[] = [
     name: "Velvet Cream — labial mate líquido",
     size: "6 ml",
     price: 990,
-    stock: { [ST_POLANCO]: 22, [ST_PALACIO]: 17, [ST_SANTA_FE]: 13 } as Product["stock"],
+    stock: { [ST_POL]: 22, [ST_PER]: 17, [ST_STF]: 13 } as Product["stock"],
     attrs: {
       tipo: "Labial",
       concerns: ["Color duradero", "Acabado mate", "Pigmentación intensa"],
@@ -462,7 +463,7 @@ const SEED: Product[] = [
     name: "Candy Glaze — gloss con cuidado",
     size: "4.7 ml",
     price: 870,
-    stock: { [ST_POLANCO]: 26, [ST_PALACIO]: 20, [ST_SANTA_FE]: 16 } as Product["stock"],
+    stock: { [ST_POL]: 26, [ST_PER]: 20, [ST_STF]: 16 } as Product["stock"],
     attrs: {
       tipo: "Labial",
       concerns: ["Hidratación", "Volumen visible", "Brillo"],
@@ -482,7 +483,7 @@ const SEED: Product[] = [
     name: "Foundation 24H — base larga duración",
     size: "25 ml",
     price: 1_280,
-    stock: { [ST_POLANCO]: 18, [ST_PALACIO]: 14, [ST_SANTA_FE]: 11 } as Product["stock"],
+    stock: { [ST_POL]: 18, [ST_PER]: 14, [ST_STF]: 21 } as Product["stock"],
     attrs: {
       tipo: "Base",
       piel: ["Todas"],
@@ -502,7 +503,7 @@ const SEED: Product[] = [
     name: "Base ligera infusionada con serum",
     size: "30 ml",
     price: 1_120,
-    stock: { [ST_POLANCO]: 14, [ST_PALACIO]: 10, [ST_SANTA_FE]: 8 } as Product["stock"],
+    stock: { [ST_POL]: 14, [ST_PER]: 16, [ST_STF]: 20 } as Product["stock"],
     attrs: {
       tipo: "Base",
       piel: ["Mixta", "Seca", "Todas"],
@@ -522,7 +523,7 @@ const SEED: Product[] = [
     name: "Iluminador corrector",
     size: "2.5 ml",
     price: 1_180,
-    stock: { [ST_POLANCO]: 18, [ST_PALACIO]: 12, [ST_SANTA_FE]: 6 } as Product["stock"],
+    stock: { [ST_POL]: 18, [ST_PER]: 12, [ST_STF]: 11 } as Product["stock"],
     attrs: {
       tipo: "Corrector",
       piel: ["Todas"],
@@ -543,7 +544,7 @@ const SEED: Product[] = [
     name: "Volumizing Mascara — máscara de volumen extremo",
     size: "9 ml",
     price: 940,
-    stock: { [ST_POLANCO]: 25, [ST_PALACIO]: 19, [ST_SANTA_FE]: 14 } as Product["stock"],
+    stock: { [ST_POL]: 25, [ST_PER]: 19, [ST_STF]: 14 } as Product["stock"],
     attrs: {
       tipo: "Máscara",
       concerns: ["Volumen", "Larga duración", "Ojos / Pestañas"],
@@ -566,7 +567,7 @@ const SEED: Product[] = [
     name: "Sérum iluminador con azafrán",
     size: "50 ml",
     price: 6_490,
-    stock: { [ST_POLANCO]: 2, [ST_PALACIO]: 3, [ST_SANTA_FE]: 1 } as Product["stock"],
+    stock: { [ST_POL]: 10, [ST_PER]: 18, [ST_STF]: 18 } as Product["stock"],
     attrs: {
       tipo: "Sérum",
       piel: ["Madura", "Todas"],
@@ -586,7 +587,7 @@ const SEED: Product[] = [
     name: "Y-Shape Targeted Eye — contorno antiedad",
     size: "15 ml",
     price: 2_280,
-    stock: { [ST_POLANCO]: 8, [ST_PALACIO]: 6, [ST_SANTA_FE]: 4 } as Product["stock"],
+    stock: { [ST_POL]: 22, [ST_PER]: 12, [ST_STF]: 14 } as Product["stock"],
     attrs: {
       tipo: "Crema",
       piel: ["Madura", "Todas"],
@@ -607,8 +608,12 @@ const SEED: Product[] = [
 // v2 invalida v1 — antes era un Map plano sin write ops. Ahora el repo
 // soporta create/update/delete para que el Admin gestione el catálogo
 // desde la UI (RF-55 + RF-17) sin redeploy.
+// v3 invalida v2: las keys de stock se renombraron de
+// st-polanco/st-santa-fe/st-palacio-polanco a st-pol/st-per/st-stf para que
+// coincidan con storeRepository (Liverpool Polanco / Liverpool Perisur /
+// Palacio Santa Fe) y la sección Disponibilidad resuelva los nombres reales.
 const PRODUCTS = persistent(
-  "__clienteling.products.v2",
+  "__clienteling.products.v3",
   () => new Map<Sku, Product>(SEED.map((p) => [p.sku, p])),
 );
 

@@ -7,6 +7,7 @@ import { appointmentRepository } from "@/server/repositories/appointment.reposit
 import { storeRepository } from "@/server/repositories/store.repository";
 import { userRepository } from "@/server/repositories/user.repository";
 import { requireSession } from "@/server/auth/session";
+import { brandScopeFor } from "@/server/auth/scope";
 import type { AppointmentId } from "@/types/appointment";
 import type { UserId } from "@/types/user";
 
@@ -25,6 +26,8 @@ export default async function SupervisorAppointmentDetailPage({
 
   const appointment = await appointmentRepository.findById(appointmentId as AppointmentId);
   if (!appointment || appointment.clientId !== clientId) notFound();
+  const brandScope = brandScopeFor(staff);
+  if (brandScope && !brandScope.includes(appointment.brand)) notFound();
 
   const [client, store, ba] = await Promise.all([
     fetchClient(clientId, staff),

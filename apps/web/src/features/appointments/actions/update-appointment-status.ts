@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/server/auth/session";
-import { isStoreInScope } from "@/server/auth/scope";
+import { brandScopeFor, isStoreInScope } from "@/server/auth/scope";
 import { can } from "@/config/rbac";
 import { appointmentRepository } from "@/server/repositories/appointment.repository";
 import type { AppointmentId } from "@/types/appointment";
@@ -23,7 +23,12 @@ export async function transitionAppointment(
   if (!can(staff.role, "appointments:write")) return { ok: false, message: "Sin permiso" };
 
   const current = await appointmentRepository.findById(appointmentId as AppointmentId);
-  if (!current || !isStoreInScope(staff, current.storeId)) {
+  const brandScope = brandScopeFor(staff);
+  if (
+    !current ||
+    !isStoreInScope(staff, current.storeId) ||
+    (brandScope && !brandScope.includes(current.brand))
+  ) {
     return { ok: false, message: "Cita no encontrada" };
   }
 
