@@ -9,7 +9,10 @@ import type { ClientId } from "@/types/client";
 import type { StaffId } from "@/types/staff";
 import { generateId } from "@/lib/id/generate-id";
 import { persistent } from "./_persist";
-import { appendOverlayFollowupTask, readOverlayFollowupTasks } from "./_overlay";
+import {
+  appendOverlayFollowupTask,
+  readOverlayFollowupTasks,
+} from "./_overlay";
 
 // BAs reales del seed post-refactor (ver user.repository.ts).
 const BA_POL_LCM_1 = "us-ba-pol-lcm-1" as StaffId; // Valentina Ríos
@@ -621,29 +624,59 @@ export const followupTaskRepository: FollowupTaskRepository = {
   },
 
   async complete(id, result) {
+    // 1) Buscamos en globalThis (tareas seedeadas y creadas en este lambda).
+    // 2) Si no está, puede vivir solo en overlay (creada en otro lambda).
+    // 3) En cualquier caso, persistimos la versión "done" al overlay para
+    //    que la mutación viaje al siguiente lambda — antes el cambio se
+    //    perdía cross-instance y la tarea reaparecía como pendiente.
     const idx = TASKS.findIndex((t) => t.id === id);
-    if (idx < 0) return null;
-    const current = TASKS[idx]!;
-    const next: FollowupTask = {
-      ...current,
-      status: "done",
-      result,
-      completedAt: new Date().toISOString(),
-    };
-    TASKS[idx] = next;
+    let next: FollowupTask | null = null;
+    if (idx >= 0) {
+      const current = TASKS[idx]!;
+      next = {
+        ...current,
+        status: "done",
+        result,
+        completedAt: new Date().toISOString(),
+      };
+      TASKS[idx] = next;
+    } else {
+      const overlay = await readOverlayFollowupTasks();
+      const found = overlay.find((t) => t.id === id);
+      if (!found) return null;
+      next = {
+        ...found,
+        status: "done",
+        result,
+        completedAt: new Date().toISOString(),
+      };
+    }
+    await appendOverlayFollowupTask(next);
     return next;
   },
 
   async cancel(id) {
     const idx = TASKS.findIndex((t) => t.id === id);
-    if (idx < 0) return null;
-    const current = TASKS[idx]!;
-    const next: FollowupTask = {
-      ...current,
-      status: "cancelled",
-      completedAt: new Date().toISOString(),
-    };
-    TASKS[idx] = next;
+    let next: FollowupTask | null = null;
+    if (idx >= 0) {
+      const current = TASKS[idx]!;
+      next = {
+        ...current,
+        status: "cancelled",
+        completedAt: new Date().toISOString(),
+      };
+      TASKS[idx] = next;
+    } else {
+      const overlay = await readOverlayFollowupTasks();
+      const found = overlay.find((t) => t.id === id);
+      if (!found) return null;
+      next = {
+        ...found,
+        status: "cancelled",
+        completedAt: new Date().toISOString(),
+      };
+    }
+    await appendOverlayFollowupTask(next);
     return next;
   },
 
